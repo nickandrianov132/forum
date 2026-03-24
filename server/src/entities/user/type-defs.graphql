@@ -1,0 +1,24 @@
+type User {
+    id: ID!
+    login: String!
+    password: String!
+    email: String!
+    posts: [Post]
+    likes: [Like!]!
+    dislike: [Dislike!]!
+}
+
+type AuthPayload {
+    user: User
+    token: String
+}
+type Query {
+    users: [User!]!
+    user(id: ID!): User
+}
+type Mutation {
+    loginUser(login: String!, password: String!): String
+    addUser(login: String!, password: String!, email: String!): AuthPayload
+    deleteUser(id: ID!): Boolean
+    updateUser(id: ID!, login: String, password: String, email: String): User
+}

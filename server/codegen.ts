@@ -1,0 +1,38 @@
+import { CodegenConfig } from "@graphql-codegen/cli";
+
+const config: CodegenConfig = {
+    schema: "./src/**/*.graphql",
+    documents: ["../client/src/graphql/**/*.{ts,tsx}", ], 
+    generates: {
+        "./src/types/resolvers-types.ts": {
+            plugins: ["typescript", "typescript-resolvers"],
+            config: {
+                // useIndexSignature: true,
+                // defaultMapper: "Partial<{T}>",
+                 contextType: "./src/types/context#MyContext",
+                 mappers:{
+                     User: "./src/models/Users.js#IUser",
+                     Post: "./src/models/Posts.js#IPost",
+                     Like: "./src/models/Likes.js#ILike",
+                     Dislike: "./src/models/Dislikes.js#IDislike"
+                 },
+                 useIndexSignature: true, 
+                 scalars: {
+                    ID: 'string',
+                 },
+                 useTypeImports: true // <--- Добавьте эту строку
+            }
+        },
+        "../client/src/gql/": {
+                    preset: "client",
+                    plugins: [],
+                    config: {
+                        scalars: { ID: 'string' },
+                        useTypeImports: true,
+                        emitLegacyCommonJSImports: false
+                    }
+        },
+    },
+}
+
+export default config;

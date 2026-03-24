@@ -1,0 +1,316 @@
+$font-hover-li: #278fff;
+$default-btn-bgcolor: #0c0c0e;
+$default-btn-bgcolor-hover: #312f35;
+$default-btn-color: #fbfbfb;
+$default-btn-color-hover: #ffffff;
+$default-btn-border-color: #fff3f3;
+$color-login-btn: #39fa86;
+$color-login-btn-hover: #25e271;
+$color-logout-btn: #fa394c;
+$color-logout-btn-hover: #e72949;
+
+
+
+
+//// ==== Mixins =====>
+@mixin app_margin($props...) {
+    margin: $props;
+}
+@mixin app_padding($props...) {
+    padding: $props;
+}
+@mixin text-shadow($x, $y, $minusX, $minusY, $area, $color) {
+    text-shadow: $x $y $area $color,
+                 $minusX $minusY $area $color,
+                 $x $minusY $area $color,
+                 $minusX $y $area $color,
+    ;
+}
+@mixin box-shadow($x: 0px, $y: 0px, $minusX: 0px, $minusY: 0px, $area: 0px, $color) {
+    box-shadow:  $x $y $area $color,
+                 $minusX $minusY $area $color,
+                 $x $minusY $area $color,
+                 $minusX $y $area $color,
+    ;
+}
+
+
+//// ==== Templates ======>
+%formBtn{
+    width: fit-content;
+    border: 0.1em solid $default-btn-border-color;
+    border-radius: 0.3em;
+    color: $default-btn-color;
+    cursor: pointer;
+    background: $default-btn-bgcolor;
+    transition: .1s linear;
+    @include app_padding(0.3em 0.5em 0.3em 0.5em);
+    &:hover{
+        background: $default-btn-bgcolor-hover;
+        color: $default-btn-color-hover;
+    }
+}
+%inputBasic{
+    font-size: 0.75em;
+    color: #070039ff;
+    width: 80%;
+    padding: 0.3em;
+    @include app_margin(0.4em 0 0.4em 0);
+    outline: none;
+    border: 0.1em solid transparent;
+    border-radius: 0.4em;
+}
+
+
+p,h1,h2,h3,h4,h5{
+    padding: 0;
+    margin: 0;
+}
+li, a{
+    &:focus{
+        outline: none;
+    }
+    text-decoration: none;
+    list-style: none;
+    cursor: pointer;
+    color: inherit;
+    :hover{
+        color: $font-hover-li;
+    }
+}
+ul{
+    padding: 0;
+    margin: 0;
+}
+body{
+    margin: 0;
+    padding: 0;
+    font-size: 16px;
+}
+#root{
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    width: 100vw;
+    height: 100vh;
+    padding: 0;
+    margin: 0;
+    font-family: "Lato", sans-serif;
+    
+}
+
+.forum_container{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex: 1 1 auto;
+    width: 100%; 
+}
+.navbar{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    font-size: 1em;
+    @include app_padding(0.3em 0.1em);
+    background: #000;
+    color: whitesmoke;
+}
+.body{
+    display: flex;
+    width: 100%;
+    height: 100%;
+    background: white;
+}
+.footer{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    font-size: 1em;
+    @include app_padding(0.3em 0.1em);
+    background: #000;
+    color: whitesmoke; 
+}
+.left_sidebar{
+    display: flex;
+    flex-direction: column;
+    background: #303030;
+    width: 15%;
+    .login_form{
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        width: 98%;
+        .form_input{
+            @extend %inputBasic;
+        }
+        .login_btn{
+            @extend %formBtn;
+        
+        }
+    }
+    .user_panel{
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        @include app_padding(0.3em 0.1em 0.3em 0.1em);
+        width: 98%;
+        .logout_btn{
+            @extend %formBtn;
+            background: $color-logout-btn;
+            @include text-shadow(0.01em, 0.01em, -0.01em, -0.01em, 0.04em, rgb(9, 6, 50));
+            &:hover{
+                background-color: $color-logout-btn-hover;
+                @include text-shadow(0.01em, 0.01em, -0.01em, -0.01em, 0.1em, rgb(9, 6, 50));
+            }
+        }
+
+    }
+}
+.router_container{
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    .post_detail{
+        background-color: #f1efdd;
+        border: 0.1em solid black;
+        border-radius: 0.3em;
+        @include app_margin(0.2em);
+        @include app_padding(0.3em);
+        .title{
+            background-color: #2e2e2e;
+            color: whitesmoke;
+            text-align: center;
+        }
+        .post_footer{
+            display: flex;
+
+        }
+        .post_button{
+            @extend %formBtn;
+        }
+        .post_content_wrapper{
+            display: flex;
+            flex-direction: column;
+            .post_content_p{
+                &::first-letter{
+                    margin-left: .5em;
+                }
+                @include app_margin(0.2em 0.3em 0.2em 0.3em);
+            }
+            .post_content_btn_save, .post_content_btn_edit{
+                @extend %formBtn;
+            }
+            .post_content_btn_edit{
+                color: whitesmoke;
+                background-color: #202eb1;
+                border: 0.1em solid #2c0071;
+                @include text-shadow(0.01em, 0.01em, -0.01em, -0.01em, 0.1em, rgb(9, 6, 50));
+                &:hover{
+                    color: rgb(255, 255, 255);
+                    background-color: #3b65c1;
+                    border: 0.1em solid #3b4587;
+                    @include text-shadow(0.01em, 0.01em, -0.01em, -0.01em, 0.06em, rgb(235, 235, 235));
+                }
+            }
+            .post_content_btn_save{
+                color: whitesmoke;
+                background-color: #37d48b;
+                border: 0.1em solid #087043;
+                @include text-shadow(0.01em, 0.01em, -0.01em, -0.01em, 0.1em, rgb(9, 6, 50));
+                &:hover{
+                    color: rgb(255, 255, 255);
+                    background-color: #3be568;
+                    border: 0.1em solid #175029;
+                    @include text-shadow(0.01em, 0.01em, -0.01em, -0.01em, 0.06em, rgb(21, 29, 22));
+                }
+            }
+        }
+    }
+}
+.posts_container{
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    @include app_padding(1em);
+    .post_wrapper{
+        display: flex;
+        flex-direction: column;
+        width: 90%;
+        background: #f8f4f4;
+        border: 0.01em solid #292929;
+        border-radius: 0.2em;
+        margin-bottom: 0.5em;
+        @include app_padding(0.3em 0.4em 0.3em 0.5em);
+        .post_title{
+            font-size: 1em;
+            width: 100%;
+            &:hover{
+                cursor: pointer;
+                @include text-shadow(0.01em, 0.01em, -0.01em, -0.01em, 0.05em, #272727)
+            }
+        }
+    }
+}
+
+.post_footer{
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    width: 100%;
+    @include app_padding(0.2em);
+    background: transparent;
+    .likes_dislikes_wrapper{
+        display: flex;
+        .action_item{
+            display: flex;
+            flex-direction: row;
+            justify-items: baseline;
+            align-items: center;
+            .like_red{
+                color: #fc2727;
+            }
+            .like_grey{
+                color: #626365;
+            }
+            .dislike_checked{
+                color: #0c0a20;
+            }
+            .dislike_unchecked{
+                color: #626365;
+            }
+            .likes_count{
+                color: #16161a;
+                font-size: 0.8em;
+                font-weight: 600;
+                margin: 0 0.2em 0 0.2em;
+            }
+        }
+    }
+    .heart_liked{
+        color: red;
+        @include text-shadow(0.15em, 0.15em, -0.15em, -0.15em, 0.8em, #181818);
+    }
+    .heart_unliked{
+        color: black;
+        // @include text-shadow(0.15em, 0.15em, -0.15em, -0.15em, 0.8em, #181818);
+
+    }
+    .div_author{
+        padding-right: 0.5em;
+        color: #837373;
+        span{
+            font-size: 0.78em;
+            margin-right: 0.3em;
+            letter-spacing: 0.015em;
+            font-style: italic;
+        }
+        em{
+            font-size: 0.82em;
+            font-weight: 600;
+        }
+    }
+}

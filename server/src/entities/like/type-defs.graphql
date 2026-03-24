@@ -1,0 +1,12 @@
+type Like {
+    id: ID!
+    user: User!
+    post: Post!
+    userId: ID!
+    postId: ID!
+    # Если вы добавили timestamps: true в Mongoose:
+    createdAt: String
+}
+type Mutation {
+    addLike(postId: ID!): Post!
+}

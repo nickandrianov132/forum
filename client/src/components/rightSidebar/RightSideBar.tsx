@@ -1,0 +1,10 @@
+
+const RightSideBar = () => {
+    return (
+        <div className="right_sidebar">
+            
+        </div>
+    );
+}
+
+export default RightSideBar;
