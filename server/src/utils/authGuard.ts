@@ -25,8 +25,8 @@ export const authenticated = <TParent, TArgs>(
 ): ResolverFn<TParent, TArgs> => {
   return (parent, args, context, info) => {
     if (!context.userId) {
-      throw new GraphQLError('You must be logged in!', {
-        extensions: { code: 'UNAUTHENTICATED' },
+      throw new GraphQLError('User is not authenticated', {
+        extensions: { code: 'UNAUTHENTICATED', http: { status: 401 } },
       });
     }
     return next(parent, args, context, info);

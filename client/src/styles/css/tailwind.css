@@ -1,0 +1,231 @@
+@import "tailwindcss";
+
+@theme {
+  --color-lexical-u1-text: #665b8b;
+  --color-lexical-u1-marker: #0f0035;
+  --shadow-login-form: 0 0 0 1px rgba(255, 255, 255, 0.05), /* Тонкий внутренний блик */
+                        0 4px 6px -1px rgba(0, 0, 0, 0.5),      /* Четкая ближняя тень */
+                        0 20px 25px -5px rgba(0, 0, 0, 0.6),    /* Мягкое глубокое размытие */
+                        0 25px 50px -12px rgba(0, 0, 0, 0.7); 
+  --text-shadow-all: 1px 2px 5px;   
+  --font-poppins: Poppins, sans-serif;
+}
+@utility main {
+  /* По умолчанию (мобилки): 1 колонка, элементы прижаты к верху */
+  @apply grid grid-cols-1 items-start min-h-dvh min-w-120 max-w-7xl mx-auto gap-6 p-4;
+  
+  /* ХИТРОСТЬ: Каждая строка сетки на мобильных сжимается строго под размер своего контента */
+  grid-auto-rows: min-content;
+
+  /* На десктопе (от 1024px) */
+  @media (width >= 64rem) {
+    @apply grid-cols-4 items-stretch w-full mx-0;
+    
+    /* Сбрасываем сжатие строк, чтобы на ПК сайдбары снова красиво растягивались по высоте до футера */
+    grid-auto-rows: unset; 
+  }
+}
+
+
+@utility left-bar {
+  /* На мобильных: блок занимает всю ширину, а высота строго по контенту */
+  @apply w-full h-fit;
+
+  /* На десктопе: растягиваем во всю высоту грид-строки и фиксируем в 1 колонку */
+  @media (width >= 64rem) {
+    @apply h-full;
+    grid-column: span 1 / span 1;
+  }
+
+  /* Стили для внутренних ссылок (оставляем как у вас) */
+  & ul {
+    @apply flex flex-row flex-wrap gap-4 justify-center items-center w-full;
+
+    @media (width >= 64rem) {
+      @apply flex-col gap-2 items-start justify-start;
+    }
+  }
+}
+@utility right-bar {
+  /* На мобильных: блок занимает всю ширину, а высота строго по контенту */
+  @apply w-full h-fit;
+
+  /* На десктопе: растягиваем во всю высоту грид-строки и фиксируем в 1 колонку */
+  @media (width >= 64rem) {
+    @apply h-full;
+    grid-column: span 1 / span 1;
+  }
+
+  /* Стили для внутренних ссылок (оставляем как у вас) */
+  & ul {
+    @apply flex flex-row flex-wrap gap-4 justify-center items-center w-full;
+
+    @media (width >= 64rem) {
+      @apply flex-col gap-2 items-start justify-start;
+    }
+  }
+}
+
+@utility header-container {
+  @apply flex flex-row bg-gray-800 p-4 w-full ;
+}
+
+@utility nav-header {
+  @apply max-w-7xl mx-auto px-4 h-16 flex justify-between items-center;
+
+  @media (width>= 64rem) {
+    @apply w-full;
+  }
+}
+@utility nav-link {
+  @apply hover:text-blue-400; 
+}
+@utility section-news {
+  @apply flex flex-col w-auto
+}
+@utility post-detail {
+  @apply flex flex-col p-2 m-2 w-200 border-b-gray-900 rounded-md bg-blue-200
+}
+
+@utility login-form {
+  @apply flex flex-col absolute left-1/2 right-1/2 -translate-x-1/2 -translate-y-2 z-50 border border-white/10 bg-slate-900 rounded-lg w-fit h-fit p-4 shadow-login-form
+}
+
+
+
+@utility form-input {
+  @apply w-40 bg-slate-950/60 text-xs text-slate-100 caret-white border border-slate-800 rounded-sm py-1 px-1 outline-none transition-all duration-200 not-last:mb-2;
+
+  &::placeholder {
+    @apply text-slate-500;
+  }
+ /* 🛠️ ИСПРАВЛЕНИЕ АВТОЗАПОЛНЕНИЯ БРАУЗЕРА */
+  @variant autofill {
+    /* Сбрасываем системный фон и текст на наши цвета темной темы */
+    box-shadow: 0 0 0px 1000px var(--color-slate-950) inset !important;
+    -webkit-text-fill-color: var(--color-slate-100) !important;
+    &:focus {
+    /* Меняем цвет рамки и добавляем свечение (ring), как при обычном фокусе */
+    border-color: rgba(59, 130, 246, 0.8) !important; /* аналог blue-500/80 */
+    box-shadow: 0 0 0px 1000px var(--color-slate-950) inset, 
+                0 0 0px 2px rgba(59, 130, 246, 0.2) !important; /* добавляем ring-2 blue-500/20 поверх заливки */
+  }
+  }
+  &:autofill:focus {
+    /* Меняем цвет рамки и добавляем свечение (ring), как при обычном фокусе */
+    border-color: rgba(59, 130, 246, 0.8) !important; /* аналог blue-500/80 */
+    box-shadow: 0 0 0px 1000px var(--color-slate-950) inset, 
+                0 0 0px 2px rgba(59, 130, 246, 0.2) !important; /* добавляем ring-2 blue-500/20 поверх заливки */
+  }
+  @variant focus {
+    @apply bg-slate-800 border-blue-500/80 ring-2 ring-blue-500/20;
+  }
+}
+
+@utility login-btn {
+  @apply mx-auto px-2 py-1 w-fit text-sm text-white rounded-sm border border-slate-400; 
+
+  @variant hover {
+    @apply text-shadow-all text-shadow-amber-50;
+  }
+}
+
+@utility editor-container {
+  @apply w-200 m-5 overflow-hidden border border-b-slate-800 rounded-lg
+}
+
+@utility toolbar {
+  @apply flex gap-1.5 p-2 border-b bg-slate-300    
+}
+
+@utility btn {
+  @apply box-border p-px flex items-center justify-center border border-b-cyan-900 rounded-md  w-8 h-7.5 text-base
+}
+
+@utility btn-active {
+  @apply box-border p-px flex items-center justify-center border border-transparent rounded-md bg-gray-400 w-8 h-7.5 text-base
+}
+
+@utility post-wrapper {
+  @apply flex-col mb-1.5 p-1.5 w-full border-b-blue-950 rounded-sm bg-slate-200 
+}
+
+@utility editor-title-input {
+  @apply w-150 outline-0 border p-1 bg-blue-50
+}
+
+@utility post-title {
+  @apply w-auto mb-1 font-bold text-mist-950 hover:text-orange-600 text-shadow-olive-900 shadow-2xs
+}
+
+
+
+@utility my-bold-text {
+  @apply font-bold;
+}
+
+@utility my-italic-text {
+  @apply italic;
+}
+
+@utility my-underline-text {
+  @apply underline;
+}
+
+@utility my-h1-style {
+  @apply text-[24px] font-bold my-2.5;
+}
+
+@utility my-h2-style {
+  @apply text-[20px] font-bold my-2;
+}
+
+@utility my-ul-list {
+  @apply list-disc ml-[1em];
+}
+
+@utility my-ol-list {
+  @apply list-decimal ml-[0.5em] pl-[0.5em];
+}
+
+@utility my-listitem {
+  @apply mb-[0.3em] text-[#434141];
+}
+
+/* Специфичные стили для маркеров и вложенности */
+.my-ol-list .my-listitem {
+  @apply text-[#0c0c0e] m-0;
+  &::marker {
+    font-family: 'Times New Roman', Times, serif;
+  }
+}
+
+.my-ul-list .my-listitem {
+  color: var(--color-lexical-ul-text);
+  &::marker {
+    color: var(--color-lexical-ul-marker);
+  }
+}
+
+/* 3. Стили для блока вывода готового HTML (.lexical-render-output) */
+.lexical-render-output {
+  & ul {
+    @apply list-disc ml-[1em];
+    & li {
+      color: var(--color-lexical-ul-text);
+      &::marker {
+        color: var(--color-lexical-ul-marker);
+      }
+    }
+  }
+
+  & ol {
+    @apply list-decimal m-[0_0_1em_1em] pl-[0.5em];
+    & li {
+      @apply m-0;
+      &::marker {
+        font-family: 'Times New Roman', Times, serif;
+      }
+    }
+  }
+}

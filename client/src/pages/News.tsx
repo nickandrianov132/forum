@@ -1,9 +1,9 @@
 
 const News = () => {
     return (
-        <div>
+        <section className="section-news">
             News Component
-        </div>
+        </section>
     );
 }
 

@@ -5,12 +5,11 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.default = void 0;
-var _client = require("@apollo/client");
 var _react = require("@apollo/client/react");
 var _react2 = _interopRequireWildcard(require("react"));
 var _hooks = require("../../store/hooks");
 var _authSlice = require("../../store/slices/authSlice");
-var _templateObject;
+var _loginUser = require("../../graphql/mutations/loginUser");
 function _interopRequireWildcard(e, t) { if ("function" == typeof WeakMap) var r = new WeakMap(), n = new WeakMap(); return (_interopRequireWildcard = function _interopRequireWildcard(e, t) { if (!t && e && e.__esModule) return e; var o, i, f = { __proto__: null, default: e }; if (null === e || "object" != _typeof(e) && "function" != typeof e) return f; if (o = t ? n : r) { if (o.has(e)) return o.get(e); o.set(e, f); } for (var _t in e) "default" !== _t && {}.hasOwnProperty.call(e, _t) && ((i = (o = Object.defineProperty) && Object.getOwnPropertyDescriptor(e, _t)) && (i.get || i.set) ? o(f, _t, i) : f[_t] = e[_t]); return f; })(e, t); }
 function ownKeys(e, r) { var t = Object.keys(e); if (Object.getOwnPropertySymbols) { var o = Object.getOwnPropertySymbols(e); r && (o = o.filter(function (r) { return Object.getOwnPropertyDescriptor(e, r).enumerable; })), t.push.apply(t, o); } return t; }
 function _objectSpread(e) { for (var r = 1; r < arguments.length; r++) { var t = null != arguments[r] ? arguments[r] : {}; r % 2 ? ownKeys(Object(t), !0).forEach(function (r) { _defineProperty(e, r, t[r]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(e, Object.getOwnPropertyDescriptors(t)) : ownKeys(Object(t)).forEach(function (r) { Object.defineProperty(e, r, Object.getOwnPropertyDescriptor(t, r)); }); } return e; }
@@ -26,11 +25,16 @@ function _nonIterableRest() { throw new TypeError("Invalid attempt to destructur
 function _unsupportedIterableToArray(r, a) { if (r) { if ("string" == typeof r) return _arrayLikeToArray(r, a); var t = {}.toString.call(r).slice(8, -1); return "Object" === t && r.constructor && (t = r.constructor.name), "Map" === t || "Set" === t ? Array.from(r) : "Arguments" === t || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(t) ? _arrayLikeToArray(r, a) : void 0; } }
 function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length); for (var e = 0, n = Array(a); e < a; e++) n[e] = r[e]; return n; }
 function _iterableToArrayLimit(r, l) { var t = null == r ? null : "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"]; if (null != t) { var e, n, i, u, a = [], f = !0, o = !1; try { if (i = (t = t.call(r)).next, 0 === l) { if (Object(t) !== t) return; f = !1; } else for (; !(f = (e = i.call(t)).done) && (a.push(e.value), a.length !== l); f = !0); } catch (r) { o = !0, n = r; } finally { try { if (!f && null != t.return && (u = t.return(), Object(u) !== u)) return; } finally { if (o) throw n; } } return a; } }
-function _arrayWithHoles(r) { if (Array.isArray(r)) return r; }
-function _taggedTemplateLiteral(e, t) { return t || (t = e.slice(0)), Object.freeze(Object.defineProperties(e, { raw: { value: Object.freeze(t) } })); }
-var LOGIN_USER = (0, _client.gql)(_templateObject || (_templateObject = _taggedTemplateLiteral(["\n  mutation loginUser($login: String!, $password: String!) {\n    loginUser(login: $login, password: $password) \n  }\n"])));
+function _arrayWithHoles(r) { if (Array.isArray(r)) return r; } // import { gql } from '@apollo/client';
+// import { setToken } from '../../store/slices/authSlice';
+// const LOGIN_USER = gql`
+//   mutation loginUser($login: String!, $password: String!) {
+//     loginUser(login: $login, password: $password) 
+//   }
+// `;
 var LoginForm = function LoginForm() {
   var dispatch = (0, _hooks.useAppDispatch)();
+  var client = (0, _react.useApolloClient)();
   var _useState = (0, _react2.useState)({
       login: '',
       password: ''
@@ -39,12 +43,32 @@ var LoginForm = function LoginForm() {
     formData = _useState2[0],
     setFormData = _useState2[1];
   // useMutation возвращает функцию для вызова и объект с состоянием
-  var _useMutation = (0, _react.useMutation)(LOGIN_USER, {
+  var _useMutation = (0, _react.useMutation)(_loginUser.LOGIN_USER, {
+      // onCompleted: (data: any) => {
+      //   // Сохраняем токен. authLink его увидит при следующем запросе!
+      //   console.log(data.loginUser);
+      //   dispatch(setToken(data.loginUser))
+      //   console.log('Успешный вход!');
+
+      // },
+      /// Переделаный под 2 токена рефреш и аус токены
       onCompleted: function onCompleted(data) {
-        // Сохраняем токен. authLink его увидит при следующем запросе!
-        console.log(data.loginUser);
-        dispatch((0, _authSlice.setToken)(data.loginUser));
-        console.log('Успешный вход!');
+        var _data$loginUser = data.loginUser,
+          accessToken = _data$loginUser.accessToken,
+          refreshToken = _data$loginUser.refreshToken;
+
+        // 1. Сохраняем ОБА токена в LocalStorage для Apollo Links
+        localStorage.setItem('token', accessToken);
+        localStorage.setItem('refreshToken', refreshToken);
+
+        // 2. В Redux обычно кладем только Access Token или весь объект пользователя
+        // dispatch(setToken(accessToken)); 
+        // Один диспатч сделает всё: и в стейт положит, и в localStorage оба токена запишет
+        dispatch((0, _authSlice.setCredentials)({
+          accessToken: accessToken,
+          refreshToken: refreshToken
+        }));
+        console.log('Успешный вход! Токены сохранены.');
       },
       onError: function onError(err) {
         return console.error("Ошибка входа:", err.message);
@@ -66,6 +90,9 @@ var LoginForm = function LoginForm() {
               variables: formData
             });
           case 1:
+            _context.n = 2;
+            return client.resetStore();
+          case 2:
             return _context.a(2);
         }
       }, _callee);

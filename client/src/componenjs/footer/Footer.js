@@ -5,7 +5,7 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.default = void 0;
 var Footer = function Footer() {
-  return /*#__PURE__*/React.createElement("div", {
+  return /*#__PURE__*/React.createElement("footer", {
     className: "footer"
   }, "Footer");
 };

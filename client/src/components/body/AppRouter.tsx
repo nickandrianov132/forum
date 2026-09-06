@@ -8,7 +8,7 @@ const AppRouter = () => {
     const isAuth = true
 
     return (
-        <div className="router_container">
+        <div className="lg:col-span-2 space-y-6">
             <Routes>
                 {isAuth && authRoutes.map(({path, Component}) => 
                     <Route key={path} path={path} element={<Component/>} />

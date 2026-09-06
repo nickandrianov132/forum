@@ -8,17 +8,30 @@ type User {
     dislike: [Dislike!]!
 }
 
-type AuthPayload {
-    user: User
-    token: String
+# type AuthPayload {
+#     user: User
+#     token: String
+# }
+
+# Единый тип для логина, регистрации и рефреша
+type AuthResponse {
+  accessToken: String!
+  refreshToken: String!
+  user: User
 }
 type Query {
     users: [User!]!
     user(id: ID!): User
 }
 type Mutation {
-    loginUser(login: String!, password: String!): String
-    addUser(login: String!, password: String!, email: String!): AuthPayload
+    # loginUser(login: String!, password: String!): String
+    # addUser(login: String!, password: String!, email: String!): AuthPayload
+    # Возвращаем AuthResponse (с двумя токенами)
+    loginUser(login: String!, password: String!): AuthResponse!
+    
+    # Тоже возвращаем AuthResponse, чтобы сразу авторизовать после регистрации
+    addUser(login: String!, password: String!, email: String!): AuthResponse!
+    refreshToken(token: String!): AuthResponse!
     deleteUser(id: ID!): Boolean
     updateUser(id: ID!, login: String, password: String, email: String): User
 }

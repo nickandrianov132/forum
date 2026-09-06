@@ -9,18 +9,21 @@ const config: CodegenConfig = {
             config: {
                 // useIndexSignature: true,
                 // defaultMapper: "Partial<{T}>",
-                 contextType: "./src/types/context#MyContext",
+                //  contextType: "./src/types/context#MyContext",
+                contextType: "../../index.js#MyContext",
                  mappers:{
-                     User: "./src/models/Users.js#IUser",
-                     Post: "./src/models/Posts.js#IPost",
-                     Like: "./src/models/Likes.js#ILike",
-                     Dislike: "./src/models/Dislikes.js#IDislike"
+                     User: "../models/Users.js#IUser",
+                     Post: "../models/Posts.js#IPost",
+                     Like: "../models/Likes.js#ILike",
+                     Dislike: "../models/Dislikes.js#IDislike"
                  },
                  useIndexSignature: true, 
                  scalars: {
                     ID: 'string',
                  },
-                 useTypeImports: true // <--- Добавьте эту строку
+                 useTypeImports: true, // <--- Добавьте эту строку
+                 // Эта опция помогает правильно обрабатывать расширения в ESM
+                emitLegacyCommonJSImports: false 
             }
         },
         "../client/src/gql/": {

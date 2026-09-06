@@ -91,10 +91,10 @@ const Posts = () => {
     return (
         <div className="posts_container">
             {data && data.posts.map((post) => 
-                <div key={post.id} className="post_wrapper">
+                <div key={post.id} className="post-wrapper">
                     <Link to={`/posts/${post.id}`}>
                         <h4 
-                            className="post_title"
+                            className="post-title"
                         >{post.title}</h4>
                     </Link>
                     {/* <p className="post_content">{post.content}</p> */}
@@ -112,7 +112,7 @@ const Posts = () => {
                             </div>  
                         </div>
 
-                        <div className="div_author"><span>author:</span><em>{post.user.login}</em></div>
+                        <div className="div_author"><span>author:</span><em>{post.user?.login}</em></div>
                     </div>
                 </div>
             )}

@@ -3,9 +3,9 @@ import { Schema, Types } from "mongoose";
 import type { InferSchemaType } from "mongoose";
 
 const userSchema = new Schema({
-    login: {type: String, unique: true},
-    password: String,
-    email: {type: String, unique: true},
+    login: {type: String, unique: true, required: true},
+    password: { type: String, required: true },
+    email: {type: String, unique: true, required: true},
     postsId: [{ type: mongoose.Types.ObjectId, ref: "Post" }],
     likesId: [{ type: mongoose.Types.ObjectId, ref: "Like" }],
     dislikesId: [{ type: mongoose.Types.ObjectId, ref: "Dislike" }]

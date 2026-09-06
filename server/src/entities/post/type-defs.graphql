@@ -1,8 +1,9 @@
      type Post {
          id: ID!
+         topic: String!
          title: String!
          content: String!
-         user: User!
+         user: User
            # Можно также добавить поля для счета лайков и дислайков
         #  likes: [Like!]!
         #  dislikes: [Dislike!]!
@@ -17,10 +18,11 @@
     type Query {
         posts: [Post!]!
         post(id: ID!): Post 
+        postsByTopic(topic: String!): [Post!]!
     }
     type Mutation {
-        createPost(title: String!, content: String!, userId: ID!): Post
-        updatePost(id: ID!, title: String, content: String): Post
+        createPost(topic: String!, title: String!, content: String!, userId: ID!): Post
+        updatePost(id: ID!, topic: String, title: String, content: String): Post
         deletePost(id: ID!): Boolean
 
         # Лайки и Дизлайки (возвращают Post для мгновенного обновления кэша)

@@ -1,9 +1,9 @@
 import type { GraphQLResolveInfo } from 'graphql';
-import type { IUser } from './src/models/Users.js';
-import type { IPost } from './src/models/Posts.js';
-import type { ILike } from './src/models/Likes.js';
-import type { IDislike } from './src/models/Dislikes.js';
-import type { MyContext } from './src/types/context';
+import type { IUser } from '../models/Users.js';
+import type { IPost } from '../models/Posts.js';
+import type { ILike } from '../models/Likes.js';
+import type { IDislike } from '../models/Dislikes.js';
+import type { MyContext } from '../../index.js';
 export type Maybe<T> = T | null;
 export type InputMaybe<T> = Maybe<T>;
 export type Exact<T extends { [key: string]: unknown }> = { [K in keyof T]: T[K] };
@@ -22,9 +22,10 @@ export type Scalars = {
   Float: { input: number; output: number; }
 };
 
-export type AuthPayload = {
-  __typename?: 'AuthPayload';
-  token?: Maybe<Scalars['String']['output']>;
+export type AuthResponse = {
+  __typename?: 'AuthResponse';
+  accessToken: Scalars['String']['output'];
+  refreshToken: Scalars['String']['output'];
   user?: Maybe<User>;
 };
 
@@ -52,11 +53,12 @@ export type Mutation = {
   __typename?: 'Mutation';
   addDislike: Post;
   addLike: Post;
-  addUser?: Maybe<AuthPayload>;
+  addUser: AuthResponse;
   createPost?: Maybe<Post>;
   deletePost?: Maybe<Scalars['Boolean']['output']>;
   deleteUser?: Maybe<Scalars['Boolean']['output']>;
-  loginUser?: Maybe<Scalars['String']['output']>;
+  loginUser: AuthResponse;
+  refreshToken: AuthResponse;
   updatePost?: Maybe<Post>;
   updateUser?: Maybe<User>;
 };
@@ -82,6 +84,7 @@ export type MutationAddUserArgs = {
 export type MutationCreatePostArgs = {
   content: Scalars['String']['input'];
   title: Scalars['String']['input'];
+  topic: Scalars['String']['input'];
   userId: Scalars['ID']['input'];
 };
 
@@ -102,10 +105,16 @@ export type MutationLoginUserArgs = {
 };
 
 
+export type MutationRefreshTokenArgs = {
+  token: Scalars['String']['input'];
+};
+
+
 export type MutationUpdatePostArgs = {
   content?: InputMaybe<Scalars['String']['input']>;
   id: Scalars['ID']['input'];
   title?: InputMaybe<Scalars['String']['input']>;
+  topic?: InputMaybe<Scalars['String']['input']>;
 };
 
 
@@ -126,13 +135,15 @@ export type Post = {
   isOwner: Scalars['Boolean']['output'];
   likesCount: Scalars['Int']['output'];
   title: Scalars['String']['output'];
-  user: User;
+  topic: Scalars['String']['output'];
+  user?: Maybe<User>;
 };
 
 export type Query = {
   __typename?: 'Query';
   post?: Maybe<Post>;
   posts: Array<Post>;
+  postsByTopic: Array<Post>;
   user?: Maybe<User>;
   users: Array<User>;
 };
@@ -140,6 +151,11 @@ export type Query = {
 
 export type QueryPostArgs = {
   id: Scalars['ID']['input'];
+};
+
+
+export type QueryPostsByTopicArgs = {
+  topic: Scalars['String']['input'];
 };
 
 
@@ -232,7 +248,7 @@ export type DirectiveResolverFn<TResult = Record<PropertyKey, never>, TParent = 
 
 /** Mapping between all available schema types and the resolvers types */
 export type ResolversTypes = ResolversObject<{
-  AuthPayload: ResolverTypeWrapper<Omit<AuthPayload, 'user'> & { user?: Maybe<ResolversTypes['User']> }>;
+  AuthResponse: ResolverTypeWrapper<Omit<AuthResponse, 'user'> & { user?: Maybe<ResolversTypes['User']> }>;
   Boolean: ResolverTypeWrapper<Scalars['Boolean']['output']>;
   Dislike: ResolverTypeWrapper<IDislike>;
   ID: ResolverTypeWrapper<Scalars['ID']['output']>;
@@ -247,7 +263,7 @@ export type ResolversTypes = ResolversObject<{
 
 /** Mapping between all available schema types and the resolvers parents */
 export type ResolversParentTypes = ResolversObject<{
-  AuthPayload: Omit<AuthPayload, 'user'> & { user?: Maybe<ResolversParentTypes['User']> };
+  AuthResponse: Omit<AuthResponse, 'user'> & { user?: Maybe<ResolversParentTypes['User']> };
   Boolean: Scalars['Boolean']['output'];
   Dislike: IDislike;
   ID: Scalars['ID']['output'];
@@ -260,8 +276,9 @@ export type ResolversParentTypes = ResolversObject<{
   User: IUser;
 }>;
 
-export type AuthPayloadResolvers<ContextType = MyContext, ParentType extends ResolversParentTypes['AuthPayload'] = ResolversParentTypes['AuthPayload']> = ResolversObject<{
-  token?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+export type AuthResponseResolvers<ContextType = MyContext, ParentType extends ResolversParentTypes['AuthResponse'] = ResolversParentTypes['AuthResponse']> = ResolversObject<{
+  accessToken?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  refreshToken?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   user?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
 }>;
 
@@ -286,11 +303,12 @@ export type LikeResolvers<ContextType = MyContext, ParentType extends ResolversP
 export type MutationResolvers<ContextType = MyContext, ParentType extends ResolversParentTypes['Mutation'] = ResolversParentTypes['Mutation']> = ResolversObject<{
   addDislike?: Resolver<ResolversTypes['Post'], ParentType, ContextType, RequireFields<MutationAddDislikeArgs, 'postId'>>;
   addLike?: Resolver<ResolversTypes['Post'], ParentType, ContextType, RequireFields<MutationAddLikeArgs, 'postId'>>;
-  addUser?: Resolver<Maybe<ResolversTypes['AuthPayload']>, ParentType, ContextType, RequireFields<MutationAddUserArgs, 'email' | 'login' | 'password'>>;
-  createPost?: Resolver<Maybe<ResolversTypes['Post']>, ParentType, ContextType, RequireFields<MutationCreatePostArgs, 'content' | 'title' | 'userId'>>;
+  addUser?: Resolver<ResolversTypes['AuthResponse'], ParentType, ContextType, RequireFields<MutationAddUserArgs, 'email' | 'login' | 'password'>>;
+  createPost?: Resolver<Maybe<ResolversTypes['Post']>, ParentType, ContextType, RequireFields<MutationCreatePostArgs, 'content' | 'title' | 'topic' | 'userId'>>;
   deletePost?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationDeletePostArgs, 'id'>>;
   deleteUser?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationDeleteUserArgs, 'id'>>;
-  loginUser?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, RequireFields<MutationLoginUserArgs, 'login' | 'password'>>;
+  loginUser?: Resolver<ResolversTypes['AuthResponse'], ParentType, ContextType, RequireFields<MutationLoginUserArgs, 'login' | 'password'>>;
+  refreshToken?: Resolver<ResolversTypes['AuthResponse'], ParentType, ContextType, RequireFields<MutationRefreshTokenArgs, 'token'>>;
   updatePost?: Resolver<Maybe<ResolversTypes['Post']>, ParentType, ContextType, RequireFields<MutationUpdatePostArgs, 'id'>>;
   updateUser?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, RequireFields<MutationUpdateUserArgs, 'id'>>;
 }>;
@@ -304,12 +322,14 @@ export type PostResolvers<ContextType = MyContext, ParentType extends ResolversP
   isOwner?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   likesCount?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   title?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  user?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
+  topic?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  user?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
 }>;
 
 export type QueryResolvers<ContextType = MyContext, ParentType extends ResolversParentTypes['Query'] = ResolversParentTypes['Query']> = ResolversObject<{
   post?: Resolver<Maybe<ResolversTypes['Post']>, ParentType, ContextType, RequireFields<QueryPostArgs, 'id'>>;
   posts?: Resolver<Array<ResolversTypes['Post']>, ParentType, ContextType>;
+  postsByTopic?: Resolver<Array<ResolversTypes['Post']>, ParentType, ContextType, RequireFields<QueryPostsByTopicArgs, 'topic'>>;
   user?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, RequireFields<QueryUserArgs, 'id'>>;
   users?: Resolver<Array<ResolversTypes['User']>, ParentType, ContextType>;
 }>;
@@ -325,7 +345,7 @@ export type UserResolvers<ContextType = MyContext, ParentType extends ResolversP
 }>;
 
 export type Resolvers<ContextType = MyContext> = ResolversObject<{
-  AuthPayload?: AuthPayloadResolvers<ContextType>;
+  AuthResponse?: AuthResponseResolvers<ContextType>;
   Dislike?: DislikeResolvers<ContextType>;
   Like?: LikeResolvers<ContextType>;
   Mutation?: MutationResolvers<ContextType>;

@@ -8,7 +8,12 @@ $color-login-btn: #39fa86;
 $color-login-btn-hover: #25e271;
 $color-logout-btn: #fa394c;
 $color-logout-btn-hover: #e72949;
-
+$color-ul-marker: #4d4c4c;
+$color-ul-text: #383838;
+$color-editor-btn-active: #adc6e2;
+$color-editor-btn-not: #e5e5e5;
+$color-bg-navbar: rgb(52, 52, 111);
+$header-title-color: #d8e3fa;
 
 
 
@@ -53,12 +58,12 @@ $color-logout-btn-hover: #e72949;
 %inputBasic{
     font-size: 0.75em;
     color: #070039ff;
-    width: 80%;
+    width: 8em;
     padding: 0.3em;
     @include app_margin(0.4em 0 0.4em 0);
     outline: none;
     border: 0.1em solid transparent;
-    border-radius: 0.4em;
+    border-radius: 0.3em;
 }
 
 
@@ -66,18 +71,22 @@ p,h1,h2,h3,h4,h5{
     padding: 0;
     margin: 0;
 }
-li, a{
+a{
     &:focus{
         outline: none;
     }
     text-decoration: none;
-    list-style: none;
     cursor: pointer;
     color: inherit;
-    :hover{
-        color: $font-hover-li;
-    }
+    // :hover{
+    //     color: $font-hover-li;
+    // }
 }
+// li{
+//     text-decoration: none;
+//     list-style: none;
+//     color: inherit;
+// }
 ul{
     padding: 0;
     margin: 0;
@@ -92,8 +101,8 @@ body{
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    width: 100vw;
-    height: 100vh;
+    min-width: 100vw;
+    min-height: 100vh;
     padding: 0;
     margin: 0;
     font-family: "Lato", sans-serif;
@@ -105,22 +114,74 @@ body{
     flex-direction: column;
     align-items: center;
     flex: 1 1 auto;
-    width: 100%; 
+    width: 100%;
+    height: 100%; 
 }
-.navbar{
+.header{
     display: flex;
-    justify-content: center;
+    justify-content: space-between;
     align-items: center;
+    height: 3em;
     width: 100%;
     font-size: 1em;
     @include app_padding(0.3em 0.1em);
-    background: #000;
+    background: $color-bg-navbar;
     color: whitesmoke;
+    .header_logo{
+        display: flex;
+        align-items: center;
+        justify-content: flex-start;
+        width: 60%;
+        .header_logo_img{
+            width: 4em;
+        }
+        .header_logo_title{
+            // margin-left: 1em;
+            font-size: 1.8em;
+            font-weight: 600;
+            color: $header-title-color;
+            font-family: "Poppins", sans-serif;
+            @include text-shadow(0.05em, 0.05em, -0.05em, -0.05em, 0.1em, #090421)
+        }
+    }
+    .login_form{
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        justify-content: center;
+        // width: 60%;
+        .form_input{
+            @extend %inputBasic;
+            margin-right: 0.5em;
+        }
+        .login_btn{
+            @extend %formBtn;
+        
+        }
+    }
+    .user_panel{
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        @include app_padding(0.3em 0.1em 0.3em 0.1em);
+        width: 40%;
+        .logout_btn{
+            @extend %formBtn;
+            background: $color-logout-btn;
+            @include text-shadow(0.01em, 0.01em, -0.01em, -0.01em, 0.04em, rgb(9, 6, 50));
+            &:hover{
+                background-color: $color-logout-btn-hover;
+                @include text-shadow(0.01em, 0.01em, -0.01em, -0.01em, 0.1em, rgb(9, 6, 50));
+            }
+        }
+
+    }
 }
 .body{
     display: flex;
+    flex: 1 1 auto;
     width: 100%;
-    height: 100%;
+    height: 90%;
     background: white;
 }
 .footer{
@@ -133,7 +194,7 @@ body{
     background: #000;
     color: whitesmoke; 
 }
-.left_sidebar{
+.left_navbar{
     display: flex;
     flex-direction: column;
     background: #303030;
@@ -174,7 +235,11 @@ body{
     display: flex;
     flex-direction: column;
     width: 100%;
+    height: 100%;
     .post_detail{
+        display: flex;
+        flex-direction: column;
+        height: auto;
         background-color: #f1efdd;
         border: 0.1em solid black;
         border-radius: 0.3em;
@@ -187,7 +252,12 @@ body{
         }
         .post_footer{
             display: flex;
-
+            .div_likes_dislikes_wrapper{
+                margin-left: 1.5em;
+            }
+            .div_author{
+                margin-right: 2em;
+            }
         }
         .post_button{
             @extend %formBtn;
@@ -195,6 +265,12 @@ body{
         .post_content_wrapper{
             display: flex;
             flex-direction: column;
+            .editor_title_input{
+                width: 50%;
+                outline: none;
+                border-radius: 0.3em;
+                padding: 0.35em;
+            }
             .post_content_p{
                 &::first-letter{
                     margin-left: .5em;
@@ -314,3 +390,142 @@ body{
         }
     }
 }
+
+/* стили для Lexical**/
+/* Основной контейнер */
+// .editor-container {
+//   margin: 20px auto;
+//   border-radius: 4px;
+//   border: 1px solid #323232;
+//   width: 600px;
+//   overflow: hidden;
+// }
+
+/* Тулбар */
+// .toolbar {
+//   display: flex;
+//   gap: 5px;
+//   padding: 8px;
+//   border-bottom: 1px solid #eee;
+//   background: #dbdbdb;
+// }
+
+/* Поле ввода (как textarea) */
+.editor-input {
+  min-height: 100px;
+  padding: 10px;
+  outline: none;
+  background: white;
+  /* border: 1px solid red; */
+  border-radius: 4px;
+}
+
+/* Подсветка активных кнопок */
+/* .toolbar button.active {
+  background: #e0e0e0;
+  border-color: #999;
+} */
+
+.btn_bold_active,.btn_bold_not{
+  font-family: 'Times New Roman', Times, serif;
+} 
+
+.btn_bold_active{
+  border: 1px solid #19153e;
+  border-radius: 0.3em;
+  background-color: $color-editor-btn-active;
+}
+.btn_bold_not{
+  border: 0.1em solid #19153e;
+  border-radius: 0.3em;
+  background-color: $color-editor-btn-not;
+}
+.btn_active{
+  border: 0.1em solid #19153e;
+  border-radius: 0.3em;
+  background-color: $color-editor-btn-active;
+  @include text-shadow(0.02em, 0.02em,-0.02em, -0.02em, 0.06em, #ffffff)
+}
+.btn_not{
+  border: 0.1em solid #19153e;
+  border-radius: 0.3em;
+  background-color: #d7d7d7;
+}
+
+// /* Эти классы Lexical сам подставит в HTML внутри редактора */
+// .my-bold-text {
+//   font-weight: bold;
+// }
+
+// .my-italic-text {
+//   font-style: italic;
+// }
+
+// .my-underline-text {
+//   text-decoration: underline;
+// }
+// .my-h1-style {
+//   font-size: 24px;
+//   font-weight: bold;
+//   margin: 10px 0;
+// }
+// .my-h2-style {
+//   font-size: 20px;
+//   font-weight: bold;
+//   margin: 8px 0;
+// }
+// .my-ul-list{
+//     list-style: disc;
+//     margin-left: 1em;
+// }
+// .my-ol-list{
+//     list-style: decimal;
+//     margin-left: 0.5em;
+//     padding-left: 0.5em;
+    
+// }
+// .my-listitem{
+//     margin-bottom: 0.3em;
+//     color: #333;
+// }
+// /* Если нужно специфично для LI внутри OL */
+// .my-ol-list .my-listitem {
+//     color: #0c0c0e;
+//     margin: 0;
+//     &::marker {
+//         font-family:'Times New Roman', Times, serif;
+//     }
+// }
+
+// /* Если нужно специфично для LI внутри UL */
+// .my-ul-list .my-listitem {
+//   color: $color-ul-text;
+//   &::marker {
+//     color: $color-ul-marker;
+//   }
+// }
+
+// .lexical-render-output{
+//     ul{
+//         list-style: disc;
+//         margin-left: 1em;
+//         li{
+//             color: $color-ul-text;
+//             &::marker {
+//                 color: $color-ul-marker;
+//             }
+//         }
+//     }
+//     ol{
+//         list-style: decimal;
+//         margin: 0 0 1em 1em;
+//         padding-left: 0.5em;
+//         li{
+//             margin: 0;
+//             &::marker {
+//                 font-family:'Times New Roman', Times, serif;
+//             }
+//         }
+//     }
+// }
+

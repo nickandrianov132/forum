@@ -5,6 +5,7 @@ import { PostModel } from "../../models/Posts.ts";
 import { UserModel } from "../../models/Users.ts";
 import type { Resolvers } from "../../types/resolvers-types.ts";
 import { DislikeModel } from '../../models/Dislikes.ts';
+import { authenticated } from '../../utils/authGuard.ts';
 
 
 const resolvers: Resolvers<MyContext> = {
@@ -26,32 +27,53 @@ const resolvers: Resolvers<MyContext> = {
         }
     },
     Mutation: {
-        addLike: async (_, { postId }, context) => {
-            const userId = context.userId;
-            if (!userId) throw new GraphQLError("Unauthorized");
+        addLike: authenticated(async (_, { postId }, context) => {
 
-            // 1. Проверяем наличие лайка
+            const userId = context.userId; 
+                // TS поймет, что ниже по коду userId — это только string
+            if (!userId) throw new GraphQLError("Unauthorized", { 
+                extensions: { code: 'UNAUTHENTICATED' } 
+            });
             const existingLike = await LikeModel.findOne({ postId, userId });
 
             if (existingLike) {
-                // Удаляем лайк
                 await LikeModel.findByIdAndDelete(existingLike._id);
             } else {
-                // Если лайка нет, сначала убираем ДИЗЛАЙК (если он был)
                 await DislikeModel.findOneAndDelete({ postId, userId });
-                
-                // Создаем новый ЛАЙК
                 await LikeModel.create({ postId, userId });
             }
 
-            // 2. Возвращаем пост. 
-            // ВАЖНО: GraphQL сам вызовет резолверы Post (isLiked, likesCount и т.д.),
-            // и лоадеры вернут уже актуальные данные!
             const post = await PostModel.findById(postId);
             if (!post) throw new GraphQLError("Post not found");
             
             return post;
-        }
+        })
+        // addLike: async (_, { postId }, context) => {
+        //     const userId = context.userId;
+        //     if (!userId) throw new GraphQLError("Unauthorized");
+
+        //     // 1. Проверяем наличие лайка
+        //     const existingLike = await LikeModel.findOne({ postId, userId });
+
+        //     if (existingLike) {
+        //         // Удаляем лайк
+        //         await LikeModel.findByIdAndDelete(existingLike._id);
+        //     } else {
+        //         // Если лайка нет, сначала убираем ДИЗЛАЙК (если он был)
+        //         await DislikeModel.findOneAndDelete({ postId, userId });
+                
+        //         // Создаем новый ЛАЙК
+        //         await LikeModel.create({ postId, userId });
+        //     }
+
+        //     // 2. Возвращаем пост. 
+        //     // ВАЖНО: GraphQL сам вызовет резолверы Post (isLiked, likesCount и т.д.),
+        //     // и лоадеры вернут уже актуальные данные!
+        //     const post = await PostModel.findById(postId);
+        //     if (!post) throw new GraphQLError("Post not found");
+            
+        //     return post;
+        // }
         // addLike: async (_, { postId }, context) => {
         //     const userId = context.userId;
         //     if (!userId) throw new GraphQLError("Invalid credentials");

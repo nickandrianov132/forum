@@ -10,10 +10,13 @@ import { BiSolidDislike } from "react-icons/bi";
 import { useEffect, useState } from "react";
 import { UPDATE_POST } from "../graphql/mutations/updatePost";
 
+import Editor from "../components/lexical/Editor.js"; // Тот самый типизированный Editor, который мы собрали
+import LexicalHTMLRenderer from "../components/lexical/LexicalHTMLRenderer.js"; // Для отображения контента
+
 
 const PostDetail = () => {
     const [isEdit, setIsEdit] = useState(false);
-    const [postContent, setPostContent] = useState('')
+    const [postContent, setPostContent] = useState('') // Сюда Lexical будет писать JSON-строку
     const [postTitle, setPostTitle] = useState('')
     const navigate = useNavigate();
     const { accessToken } = useAppSelector((state) => state.user);
@@ -27,13 +30,21 @@ const PostDetail = () => {
     const [updatePost] = useMutation(UPDATE_POST);
 
 
+    // useEffect(() => {
+    //     if (loading === false) {
+    //         setPostContent(post.content)
+    //         setPostTitle(post.title)
+    //     }
+    // }, [loading])
+
     useEffect(() => {
-        if (loading === false) {
-            setPostContent(post.content)
-            setPostTitle(post.title)
+        if (data?.post) {
+            setPostContent(data.post.content)
+            setPostTitle(data.post.title)
         }
-    }, [loading])
-        const handleLike = (post: any) => {
+    }, [data]);
+
+    const handleLike = (post: any) => {
         if(accessToken.length != 0){
             addLike({
                 variables: { postId: post.id },
@@ -52,7 +63,7 @@ const PostDetail = () => {
             });
         } else {
             return
-        }
+    }
     };
     const handleDislike = (post: any) => {
         if(accessToken.length != 0){
@@ -74,27 +85,57 @@ const PostDetail = () => {
         }
     };
 
+
     // const handleEditPost = () => {
     //     if (accessToken.length != 0 ){}
     // }
 
-    const handleUpdatePost = (pId: String, pTitle: String, pContent: String) => {
-        if(accessToken.length != 0) {
+    // const handleUpdatePost = (pId: String, pTitle: String, pContent: String) => {
+    //     if(accessToken.length !== 0) {
+    //         updatePost({
+    //             variables: {id: pId, postTitle: pTitle, postContent: pContent}
+    //         })
+    //         setIsEdit(false)
+    //     }
+    // }
+
+    //// Новый хэндлер апдейта поста с учетом использования Lexical:
+    const handleUpdatePost = (pId: string, pTitle: string, pContent: string) => {
+        if (accessToken.length !== 0) {
             updatePost({
-                variables: {id: pId, postTitle: pTitle, postContent: pContent}
-            })
-            setIsEdit(isEdit => !isEdit)
+                variables: { 
+                    id: pId, 
+                    postTitle: pTitle, 
+                    postContent: pContent 
+                },
+                // Оптимистичный ответ должен полностью соответствовать структуре мутации
+                optimisticResponse: {
+                    updatePost: {
+                        __typename: 'Post',
+                        id: pId,
+                        title: pTitle,
+                        content: pContent,
+                        // Берем текущие значения из data.post, чтобы кэш не занулился
+                        likesCount: post.likesCount,
+                        dislikesCount: post.dislikesCount,
+                        isLiked: post.isLiked,
+                        isDisliked: post.isDisliked,
+                        isOwner: post.isOwner
+                    },
+                },
+            });
+            setIsEdit(false);
         }
-    }
+    };
     // 1. Сначала обрабатываем состояние загрузки
-    if (loading) return <div>Загрузка...</div>;
+    if (loading) return <div>Loading...</div>;
 
     // 2. Обрабатываем ошибку (если есть)
-    if (error) return <div>Ошибка: {error.message}</div>;
+    if (error) return <div>Error: {error.message}</div>;
 
     // 3. Проверяем наличие данных. После этого условия TS поймет, что data определена.
     if (!data || !data.post) {
-        return <div>Пост не найден</div>;
+        return <div>Post not found</div>;
     }
 
     // Теперь здесь переменная post будет иметь четкий тип без undefined
@@ -102,36 +143,41 @@ const PostDetail = () => {
 
 
     return (
-        <div className="post_detail">
-            { isEdit ? 
-                <>
-                <input 
-                    type="text" 
-                    defaultValue={postTitle}
-                    onChange={(e) => setPostTitle(e.target.value)}
-                ></input>
-                <div className="post_content_wrapper">
-                    <textarea 
+        <div className="post-detail">
+            { isEdit ? (
+                
+                <div className="flex flex-col items-start justify-start">
+                    <label htmlFor="title">Title of Post:</label>
+                    <input
+                        id="title" 
+                        type="text" 
+                        // className="editor_title_input"
+                        className="editor-title-input"
+                        value={postTitle}
+                        onChange={(e) => setPostTitle(e.target.value)}
+                    ></input>
+                    {/* ЗАМЕНЯЕМ textarea НА LEXICAL */}
+                    <Editor 
+                        initialContent={post.content} 
+                        onChange={(jsonString) => setPostContent(jsonString)} 
+                    />
+                    {/* <textarea 
                         defaultValue={post.content}
                         onChange={(e) => setPostContent(e.target.value)}
-                    ></textarea>
-                    <div contentEditable="true" content={post.content}>
-                        
-                    </div>
+                    ></textarea> */}
                     <button 
                         className="post_content_btn_save"
                         onClick={() => handleUpdatePost(post.id, postTitle, postContent)}
-                        >Save</button>
+                    >Save</button>
                 </div>
-                </>
+                )
                 : 
-                <>
-                <h1 className="title">{post.title}</h1>
+                (
                 <div className="post_content_wrapper">
-                    <p className="post_content_p">{postContent}</p>
-                    <div contentEditable="true">
-                        {post.content}
-                    </div>
+                    <h1 className="title">{post.title}</h1>
+                    {/* ЗАМЕНЯЕМ <p> НА РЕНДЕРЕР HTML */}
+                    <LexicalHTMLRenderer jsonString={post.content} />
+                    {/* <p className="post_content_p">{postContent}</p> */}
                     {post.isOwner && accessToken.length != 0 &&
                         <button 
                             className="post_content_btn_edit"
@@ -139,7 +185,7 @@ const PostDetail = () => {
                         >Edit✒️</button>
                     }
                 </div>
-                </>
+                )
             }
             <div className="post_footer">
                 <div className="likes_dislikes_wrapper">
@@ -157,7 +203,7 @@ const PostDetail = () => {
                 {/* <span className="like_span">Likes: {post.likesCount}</span>
                 <span className="dislike_span">Dislikes: {post.dislikesCount}</span> */}
                 <div className="div_author">
-                    <span className="author_span">Author:</span><em>{post.user.login}</em>
+                    <span className="author_span">Author:</span><em>{post.user?.login}</em>
                 </div>
             </div>
             <button 
