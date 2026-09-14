@@ -14,7 +14,7 @@ const LogoutButton = () => {
         dispatch(logout())
         await client.clearStore(); 
         // 3. Перенаправляем или обновляем UI
-        navigate(NEWS_ROUTE) // Или используй useNavigate из react-router
+        navigate(NEWS_ROUTE) 
     }
 
     return (

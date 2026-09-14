@@ -5,12 +5,11 @@ import type { InferSchemaType } from "mongoose";
 
 
 const postSchema = new Schema({
-    // title: String,
-    // content: String,
-    topic: {
-        type: String, 
-        required: true, 
-        trim: true
+    // ИЗМЕНЕНО:  привязываем пост к ObjectId модели Category
+    category: { 
+        type: mongoose.Schema.Types.ObjectId, 
+        ref: "Category", 
+        required: true 
     },
     title: { 
         type: String, 

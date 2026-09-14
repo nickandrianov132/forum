@@ -1,6 +1,5 @@
 import { useAppSelector } from "../../../store/hooks";
-import LoginForm from "./LoginForm.tsx";
-import LogoutButton from "./LogoutButton";
+
 
 const UserPanel = () => {
     const { accessToken } = useAppSelector((state) => state.user)
@@ -10,12 +9,7 @@ const UserPanel = () => {
 
     return (
         <div className="user_panel">
-            {isLoggedIn 
-                ?
-                <LogoutButton />
-                :
-                <LoginForm />
-            }
+            www
         </div>
     );
 }

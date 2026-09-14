@@ -3,6 +3,7 @@ import { UserModel } from '../models/Users.ts';
 import { LikeModel } from '../models/Likes.ts';
 import { DislikeModel } from '../models/Dislikes.ts';
 import mongoose from 'mongoose';
+import { CategoryModel } from '../models/Category.ts';
 
 export type ILoaders = ReturnType<typeof createLoaders>;
 
@@ -14,6 +15,20 @@ export const createLoaders = (currentUserId?: string) => ({
   //   return ids.map(id => userMap.get(id.toString()) || null);
   // }),
 
+
+  // 2. ДОБАВИЛИ ЛОАДЕР КАТЕГОРИЙ для решения проблемы N+1
+  categoryLoader: new DataLoader(async (ids: readonly string[]) => {
+    try {
+      // Ищем все категории из папки id одной пачкой
+      const categories = await CategoryModel.find({ _id: { $in: ids } });
+      const categoryMap = new Map(categories.map(cat => [cat.id.toString(), cat]));
+      
+      // Возвращаем строго в том порядке, в котором пришли IDs
+      return ids.map(id => categoryMap.get(id.toString()) || null);
+    } catch (err) {
+      return ids.map(() => new Error("Internal Database Error (CategoryLoader)"));
+    }
+  }),
   userLoader: new DataLoader(async (ids: readonly string[]) => {
   try {
     // 1. Получаем документы из базы

@@ -14,6 +14,7 @@ const config: CodegenConfig = {
                  mappers:{
                      User: "../models/Users.js#IUser",
                      Post: "../models/Posts.js#IPost",
+                     Category: "../models/Category.js#ICategory",
                      Like: "../models/Likes.js#ILike",
                      Dislike: "../models/Dislikes.js#IDislike"
                  },

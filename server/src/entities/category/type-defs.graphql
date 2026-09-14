@@ -1,0 +1,21 @@
+type Category {
+    id: ID!
+    name: String!
+    slug: String!
+    description: String
+    posts: [Post!]!     # GraphQL поймет этот тип, даже если он объявлен в другой папке
+}
+
+# Расширяем глобальный Query
+extend type Query {
+    categories: [Category!]!
+    category(id: ID!): Category
+    categoryBySlug(slug: String!): Category
+    postsByCategory(categoryId: ID!): [Post!]!
+}
+
+# Расширяем глобальный Mutation
+extend type Mutation {
+    createPost(categoryId: ID!, title: String!, content: String!, userId: ID!): Post!
+    createCategory(name: String!, slug: String!, description: String): Category!
+}

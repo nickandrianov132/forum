@@ -15,6 +15,7 @@ import LexicalHTMLRenderer from "../components/lexical/LexicalHTMLRenderer.js"; 
 
 
 const PostDetail = () => {
+    const { categorySlug, id } = useParams<{ categorySlug: string, id: string }>();
     const [isEdit, setIsEdit] = useState(false);
     const [postContent, setPostContent] = useState('') // Сюда Lexical будет писать JSON-строку
     const [postTitle, setPostTitle] = useState('')
@@ -22,7 +23,6 @@ const PostDetail = () => {
     const { accessToken } = useAppSelector((state) => state.user);
     const [addLike] = useMutation(ADD_LIKE);
     const [addDislike] = useMutation(ADD_DISLIKE);
-    const { id } = useParams<{ id: string }>();
     const { data, loading, error } = useQuery(GET_ONE_POST, {
         variables: { id: id ?? "" },
         skip: !id, // Пропускаем запрос, если id по какой-то причине пуст
@@ -36,13 +36,14 @@ const PostDetail = () => {
     //         setPostTitle(post.title)
     //     }
     // }, [loading])
-
     useEffect(() => {
         if (data?.post) {
             setPostContent(data.post.content)
             setPostTitle(data.post.title)
         }
     }, [data]);
+
+    console.log(data);
 
     const handleLike = (post: any) => {
         if(accessToken.length != 0){
@@ -174,7 +175,7 @@ const PostDetail = () => {
                 : 
                 (
                 <div className="post_content_wrapper">
-                    <h1 className="title">{post.title}</h1>
+                    <h1 className="post-title">{post.title}</h1>
                     {/* ЗАМЕНЯЕМ <p> НА РЕНДЕРЕР HTML */}
                     <LexicalHTMLRenderer jsonString={post.content} />
                     {/* <p className="post_content_p">{postContent}</p> */}
@@ -207,9 +208,9 @@ const PostDetail = () => {
                 </div>
             </div>
             <button 
-                className="post_button" 
-                onClick={() => navigate(POSTS_ROUTE)}
-            >Back to posts</button>
+                className="post-btn" 
+                onClick={() => navigate(`/posts/${categorySlug}`)}
+            >Back</button>
         </div>
     );
 }

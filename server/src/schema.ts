@@ -17,11 +17,15 @@ import {
     resolvers as dislikeResolvers,
     typeDefs as dislikeTypeDefs,
 } from "./entities/dislike/index.ts";
+import {
+    resolvers as categoryResolvers,
+    typeDefs as categoryTypeDefs,
+} from "./entities/category/index.ts";
 
 
 const schema = makeExecutableSchema({
-    typeDefs: [userTypeDefs, postTypeDefs, likeTypeDefs, dislikeTypeDefs],
-    resolvers: [userResolvers, postResolvers, likeResolvers, dislikeResolvers],
+    typeDefs: [userTypeDefs, postTypeDefs, likeTypeDefs, dislikeTypeDefs, categoryTypeDefs],
+    resolvers: [userResolvers, postResolvers, likeResolvers, dislikeResolvers, categoryResolvers],
 });
 
 export default schema;

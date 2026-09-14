@@ -1,5 +1,5 @@
 export const NEWS_ROUTE = '/news'
 export const GUIDES_ROUTE = '/guides'
-export const POSTS_ROUTE = '/posts'
+export const POSTS_ROUTE = '/posts/:categorySlug'
+export const ONE_POST_ROUTE = '/post/:categorySlug/:id'
 export const ACCOUNT_INFO_ROUTE = '/account_info'
-export const POST_ONE_ROUTE = '/posts/post:id'

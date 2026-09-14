@@ -18,18 +18,20 @@ type Documents = {
     "\n  mutation AddLike($postId: ID!) {\n    addLike(postId: $postId) {\n      id\n      likesCount\n      dislikesCount\n      isLiked\n      isDisliked\n    }\n  }\n": typeof types.AddLikeDocument,
     "\n  mutation loginUser($login: String!, $password: String!) {\n    loginUser(login: $login, password: $password) {\n      accessToken\n      refreshToken\n      user {\n        id\n        login\n      }\n    }\n  }\n": typeof types.LoginUserDocument,
     "\n  mutation UpdatePost($id: ID!, $postTitle: String, $postContent: String) {\n    updatePost(id: $id, title: $postTitle, content: $postContent) {\n      id              # Обязательно для идентификации в кэше\n      title           # Чтобы заголовок обновился в списке\n      content         # Чтобы контент обновился в списке\n      likesCount\n      dislikesCount\n      isLiked\n      isDisliked\n      __typename      # Помогает Apollo понять тип объекта\n      isOwner\n    }\n  }\n": typeof types.UpdatePostDocument,
+    "\n    query GetCategories {\n        categories {\n            id\n            name\n            slug\n        }\n    }\n": typeof types.GetCategoriesDocument,
     "\n    query getOnePost($id: ID!) {\n        post(id: $id) {\n        id\n        title\n        content\n        isLiked\n        isDisliked\n        likesCount\n        dislikesCount\n        isOwner\n        user {\n            login\n        }\n    }\n}\n": typeof types.GetOnePostDocument,
     "\n    query getPosts{\n        posts {\n            id\n            title\n            content\n            isDisliked\n            isLiked\n            likesCount\n            dislikesCount\n            isOwner\n            user {\n            id\n            login\n            }\n        }\n    }\n": typeof types.GetPostsDocument,
-    "\n    query getPostsByTopic($topic: String!) {\n        postsByTopic(topic: $topic) {\n        id\n        topic\n        title\n        content\n        isLiked\n        isDisliked\n        likesCount\n        dislikesCount\n        isOwner\n        user {\n            login\n        }\n    }\n}\n": typeof types.GetPostsByTopicDocument,
+    "\n  query GetPostsByCategory($slug: String!) {\n    categoryBySlug(slug: $slug) {\n      id\n      name\n      description\n      posts {\n        id\n        title\n        content\n        createdAt\n        likesCount\n        dislikesCount\n        isLiked\n        isDisliked\n        isOwner\n        user {\n          id\n          login\n        }\n      }\n    }\n  }\n": typeof types.GetPostsByCategoryDocument,
 };
 const documents: Documents = {
     "\n  mutation AddDislike($postId: ID!) {\n    addDislike(postId: $postId) {\n      id\n      likesCount\n      dislikesCount\n      isLiked\n      isDisliked\n    }\n  }\n": types.AddDislikeDocument,
     "\n  mutation AddLike($postId: ID!) {\n    addLike(postId: $postId) {\n      id\n      likesCount\n      dislikesCount\n      isLiked\n      isDisliked\n    }\n  }\n": types.AddLikeDocument,
     "\n  mutation loginUser($login: String!, $password: String!) {\n    loginUser(login: $login, password: $password) {\n      accessToken\n      refreshToken\n      user {\n        id\n        login\n      }\n    }\n  }\n": types.LoginUserDocument,
     "\n  mutation UpdatePost($id: ID!, $postTitle: String, $postContent: String) {\n    updatePost(id: $id, title: $postTitle, content: $postContent) {\n      id              # Обязательно для идентификации в кэше\n      title           # Чтобы заголовок обновился в списке\n      content         # Чтобы контент обновился в списке\n      likesCount\n      dislikesCount\n      isLiked\n      isDisliked\n      __typename      # Помогает Apollo понять тип объекта\n      isOwner\n    }\n  }\n": types.UpdatePostDocument,
+    "\n    query GetCategories {\n        categories {\n            id\n            name\n            slug\n        }\n    }\n": types.GetCategoriesDocument,
     "\n    query getOnePost($id: ID!) {\n        post(id: $id) {\n        id\n        title\n        content\n        isLiked\n        isDisliked\n        likesCount\n        dislikesCount\n        isOwner\n        user {\n            login\n        }\n    }\n}\n": types.GetOnePostDocument,
     "\n    query getPosts{\n        posts {\n            id\n            title\n            content\n            isDisliked\n            isLiked\n            likesCount\n            dislikesCount\n            isOwner\n            user {\n            id\n            login\n            }\n        }\n    }\n": types.GetPostsDocument,
-    "\n    query getPostsByTopic($topic: String!) {\n        postsByTopic(topic: $topic) {\n        id\n        topic\n        title\n        content\n        isLiked\n        isDisliked\n        likesCount\n        dislikesCount\n        isOwner\n        user {\n            login\n        }\n    }\n}\n": types.GetPostsByTopicDocument,
+    "\n  query GetPostsByCategory($slug: String!) {\n    categoryBySlug(slug: $slug) {\n      id\n      name\n      description\n      posts {\n        id\n        title\n        content\n        createdAt\n        likesCount\n        dislikesCount\n        isLiked\n        isDisliked\n        isOwner\n        user {\n          id\n          login\n        }\n      }\n    }\n  }\n": types.GetPostsByCategoryDocument,
 };
 
 /**
@@ -65,6 +67,10 @@ export function graphql(source: "\n  mutation UpdatePost($id: ID!, $postTitle: S
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
+export function graphql(source: "\n    query GetCategories {\n        categories {\n            id\n            name\n            slug\n        }\n    }\n"): (typeof documents)["\n    query GetCategories {\n        categories {\n            id\n            name\n            slug\n        }\n    }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
 export function graphql(source: "\n    query getOnePost($id: ID!) {\n        post(id: $id) {\n        id\n        title\n        content\n        isLiked\n        isDisliked\n        likesCount\n        dislikesCount\n        isOwner\n        user {\n            login\n        }\n    }\n}\n"): (typeof documents)["\n    query getOnePost($id: ID!) {\n        post(id: $id) {\n        id\n        title\n        content\n        isLiked\n        isDisliked\n        likesCount\n        dislikesCount\n        isOwner\n        user {\n            login\n        }\n    }\n}\n"];
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
@@ -73,7 +79,7 @@ export function graphql(source: "\n    query getPosts{\n        posts {\n       
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
-export function graphql(source: "\n    query getPostsByTopic($topic: String!) {\n        postsByTopic(topic: $topic) {\n        id\n        topic\n        title\n        content\n        isLiked\n        isDisliked\n        likesCount\n        dislikesCount\n        isOwner\n        user {\n            login\n        }\n    }\n}\n"): (typeof documents)["\n    query getPostsByTopic($topic: String!) {\n        postsByTopic(topic: $topic) {\n        id\n        topic\n        title\n        content\n        isLiked\n        isDisliked\n        likesCount\n        dislikesCount\n        isOwner\n        user {\n            login\n        }\n    }\n}\n"];
+export function graphql(source: "\n  query GetPostsByCategory($slug: String!) {\n    categoryBySlug(slug: $slug) {\n      id\n      name\n      description\n      posts {\n        id\n        title\n        content\n        createdAt\n        likesCount\n        dislikesCount\n        isLiked\n        isDisliked\n        isOwner\n        user {\n          id\n          login\n        }\n      }\n    }\n  }\n"): (typeof documents)["\n  query GetPostsByCategory($slug: String!) {\n    categoryBySlug(slug: $slug) {\n      id\n      name\n      description\n      posts {\n        id\n        title\n        content\n        createdAt\n        likesCount\n        dislikesCount\n        isLiked\n        isDisliked\n        isOwner\n        user {\n          id\n          login\n        }\n      }\n    }\n  }\n"];
 
 export function graphql(source: string) {
   return (documents as any)[source] ?? {};

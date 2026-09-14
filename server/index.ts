@@ -100,7 +100,7 @@ await server.start();
 app.use(
   '/graphql',
   cors<cors.CorsRequest>({
-    origin: 'http://localhost:5173', // URL твоего фронтенда
+    origin: 'http://localhost:5173', // URL фронтенда
     credentials: true,               // Разрешает куки и заголовки авторизации
   }),
   express.json(),
