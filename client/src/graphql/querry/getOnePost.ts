@@ -14,6 +14,7 @@ export const GET_ONE_POST = graphql(`
         isOwner
         user {
             login
+            avatar
         }
     }
 }

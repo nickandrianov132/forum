@@ -77,42 +77,64 @@ const Posts = () => {
     // console.log(data?.posts[0].isLiked);
 
     return (
-        <div className="posts_container">
-            {/* Добавил знак вопроса к category, чтобы TS не ругался на возможный null */}
+        <div className="flex flex-col min-h-full bg-slate-200">
+            <div className="flex py-2 px-3 mb-3 bg-slate-600 text-white text-shadow-2xs text-shadow-gray-900">
+                <h2 className="text-lg text-center w-full font-semibold text-shadow-sm text-shadow-black/60 tracking-wide" 
+                >{category?.name}</h2>
+            </div>
             {category?.posts?.map((post) => 
-                <div key={post.id} className="post-wrapper">
-                    <Link  to={`/post/${categorySlug}/${post.id}`} className="block hover:opacity-60">
-                    <div className="flex justify-between shadow-2xs">
-                            <h2 className="post-title">{post.title}</h2>
-                        <span className="text-gray-700 text-sm ">{convertDateFn(Number(post.createdAt))}</span>
+                // <div key={post.id} className="post-wrapper hover:scale-[101%]">
+                <Link 
+                    key={post.id}  
+                    to={`/post/${categorySlug}/${post.id}`} 
+                    className="post-wrapper"
+                >
+                    <div className="flex justify-between shadow-2xs py-1 px-3">
+                        <h2 className="post-title">{post.title}</h2>
+                        <span className="text-gray-700 text-xs font-sans">{convertDateFn(Number(post.createdAt))}</span>
                     </div>
-                    </Link>
-                    <div className="post_footer">
-                        <div className="likes_dislikes_wrapper">
+
+                    <div className="flex items-center justify-between py-1 px-3 text-sm bg-slate-300 border-transparent rounded-b-sm">
+                        <div className="flex">
                             {/* Лайк */}
-                            <div onClick={() => handleLike(post)} className="action_item">
-                                {post.isLiked ? <FaHeart className="like_red"/> : <FaHeart className="like_grey"/>}
-                                <p className="likes_count">{post.likesCount}</p>
+                            <div 
+                                onClick={(e) => {
+                                    e.preventDefault()
+                                    e.stopPropagation()
+                                    handleLike(post)
+                                }} 
+                                className="like-dislike-wrapper"
+                            >
+                                {post.isLiked ? <FaHeart className="like-red"/> : <FaHeart className="like-gray"/>}
+                                <p className="text-xs">{post.likesCount}</p>
                             </div>
                             {/* Дизлайк */}
-                            <div onClick={() => handleDislike(post)} className="action_item">
-                                {post.isDisliked ? <BiSolidDislike className="dislike_checked" /> : <BiSolidDislike className="dislike_unchecked"/>}
-                                <p className="likes_count">{post.dislikesCount}</p>
+                            <div 
+                                onClick={(e) => {
+                                    e.preventDefault()
+                                    e.stopPropagation()
+                                    handleDislike(post)
+                                }} 
+                                className="like-dislike-wrapper"
+                            >
+                                {post.isDisliked ? <BiSolidDislike className="dislike-blue" /> : <BiSolidDislike className="dislike-gray"/>}
+                                <p className="text-xs">{post.dislikesCount}</p>
                             </div>  
                         </div>
 
-                        <div className="div_author">
-                            <span>author:</span>
+                        <div className="flex text-xs text-gray-800">
+                            <span className="font-serif">Author:</span>
                             {/* Логин может быть undefined, добавим безопасный фолбек */}
-                            <em>{post.user?.login || "Anonymous"}</em>
+                            <em className="underline decoration-solid">{post.user?.login || "Anonymous"}</em>
                         </div>
                     </div>
-                </div>
+                                        </Link>
+                // </div>
             )}
 
             {/* Опционально: вывод сообщения, если постов в категории нет */}
             {category && category.posts.length === 0 && (
-                <p className="no_posts_message">В этом разделе форума пока нет постов.</p>
+                <p className="no_posts_message">No posts in this section.</p>
             )}
         </div>
         // <div className="posts_container">

@@ -4,42 +4,28 @@ import React, { useState } from 'react';
 import { useAppDispatch, useAppSelector } from '../../../store/hooks';
 import { setCredentials } from '../../../store/slices/authSlice';
 import { LOGIN_USER } from '../../../graphql/mutations/loginUser';
-// import { setToken } from '../../store/slices/authSlice';
 
 interface LoginFormProps {
   onClose: () => void;
 }
-// const LOGIN_USER = gql`
-//   mutation loginUser($login: String!, $password: String!) {
-//     loginUser(login: $login, password: $password) 
-//   }
-// `;
+
 const LoginForm = ({onClose}: LoginFormProps) => {
   const dispatch = useAppDispatch();
   const client = useApolloClient();
-  const { accessToken } = useAppSelector((state) => state.user)
   const [formData, setFormData] = useState({ login: '', password: '' });
   // useMutation возвращает функцию для вызова и объект с состоянием
   const [loginMutation, { loading, error }] = useMutation(LOGIN_USER, {
-    // onCompleted: (data: any) => {
-    //   // Сохраняем токен. authLink его увидит при следующем запросе!
-    //   console.log(data.loginUser);
-    //   dispatch(setToken(data.loginUser))
-    //   console.log('Успешный вход!');
 
-    // },
     /// Переделаный под 2 токена рефреш и аус токены
     onCompleted: (data: any) => {
-      const { accessToken, refreshToken } = data.loginUser;
+      const { accessToken, refreshToken, user } = data.loginUser;
 
       // 1. Сохраняем ОБА токена в LocalStorage для Apollo Links
       localStorage.setItem('token', accessToken);
       localStorage.setItem('refreshToken', refreshToken);
 
       // 2. В Redux обычно кладем только Access Token или весь объект пользователя
-      // dispatch(setToken(accessToken)); 
-      // Один диспатч сделает всё: и в стейт положит, и в localStorage оба токена запишет
-    dispatch(setCredentials({ accessToken, refreshToken }));
+    dispatch(setCredentials({ accessToken, refreshToken, user }));
     onClose();  
     console.log('Успешный вход! Токены сохранены.');
     console.log(accessToken);

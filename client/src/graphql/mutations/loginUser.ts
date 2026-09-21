@@ -14,6 +14,7 @@ export const LOGIN_USER = gql`
       user {
         id
         login
+        avatar
       }
     }
   }

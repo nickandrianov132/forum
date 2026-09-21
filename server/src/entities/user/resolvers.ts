@@ -21,70 +21,62 @@ const generateJwt = (login: string, id: string) => {
   return jwt.sign(
     { login, id }, // убрал пароль
     env.JWT_SECRET_KEY || 'SECRET',
-    { expiresIn: '1h' }
+    { expiresIn: '1m' }
   );
 };
 const generateRefreshToken = (id: string) => {
   return jwt.sign(
     { id },
     env.JWT_REFRESH_SECRET || 'REFRESH_SECRET', // Используй другой секрет!
-    { expiresIn: '7d' } // Длинный срок
+    { expiresIn: '1m' } // Длинный срок
   );
 };
 
 const resolvers: Resolvers<MyContext> = {
     Query: {
+        me: async (
+        _parent: unknown,           // У me нет родителя, поэтому можно указать unknown или any
+        _args: unknown,             // У me нет входящих аргументов (в схеме просто me: User), поэтому unknown
+        context: MyContext          // Передаем кастомный контекст, где есть userId и loaders
+        ) => {
+        
+        // 1. Проверяем наличие id в контексте
+        if (!context.userId) {
+            throw new GraphQLError('Not authenticated', {
+            extensions: { code: 'UNAUTHENTICATED' },
+            });
+        }
+
+        // 2. Достаем пользователя из базы по id напрямую
+        const currentUser = await UserModel.findById(context.userId);
+
+        // 3. Проверяем, существует ли он
+        if (!currentUser) {
+            throw new GraphQLError('User not found', {
+            extensions: { code: 'UNAUTHENTICATED' },
+            });
+        }
+
+        // 4. Возвращаем пользователя (благодаря mappers в codegen TS примет этот объект)
+        return currentUser;
+        },
         user: authenticated( async (_, {id}) => UserModel.findById(id)),
         users: async () => await UserModel.find(),
     },
     Mutation: {
-        // loginUser: async (_, { login, password }) => {
-        //     // 1. Ищем пользователя по логину
-        //     const user = await UserModel.findOne({ login });
-        //     if (!user) {
-        //         throw new GraphQLError('Неверный логин или пароль');
-        //     }
-
-        //     // 2. Проверяем хэшированный пароль
-        //     // Если ты пока хранишь пароли текстом, временно оставь ===, 
-        //     // но для addUser начни использовать bcrypt.hash()
-        //     const isPasswordValid = await bcrypt.compare(password, user.password!); 
-            
-        //     if (!isPasswordValid) {
-        //         throw new GraphQLError('Неверный логин или пароль');
-        //     }
-        //     if (!user.login) {
-        //     throw new GraphQLError('Данные пользователя повреждены: отсутствует логин');
-        //     }
-        //     // 3. Генерируем токен БЕЗ пароля
-        //     return generateJwt(user.login!, user.id);
-        // },
         loginUser: async (_, { login, password }) => {
             const user = await UserModel.findOne({ login });
             if (!user || !(await bcrypt.compare(password, user.password!))) {
                 throw new GraphQLError('Incorrect password or login');
             }
 
-            // 2. Проверяем хэшированный пароль
-            // Если ты пока хранишь пароли текстом, временно оставь ===, 
-            // но для addUser начни использовать bcrypt.hash()
-            // const isPasswordValid = await bcrypt.compare(password, user.password!); 
-            
-            // if (!isPasswordValid) {
-            //     throw new GraphQLError('Неверный логин или пароль');
-            // }
-            // if (!user.login) {
-            // throw new GraphQLError('Данные пользователя повреждены: отсутствует логин');
-            // }
-            // 3. Генерируем токен БЕЗ пароля
-            // return generateJwt(user.login!, user.id);
             return {
             accessToken: generateJwt(user.login!, user.id),
-            refreshToken: generateRefreshToken(user.id)
+            refreshToken: generateRefreshToken(user.id),
+            user: user
         };
         },
-
-        // НОВАЯ МУТАЦИЯ ДЛЯ ОБНОВЛЕНИЯ
+        // МУТАЦИЯ ДЛЯ ОБНОВЛЕНИЯ
         refreshToken: async (_, { token }) => {
             try {
                 // Проверяем пришедший рефреш-токен
@@ -96,7 +88,8 @@ const resolvers: Resolvers<MyContext> = {
                 // Генерируем новую пару (Rotation)
                 return {
                     accessToken: generateJwt(user.login!, user.id),
-                    refreshToken: generateRefreshToken(user.id)
+                    refreshToken: generateRefreshToken(user.id),
+                    user: user
                 };
             } catch (e) {
                 throw new GraphQLError('Session expired. Please log in again', {

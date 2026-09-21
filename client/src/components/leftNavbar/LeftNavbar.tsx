@@ -2,7 +2,6 @@ import { NavLink } from "react-router";
 import { useQuery } from "@apollo/client/react";
 import { GET_CATEGORIES } from "../../graphql/querry/getCategories";
 
-
 const LeftNavbar = () => {
     const {loading, error, data } = useQuery(GET_CATEGORIES);
     console.log(data);

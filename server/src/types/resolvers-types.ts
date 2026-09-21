@@ -27,7 +27,7 @@ export type AuthResponse = {
   __typename?: 'AuthResponse';
   accessToken: Scalars['String']['output'];
   refreshToken: Scalars['String']['output'];
-  user?: Maybe<User>;
+  user: User;
 };
 
 export type Category = {
@@ -86,6 +86,7 @@ export type MutationAddLikeArgs = {
 
 
 export type MutationAddUserArgs = {
+  avatar?: InputMaybe<Scalars['String']['input']>;
   email: Scalars['String']['input'];
   login: Scalars['String']['input'];
   password: Scalars['String']['input'];
@@ -137,6 +138,7 @@ export type MutationUpdatePostArgs = {
 
 
 export type MutationUpdateUserArgs = {
+  avatar?: InputMaybe<Scalars['String']['input']>;
   email?: InputMaybe<Scalars['String']['input']>;
   id: Scalars['ID']['input'];
   login?: InputMaybe<Scalars['String']['input']>;
@@ -163,6 +165,7 @@ export type Query = {
   categories: Array<Category>;
   category?: Maybe<Category>;
   categoryBySlug?: Maybe<Category>;
+  me?: Maybe<User>;
   post?: Maybe<Post>;
   posts: Array<Post>;
   postsByCategory: Array<Post>;
@@ -197,12 +200,12 @@ export type QueryUserArgs = {
 
 export type User = {
   __typename?: 'User';
-  dislike: Array<Dislike>;
+  avatar: Scalars['String']['output'];
+  dislike?: Maybe<Array<Dislike>>;
   email: Scalars['String']['output'];
   id: Scalars['ID']['output'];
-  likes: Array<Like>;
+  likes?: Maybe<Array<Like>>;
   login: Scalars['String']['output'];
-  password: Scalars['String']['output'];
   posts?: Maybe<Array<Maybe<Post>>>;
 };
 
@@ -280,7 +283,7 @@ export type DirectiveResolverFn<TResult = Record<PropertyKey, never>, TParent = 
 
 /** Mapping between all available schema types and the resolvers types */
 export type ResolversTypes = ResolversObject<{
-  AuthResponse: ResolverTypeWrapper<Omit<AuthResponse, 'user'> & { user?: Maybe<ResolversTypes['User']> }>;
+  AuthResponse: ResolverTypeWrapper<Omit<AuthResponse, 'user'> & { user: ResolversTypes['User'] }>;
   Boolean: ResolverTypeWrapper<Scalars['Boolean']['output']>;
   Category: ResolverTypeWrapper<ICategory>;
   Dislike: ResolverTypeWrapper<IDislike>;
@@ -296,7 +299,7 @@ export type ResolversTypes = ResolversObject<{
 
 /** Mapping between all available schema types and the resolvers parents */
 export type ResolversParentTypes = ResolversObject<{
-  AuthResponse: Omit<AuthResponse, 'user'> & { user?: Maybe<ResolversParentTypes['User']> };
+  AuthResponse: Omit<AuthResponse, 'user'> & { user: ResolversParentTypes['User'] };
   Boolean: Scalars['Boolean']['output'];
   Category: ICategory;
   Dislike: IDislike;
@@ -313,7 +316,7 @@ export type ResolversParentTypes = ResolversObject<{
 export type AuthResponseResolvers<ContextType = MyContext, ParentType extends ResolversParentTypes['AuthResponse'] = ResolversParentTypes['AuthResponse']> = ResolversObject<{
   accessToken?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   refreshToken?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  user?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
+  user?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
 }>;
 
 export type CategoryResolvers<ContextType = MyContext, ParentType extends ResolversParentTypes['Category'] = ResolversParentTypes['Category']> = ResolversObject<{
@@ -374,6 +377,7 @@ export type QueryResolvers<ContextType = MyContext, ParentType extends Resolvers
   categories?: Resolver<Array<ResolversTypes['Category']>, ParentType, ContextType>;
   category?: Resolver<Maybe<ResolversTypes['Category']>, ParentType, ContextType, RequireFields<QueryCategoryArgs, 'id'>>;
   categoryBySlug?: Resolver<Maybe<ResolversTypes['Category']>, ParentType, ContextType, RequireFields<QueryCategoryBySlugArgs, 'slug'>>;
+  me?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
   post?: Resolver<Maybe<ResolversTypes['Post']>, ParentType, ContextType, RequireFields<QueryPostArgs, 'id'>>;
   posts?: Resolver<Array<ResolversTypes['Post']>, ParentType, ContextType>;
   postsByCategory?: Resolver<Array<ResolversTypes['Post']>, ParentType, ContextType, RequireFields<QueryPostsByCategoryArgs, 'categoryId'>>;
@@ -382,12 +386,12 @@ export type QueryResolvers<ContextType = MyContext, ParentType extends Resolvers
 }>;
 
 export type UserResolvers<ContextType = MyContext, ParentType extends ResolversParentTypes['User'] = ResolversParentTypes['User']> = ResolversObject<{
-  dislike?: Resolver<Array<ResolversTypes['Dislike']>, ParentType, ContextType>;
+  avatar?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  dislike?: Resolver<Maybe<Array<ResolversTypes['Dislike']>>, ParentType, ContextType>;
   email?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
-  likes?: Resolver<Array<ResolversTypes['Like']>, ParentType, ContextType>;
+  likes?: Resolver<Maybe<Array<ResolversTypes['Like']>>, ParentType, ContextType>;
   login?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  password?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   posts?: Resolver<Maybe<Array<Maybe<ResolversTypes['Post']>>>, ParentType, ContextType>;
 }>;
 

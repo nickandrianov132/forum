@@ -70,10 +70,25 @@ const resolvers: Resolvers<MyContext> = {
             return loaders.dislikeLoader.load(parent.id.toString());
         },
 
+            // УБИРАЕМ authenticated() отсюда!
         isOwner: (parent, _, { userId }) => {
-            if (!userId || !parent.userId) return false;
-            return parent.userId.toString() === userId.toString();
+        console.log("Parent Post userId:", parent.userId);
+        console.log("Current Context userId:", userId);
+        
+        // Если пользователь не залогинен (userId === null) 
+        // или у поста нет автора, он физически не может быть владельцем
+        if (!userId || !parent.userId) {
+            return false; 
+        }
+        
+        return parent.userId.toString() === userId.toString();
         },
+        // isOwner: authenticated((parent, _, { userId }) => {
+        //     console.log(parent);
+        //     console.log(userId);
+        //     if (!userId || !parent.userId) return false;
+        //     return parent.userId.toString() === userId.toString();
+        // }),
     }
 
     // Query: {

@@ -19,6 +19,7 @@
     "@lexical/selection": "^0.42.0",
     "@lexical/utils": "^0.42.0",
     "@reduxjs/toolkit": "^2.11.2",
+    "@supabase/supabase-js": "^2.116.0",
     "graphql": "^16.12.0",
     "graphql-ws": "^6.0.7",
     "lexical": "^0.42.0",
