@@ -1,6 +1,7 @@
 import AccountInfo from "../pages/AccountInfo.tsx"
-import Posts from "../pages/Posts.tsx"
-import { ACCOUNT_INFO_ROUTE, POSTS_ROUTE } from "./constants"
+import CreatePost from "../pages/posts/CreatePost.tsx"
+import Posts from "../pages/posts/Posts.tsx"
+import { ACCOUNT_INFO_ROUTE, CREATE_NEW_POST, POSTS_ROUTE } from "./constants"
 
 
 export const authRoutes = [
@@ -8,6 +9,10 @@ export const authRoutes = [
         path: ACCOUNT_INFO_ROUTE,
         Component: AccountInfo
     },
+    {
+        path: CREATE_NEW_POST,
+        Component: CreatePost
+    }
 
 ]
 

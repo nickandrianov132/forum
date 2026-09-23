@@ -21,14 +21,14 @@ const generateJwt = (login: string, id: string) => {
   return jwt.sign(
     { login, id }, // убрал пароль
     env.JWT_SECRET_KEY || 'SECRET',
-    { expiresIn: '1m' }
+    { expiresIn: '5m' }
   );
 };
 const generateRefreshToken = (id: string) => {
   return jwt.sign(
     { id },
     env.JWT_REFRESH_SECRET || 'REFRESH_SECRET', // Используй другой секрет!
-    { expiresIn: '1m' } // Длинный срок
+    { expiresIn: '15d' } // Длинный срок
   );
 };
 

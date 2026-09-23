@@ -168,7 +168,9 @@
 }
 
 @utility post-wrapper {
-  @apply flex box-border flex-col not-last:mb-2.5 w-auto mx-2 border-b-blue-950 rounded-sm bg-gray-50 shadow-md transform-gpu hover:scale-[101%] hover:saturate-200
+  @apply flex box-border flex-col not-last:mb-2.5 w-auto mx-2 border-b-blue-950 rounded-sm bg-gray-50 shadow-md transform-gpu hover:scale-[101%] 
+  
+  /* hover:saturate-200 */
 }
 
 @utility editor-title-input {

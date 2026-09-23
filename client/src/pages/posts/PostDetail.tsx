@@ -1,17 +1,17 @@
 import { useNavigate, useParams } from "react-router";
-import { GET_ONE_POST } from "../graphql/querry/getOnePost";
+import { GET_ONE_POST } from "../../graphql/querry/getOnePost.js";
 import { useMutation, useQuery } from "@apollo/client/react";
-import { POSTS_ROUTE } from "../utils/constants";
-import { useAppSelector } from "../store/hooks";
-import { ADD_LIKE } from "../graphql/mutations/addLike";
-import { ADD_DISLIKE } from "../graphql/mutations/addDislike";
+import { POSTS_ROUTE } from "../../utils/constants.js";
+import { useAppSelector } from "../../store/hooks.js";
+import { ADD_LIKE } from "../../graphql/mutations/addLike.js";
+import { ADD_DISLIKE } from "../../graphql/mutations/addDislike.js";
 import { FaHeart } from "react-icons/fa";
 import { BiSolidDislike } from "react-icons/bi";
 import { useEffect, useState } from "react";
-import { UPDATE_POST } from "../graphql/mutations/updatePost";
+import { UPDATE_POST } from "../../graphql/mutations/updatePost.js";
 
-import Editor from "../components/lexical/Editor.js"; // Тот самый типизированный Editor, который мы собрали
-import LexicalHTMLRenderer from "../components/lexical/LexicalHTMLRenderer.js"; // Для отображения контента
+import Editor from "../../components/lexical/Editor.js"; // Тот самый типизированный Editor
+import LexicalHTMLRenderer from "../../components/lexical/LexicalHTMLRenderer.js"; // Для отображения контента
 
 
 const PostDetail = () => {
@@ -30,41 +30,30 @@ const PostDetail = () => {
     const [updatePost] = useMutation(UPDATE_POST);
     console.log(accessToken);
 
-    // useEffect(() => {
-    //     if (loading === false) {
-    //         setPostContent(post.content)
-    //         setPostTitle(post.title)
-    //     }
-    // }, [loading])
     useEffect(() => {
         if (data?.post) {
             setPostContent(data.post.content)
             setPostTitle(data.post.title)
         }
     }, [data]);
-
     // console.log(data);
-
     const handleLike = (post: any) => {
-        if(accessToken.length != 0){
-            addLike({
-                variables: { postId: post.id },
-                optimisticResponse: {
-                    addLike: {
-                        __typename: 'Post',
-                        id: post.id,
-                        // Если уже был лайк — уменьшаем, если нет — увеличиваем
-                        likesCount: post.isLiked ? post.likesCount - 1 : post.likesCount + 1,
-                        // Если был дизлайк и мы ставим лайк — дизлайк исчезает (логика бэкенда)
-                        dislikesCount: post.isDisliked ? post.dislikesCount - 1 : post.dislikesCount,
-                        isLiked: !post.isLiked,
-                        isDisliked: false,
-                    },
+        if(accessToken.length === 0) return
+        addLike({
+            variables: { postId: post.id },
+            optimisticResponse: {
+                addLike: {
+                    __typename: 'Post',
+                    id: post.id,
+                    // Если уже был лайк — уменьшаем, если нет — увеличиваем
+                    likesCount: post.isLiked ? post.likesCount - 1 : post.likesCount + 1,
+                    // Если был дизлайк и мы ставим лайк — дизлайк исчезает (логика бэкенда)
+                    dislikesCount: post.isDisliked ? post.dislikesCount - 1 : post.dislikesCount,
+                    isLiked: !post.isLiked,
+                    isDisliked: false,
                 },
-            });
-        } else {
-            return
-    }
+            },
+        });
     };
     const handleDislike = (post: any) => {
         if(accessToken.length != 0){
@@ -86,20 +75,6 @@ const PostDetail = () => {
         }
     };
 
-
-    // const handleEditPost = () => {
-    //     if (accessToken.length != 0 ){}
-    // }
-
-    // const handleUpdatePost = (pId: String, pTitle: String, pContent: String) => {
-    //     if(accessToken.length !== 0) {
-    //         updatePost({
-    //             variables: {id: pId, postTitle: pTitle, postContent: pContent}
-    //         })
-    //         setIsEdit(false)
-    //     }
-    // }
-
     //// Новый хэндлер апдейта поста с учетом использования Lexical:
     const handleUpdatePost = (pId: string, pTitle: string, pContent: string) => {
         if (accessToken.length !== 0) {
@@ -110,9 +85,12 @@ const PostDetail = () => {
                     postContent: pContent 
                 },
                 // Оптимистичный ответ должен полностью соответствовать структуре мутации
+                // В кратце optimisticResponse берет объект из кэша, меняет и выдает на фронтб в фоне улетает запрос на сервер 
+                // когда запрос пришел OK: то он просто подменяет значения
+                // иначе просто откатывает данные назад
                 optimisticResponse: {
                     updatePost: {
-                        __typename: 'Post',
+                        __typename: 'Post', /// Важно для того что бы Apollo Client понимал какой именно объект в кэше обновить
                         id: pId,
                         title: pTitle,
                         content: pContent,
@@ -189,7 +167,7 @@ const PostDetail = () => {
                         <h1 className="post-title">{post.title}</h1>
                         {post.isOwner && accessToken.length != 0 &&
                         <button 
-                            className="w-fit px-2.5 bg-slate-400 text-sm text-gray-800 border-transparent rounded-md transition-all hover:bg-emerald-400 hover:text-white hover:text-shadow-2xs hover:text-shadow-gray-800 active:scale-95"
+                            className="w-fit py-1 px-2.5 bg-slate-400 text-sm text-gray-800 border-transparent rounded-md transition-all hover:bg-emerald-400 hover:text-white hover:text-shadow-2xs hover:text-shadow-gray-800 active:scale-95"
                             onClick={() => setIsEdit(isEdit => !isEdit)}
                         >✒️edit</button>
                     }

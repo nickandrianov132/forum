@@ -16,6 +16,8 @@ import type { TypedDocumentNode as DocumentNode } from '@graphql-typed-document-
 type Documents = {
     "\n  mutation AddDislike($postId: ID!) {\n    addDislike(postId: $postId) {\n      id\n      likesCount\n      dislikesCount\n      isLiked\n      isDisliked\n    }\n  }\n": typeof types.AddDislikeDocument,
     "\n  mutation AddLike($postId: ID!) {\n    addLike(postId: $postId) {\n      id\n      likesCount\n      dislikesCount\n      isLiked\n      isDisliked\n    }\n  }\n": typeof types.AddLikeDocument,
+    "\n   mutation CreatePost($categoryId: ID!, $title: String!, $content: String!, $userId: ID!) {\n      createPost(categoryId: $categoryId, title: $title, content: $content, userId: $userId) {\n        id\n        category {\n            id\n            name\n        }\n        title\n        createdAt\n        user{\n            id\n            login\n        }\n      }\n   }\n": typeof types.CreatePostDocument,
+    "\n    mutation DeletePost($id: ID!) {\n        deletePost(id: $id) \n            \n    }    \n": typeof types.DeletePostDocument,
     "\n  mutation loginUser($login: String!, $password: String!) {\n    loginUser(login: $login, password: $password) {\n      accessToken\n      refreshToken\n      user {\n        id\n        login\n        avatar\n      }\n    }\n  }\n": typeof types.LoginUserDocument,
     "\n  mutation UpdatePost($id: ID!, $postTitle: String, $postContent: String) {\n    updatePost(id: $id, title: $postTitle, content: $postContent) {\n      id              # Обязательно для идентификации в кэше\n      title           # Чтобы заголовок обновился в списке\n      content         # Чтобы контент обновился в списке\n      likesCount\n      dislikesCount\n      isLiked\n      isDisliked\n      __typename      # Помогает Apollo понять тип объекта\n      isOwner\n    }\n  }\n": typeof types.UpdatePostDocument,
     "\n    fragment UserHeaderFields on User {\n      id\n      login\n      avatar\n    }  \n": typeof types.UserHeaderFieldsFragmentDoc,
@@ -28,6 +30,8 @@ type Documents = {
 const documents: Documents = {
     "\n  mutation AddDislike($postId: ID!) {\n    addDislike(postId: $postId) {\n      id\n      likesCount\n      dislikesCount\n      isLiked\n      isDisliked\n    }\n  }\n": types.AddDislikeDocument,
     "\n  mutation AddLike($postId: ID!) {\n    addLike(postId: $postId) {\n      id\n      likesCount\n      dislikesCount\n      isLiked\n      isDisliked\n    }\n  }\n": types.AddLikeDocument,
+    "\n   mutation CreatePost($categoryId: ID!, $title: String!, $content: String!, $userId: ID!) {\n      createPost(categoryId: $categoryId, title: $title, content: $content, userId: $userId) {\n        id\n        category {\n            id\n            name\n        }\n        title\n        createdAt\n        user{\n            id\n            login\n        }\n      }\n   }\n": types.CreatePostDocument,
+    "\n    mutation DeletePost($id: ID!) {\n        deletePost(id: $id) \n            \n    }    \n": types.DeletePostDocument,
     "\n  mutation loginUser($login: String!, $password: String!) {\n    loginUser(login: $login, password: $password) {\n      accessToken\n      refreshToken\n      user {\n        id\n        login\n        avatar\n      }\n    }\n  }\n": types.LoginUserDocument,
     "\n  mutation UpdatePost($id: ID!, $postTitle: String, $postContent: String) {\n    updatePost(id: $id, title: $postTitle, content: $postContent) {\n      id              # Обязательно для идентификации в кэше\n      title           # Чтобы заголовок обновился в списке\n      content         # Чтобы контент обновился в списке\n      likesCount\n      dislikesCount\n      isLiked\n      isDisliked\n      __typename      # Помогает Apollo понять тип объекта\n      isOwner\n    }\n  }\n": types.UpdatePostDocument,
     "\n    fragment UserHeaderFields on User {\n      id\n      login\n      avatar\n    }  \n": types.UserHeaderFieldsFragmentDoc,
@@ -60,6 +64,14 @@ export function graphql(source: "\n  mutation AddDislike($postId: ID!) {\n    ad
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
 export function graphql(source: "\n  mutation AddLike($postId: ID!) {\n    addLike(postId: $postId) {\n      id\n      likesCount\n      dislikesCount\n      isLiked\n      isDisliked\n    }\n  }\n"): (typeof documents)["\n  mutation AddLike($postId: ID!) {\n    addLike(postId: $postId) {\n      id\n      likesCount\n      dislikesCount\n      isLiked\n      isDisliked\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n   mutation CreatePost($categoryId: ID!, $title: String!, $content: String!, $userId: ID!) {\n      createPost(categoryId: $categoryId, title: $title, content: $content, userId: $userId) {\n        id\n        category {\n            id\n            name\n        }\n        title\n        createdAt\n        user{\n            id\n            login\n        }\n      }\n   }\n"): (typeof documents)["\n   mutation CreatePost($categoryId: ID!, $title: String!, $content: String!, $userId: ID!) {\n      createPost(categoryId: $categoryId, title: $title, content: $content, userId: $userId) {\n        id\n        category {\n            id\n            name\n        }\n        title\n        createdAt\n        user{\n            id\n            login\n        }\n      }\n   }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n    mutation DeletePost($id: ID!) {\n        deletePost(id: $id) \n            \n    }    \n"): (typeof documents)["\n    mutation DeletePost($id: ID!) {\n        deletePost(id: $id) \n            \n    }    \n"];
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */

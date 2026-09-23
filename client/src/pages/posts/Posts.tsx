@@ -1,14 +1,16 @@
 
 import { useMutation, useQuery } from "@apollo/client/react";
-// import { GET_POSTS } from "../graphql/querry/getPosts";
-import { ADD_LIKE } from "../graphql/mutations/addLike";
-import { ADD_DISLIKE } from "../graphql/mutations/addDislike";
-import { useAppSelector } from "../store/hooks";
+import { ADD_LIKE } from "../../graphql/mutations/addLike";
+import { ADD_DISLIKE } from "../../graphql/mutations/addDislike";
+import { useAppSelector } from "../../store/hooks";
 import { Link, useParams } from "react-router";
 import { FaHeart } from "react-icons/fa";
 import { BiSolidDislike } from "react-icons/bi";
-import { GET_POSTS_BY_CATEGORY } from "../graphql/querry/getPostsByCategory";
-import { convertDateFn } from "../utils/functions";
+import { GET_POSTS_BY_CATEGORY } from "../../graphql/querry/getPostsByCategory";
+import { convertDateFn } from "../../utils/functions";
+import { CREATE_NEW_POST } from "../../utils/constants";
+import { DELETE_POST } from "../../graphql/mutations/deletePost";
+import { useState } from "react";
 
 
 
@@ -19,10 +21,20 @@ const Posts = () => {
         skip: !categorySlug  // пропускаем запрос, если slug ещё не успел прочитаться
     })
     // const { loading, error, data } = useQuery(GET_POSTS);
-    const { accessToken } = useAppSelector((state) => state.user)
-
+    const { user } = useAppSelector((state) => state.user);
     const [addLike] = useMutation(ADD_LIKE);
     const [addDislike] = useMutation(ADD_DISLIKE);
+    const [postId, setPostId] = useState('');
+    const [deletePost, {loading: delLoading, error: delError, called}] = useMutation(DELETE_POST, {
+        onCompleted: (data) => {
+            console.log(data.deletePost)
+            setPostId('')
+        },
+        onError: (err) => {
+            console.log(`Server error: ${err.message}`);
+        },
+         
+    });
 
     if (loading) return <p>Loading...</p>
     if (error) return <p>Error: {error.message}</p>
@@ -30,9 +42,27 @@ const Posts = () => {
     const category = data?.categoryBySlug;
     console.log(category?.posts);
 
+    const handleDelete = (id: string) => {
+        if(user) {
+            setPostId(id)
+            deletePost({
+                variables: {
+                    id
+                },
+                refetchQueries: [
+                    {
+                        query: GET_POSTS_BY_CATEGORY,
+                        variables: { slug: categorySlug }
+                    }
+                ]
+            })
+        } else {
+            console.log("Not authenticate!");
+        }
+    }
 
     const handleLike = (post: any) => {
-        if(accessToken){
+        if(user){
             addLike({
                 variables: { postId: post.id },
                 optimisticResponse: {
@@ -54,7 +84,7 @@ const Posts = () => {
     };
 
     const handleDislike = (post: any) => {
-        if(accessToken){
+        if(user){
             addDislike({
                 variables: { postId: post.id },
                 optimisticResponse: {
@@ -78,9 +108,15 @@ const Posts = () => {
 
     return (
         <div className="flex flex-col min-h-full bg-slate-200">
-            <div className="flex py-2 px-3 mb-3 bg-slate-600 text-white text-shadow-2xs text-shadow-gray-900">
+            <div className="flex h-10 items-center mb-3 bg-slate-600 text-white text-shadow-2xs text-shadow-gray-900">
                 <h2 className="text-lg text-center w-full font-semibold text-shadow-sm text-shadow-black/60 tracking-wide" 
                 >{category?.name}</h2>
+                {user &&
+                    <Link
+                        to={CREATE_NEW_POST}
+                        className="flex items-center h-full px-3 text-gray-200 border-l border-gray-400 bg-blue-700 hover:text-white hover:bg-blue-600"
+                    >Create</Link>
+                }
             </div>
             {category?.posts?.map((post) => 
                 // <div key={post.id} className="post-wrapper hover:scale-[101%]">
@@ -123,12 +159,27 @@ const Posts = () => {
                         </div>
 
                         <div className="flex text-xs text-gray-800">
-                            <span className="font-serif">Author:</span>
-                            {/* Логин может быть undefined, добавим безопасный фолбек */}
-                            <em className="underline decoration-solid">{post.user?.login || "Anonymous"}</em>
+                            {post.isOwner && user
+                                ?
+                                <button
+                                    disabled={delLoading && post.id === postId} 
+                                    className="py-1 px-2 border-2 cursor-grab border-red-300 rounded-md text-gray-200 bg-red-500 hover:text-white hover:bg-red-600/70 disabled:bg-gray-500 disabled:border-gray-700"
+                                    onClick={(e) => {
+                                        e.preventDefault()
+                                        handleDelete(post.id)
+                                    }}
+                                >Delete</button>
+                                :
+                                <>
+                                   <span className="font-serif">Author:</span>
+                                    {/* Логин может быть undefined, добавим безопасный фолбек */}
+                                    <em className="underline decoration-solid">{post.user?.login || "Anonymous"}</em> 
+                                </>
+                            }
+                            
                         </div>
                     </div>
-                                        </Link>
+                </Link>
                 // </div>
             )}
 

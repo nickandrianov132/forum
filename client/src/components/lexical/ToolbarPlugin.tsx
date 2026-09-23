@@ -99,18 +99,21 @@ export function ToolbarPlugin(): ReactElement {
 
       {/* Инлайновые форматы */}
       <button 
+        type="button"
         className={isBold ? "btn-active" : "btn"} 
         onClick={() => editor.dispatchCommand(FORMAT_TEXT_COMMAND, 'bold')}
       >
         <b>B</b>
       </button>
       <button 
+        type="button"
         className={isItalic ? "btn-active" : "btn"} 
         onClick={() => editor.dispatchCommand(FORMAT_TEXT_COMMAND, 'italic')}
       >
         <i>I</i>
       </button>
       <button 
+        type="button"
         className={isUnderline ? "btn-active" : "btn"} 
         onClick={() => editor.dispatchCommand(FORMAT_TEXT_COMMAND, 'underline')}
       >
@@ -119,12 +122,14 @@ export function ToolbarPlugin(): ReactElement {
 
       {/* Заголовки */}
       <button 
+        type="button"
         className={blockType === 'h1' ? "btn-active" : "btn"} 
         onClick={() => formatHeading('h1')}
       >
         H1
       </button>
       <button 
+        type="button"
         className={blockType === 'h2' ? "btn-active" : "btn"} 
         onClick={() => formatHeading('h2')}
       >
@@ -133,6 +138,7 @@ export function ToolbarPlugin(): ReactElement {
 
       {/* Списки */}
       <button 
+        type="button"
         className={blockType === 'ul' ? "btn-active" : "btn"} 
         onClick={() => editor.dispatchCommand(INSERT_UNORDERED_LIST_COMMAND, undefined)}
       >
@@ -146,6 +152,7 @@ export function ToolbarPlugin(): ReactElement {
         </svg>
       </button>
       <button 
+        type="button"
         className={blockType === 'ol' ? "btn-active" : "btn"} 
         onClick={() => editor.dispatchCommand(INSERT_ORDERED_LIST_COMMAND, undefined)}
       >

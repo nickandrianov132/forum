@@ -1,18 +1,17 @@
 import { Navigate, Route, Routes } from "react-router";
 import { authRoutes, publicRoutes } from "../../utils/routes.ts";
-import News from "../../pages/News";
 import { ONE_POST_ROUTE } from "../../utils/constants.ts";
-import PostDetail from "../../pages/PostDetail.tsx";
-// import { POSTS_ROUTE } from "../../utils/constants.ts";
-// import PostDetail from "../../pages/PostDetail.tsx";
+import PostDetail from "../../pages/posts/PostDetail.tsx";
+import { useAppSelector } from "../../store/hooks.ts";
+
 
 const AppRouter = () => {
-    const isAuth = true
+    const {user} = useAppSelector(state => state.user)
 
     return (
         <div className="lg:col-span-4 space-y-6">
             <Routes>
-                {isAuth && authRoutes.map(({path, Component}) => 
+                {user && authRoutes.map(({path, Component}) => 
                     <Route key={path} path={path} element={<Component/>} />
                 )}
                 {publicRoutes.map(({path, Component}) =>
