@@ -60,11 +60,13 @@ export default function Editor({ initialContent, onChange }: EditorProps): React
     <LexicalComposer initialConfig={initialConfig}>
       <div className="editor-container">
         <ToolbarPlugin />
-        <RichTextPlugin
-          contentEditable={<ContentEditable className="editor-input" />}
-          placeholder={<div className="placeholder">Write your text here...</div>}
-          ErrorBoundary={LexicalErrorBoundary}
-        />
+        <div className='relative w-full h-fit'>
+          <RichTextPlugin
+            contentEditable={<ContentEditable className="editor-input" />}
+            placeholder={<div className="placeholder">Write your text here...</div>}
+            ErrorBoundary={LexicalErrorBoundary}
+          />
+        </div>
         <HistoryPlugin />
         <ListPlugin />
         <OnChangePlugin onChange={handleOnChange} />

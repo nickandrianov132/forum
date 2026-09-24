@@ -6,12 +6,14 @@ const LeftNavbar = () => {
     const {loading, error, data } = useQuery(GET_CATEGORIES);
     console.log(data);
 
-    if (loading) return <aside className="left-bar"><p className="text-gray-400 p-4">Loading...</p></aside>;
+    if (loading) return (
+        <div className="left-bar lg:h-full p-4 border border-slate-500/20 rounded-l-lg h-fit bg-gray-800 animate-pulse"></div>
+    )
     if (error) return <aside className="left-bar"><p className="text-red-400 p-4">Error loading categories</p></aside>;
 
     return (
         <aside className="left-bar">
-            <nav className="bg-gray-800 p-4 rounded-l-md h-fit lg:h-full">
+            <nav className="bg-gray-800 p-4 rounded-l-lg h-fit lg:h-full border border-slate-400/20">
                 <ul className="text-gray-300 text-sm">
                  {/* Перебираем категории из базы данных */}
                     {data?.categories.map((category: any) => (

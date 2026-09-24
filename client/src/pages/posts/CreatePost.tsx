@@ -8,6 +8,7 @@ import { useNavigate } from "react-router";
 import { GET_POSTS_BY_CATEGORY } from "../../graphql/querry/getPostsByCategory";
 
 
+
 const CreatePost = () => {
     const navigate = useNavigate();
     const [cat, setCat] = useState('');
@@ -38,7 +39,17 @@ const CreatePost = () => {
     // console.log(data);   
    
     
-    if (loading || postLoading )  return <div>Loading...</div> 
+    if (loading || postLoading )  return (
+            <div className="relative flex flex-col gap-6 w-full max-w-3xl mx-auto p-6 bg-slate-900 border border-slate-800 rounded-2xl shadow-xl animate-pulse">
+                <div className="h-7 w-full pb-4 border-b border-slate-800"></div>
+                <div className="ml-29 h-8 w-1/5 bg-slate-800 rounded-md"></div>
+                <div className="self-end h-8 w-5/6 mr-1 bg-slate-800 rounded-md"></div>
+                <div className="h-50 w-full bg-slate-800 rounded-xl"></div>
+                <div className="flex justify-end gap-2 h-6 w-full mb-3">
+                    <div className="h-9 w-22 bg-slate-800 rounded-md"></div>
+                </div>
+            </div>
+            )
 
     if (postError) return <div>{postError.message}</div>
 
@@ -70,56 +81,115 @@ const CreatePost = () => {
     };
 
 
-
-    return (
-        <form onSubmit={handleSubmit} className="flex relative flex-col">
-            {isSuccess &&
-                <div className="flex flex-col items-center absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-sm p-6 text-white rounded-2xl bg-slate-800/90 backdrop-blur-md border border-slate-700 shadow-2xl shadow-teal-400/30 text-center ">
-                    <span className="flex mb-4 mt-3 text-xl">Success!</span>
-                    <span className="mb-2 px-2">Post was created!</span>
-                    <button 
-                        className="w-1/3 mt-4 px-4 py-2.5 rounded-xl bg-linear-to-r from-emerald-500 to-teal-600 text-white font-medium tracking-wide transform-gpu transition-colors duration-200 hover:from-emerald-400 hover:to-teal-500 hover:shadow-[0_0_12px_rgba(16,185,129,0.4)] hover:-translate-y-0.5 hover:text-gray-200 hover:drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)] active:translate-y-0"
-                        onClick={() => navigate(-1)}
-                    >Ok</button>
-                </div>
-            }
-            {!loading ?
-                <>
-                <span className="mb-2">
-                    <label>Category:</label>    
-                    <select className="w-fit border rounded-xs ml-2" value={cat} onChange={(e) => setCat(e.target.value)}>
-                        {data?.categories.map((c) => (
-                            <option key={c.id} value={c.id} >
-                                {c.name}
-                            </option>
-                        ))}
-                    </select>
-                </span>
-                <span>
-                    <label>
-                        Title:
-                    </label>
-                    <input 
-                        type="text"
-                        maxLength={30}
-                        className="min-w-95 text-sm/5 px-2 py-1 border border-gray-600/70 rounded-sm ml-2 focus:outline-none focus:border-blue-500/40 focus:ring-2 focus:ring-blue-200" 
-                        value={title} 
-                        placeholder="Your title...."
-                        onChange={(e) => setTitle(e.target.value)} 
-                    />
-                </span>
-                <Editor initialContent={postContent} onChange={(jsonString) => setPostContent(jsonString)} />
-                </>
-                :
-                <p>Loading...</p>
-            }
+ return (
+    <form onSubmit={handleSubmit} className="relative flex flex-col gap-6 w-full max-w-3xl mx-auto p-6 bg-slate-900 border border-slate-800 rounded-2xl shadow-xl">
+      
+      {/* Модальное окно успешного создания */}
+      {isSuccess && (
+        <div className="absolute inset-0 z-50 flex flex-col items-center justify-center p-6 bg-slate-950/80 backdrop-blur-md rounded-2xl animate-fade-in">
+          <div className="flex flex-col items-center w-full max-w-sm p-6 text-center bg-slate-900 border border-slate-700 rounded-2xl shadow-2xl shadow-teal-500/10">
+            <div className="flex items-center justify-center w-12 h-12 mb-4 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+              ✓
+            </div>
+            <h3 className="mb-1 text-xl font-semibold text-white tracking-wide">Success!</h3>
+            <p className="text-sm text-slate-400 mb-6">Your post was created.</p>
             <button 
-                type="submit"
-                disabled={loading}
-                className="post-btn self-start ml-6 mr-0"
-            >{loading ? "Loading..." : "Create"}</button>
-        </form>
-    );
+              type="button"
+              className="w-full px-4 py-2.5 rounded-xl bg-linear-to-r from-emerald-500 to-teal-600 text-white font-medium tracking-wide transition-all duration-200 hover:from-emerald-400 hover:to-teal-500 active:scale-98 shadow-lg shadow-emerald-500/20" 
+              onClick={() => navigate(-1)}
+            >
+              Nice
+            </button>
+          </div>
+        </div>  
+      )}
+
+      {/* Основной контент формы */}
+
+            <div className="flex flex-col gap-5">
+            {/* Заголовок формы (опционально, для лучшего UX) */}
+            <div className="border-b border-slate-800 pb-4">
+                <h2 className="text-xl font-bold text-white">Creating new post</h2>
+            </div>
+
+            {/* Селект категории */}
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-4">
+                <label className="text-sm font-medium text-slate-300 min-w-20">
+                Category
+                </label>
+                <div className="relative w-full sm:w-64">
+                <select 
+                    className="w-full px-3 py-2 bg-slate-800 border border-slate-700 text-sm text-slate-200 rounded-xl focus:outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 transition-all appearance-none cursor-pointer"
+                    value={cat} 
+                    onChange={(e) => setCat(e.target.value)}
+                >
+                    {data?.categories.map((c) => (
+                    <option key={c.id} value={c.id} className="bg-slate-850">
+                        {c.name}
+                    </option>
+                    ))}
+                </select>
+                {/* Кастомная стрелочка для селекта */}
+                <div className="absolute inset-y-0 right-3 flex items-center pointer-events-none text-slate-400">
+                    ▼
+                </div>
+                </div>
+            </div>
+
+            {/* Инпут заголовка */}
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-4">
+                <label className="text-sm font-medium text-slate-300 min-w-20">
+                Title
+                </label>
+                <div className="relative flex-1">
+                <input 
+                    type="text" 
+                    maxLength={30} 
+                    className="w-full px-3 py-2 bg-slate-800 border border-slate-700 text-sm text-slate-200 rounded-xl placeholder-slate-500 focus:outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 transition-all"
+                    value={title} 
+                    placeholder="Your title..." 
+                    onChange={(e) => setTitle(e.target.value)} 
+                />
+                <span className="absolute right-3 bottom-2.5 text-xs text-slate-500">
+                    {title.length}/30
+                </span>
+                </div>
+            </div>
+
+            {/* Редактор */}
+            <div className="flex flex-col gap-2">
+                <label className="text-sm font-medium text-slate-300">Content</label>
+                <div className="rounded-xl border border-slate-700 bg-slate-800 overflow-hidden focus-within:border-teal-500 focus-within:ring-2 focus-within:ring-teal-500/20 transition-all">
+                <Editor 
+                    initialContent={postContent} 
+                    onChange={(jsonString) => setPostContent(jsonString)} 
+                />
+                </div>
+            </div>
+            </div>
+        
+
+      {/* Кнопка отправки формы */}
+      <div className="flex justify-end border-t border-slate-800 pt-4 mt-2">
+        <button 
+          type="submit" 
+          disabled={loading} 
+          className="px-6 py-2.5 bg-linear-to-r from-teal-500 to-emerald-600 hover:from-teal-400 hover:to-emerald-500 text-white font-medium text-sm rounded-xl transition-all duration-200 shadow-md shadow-teal-500/10 hover:shadow-teal-500/25 active:scale-98 disabled:opacity-50 disabled:pointer-events-none disabled:transform-none"
+        >
+          {loading ? (
+            <span className="flex items-center gap-2">
+              <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+              Creating...
+            </span>
+          ) : (
+            "Create"
+          )}
+        </button>
+      </div>
+
+    </form>
+  );
+
 }
 
 

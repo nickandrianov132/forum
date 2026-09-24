@@ -17,9 +17,10 @@ const LoginForm = ({onClose}: LoginFormProps) => {
   const [loginMutation, { loading, error }] = useMutation(LOGIN_USER, {
 
     /// Переделаный под 2 токена рефреш и auth/refresh токены
-    onCompleted: (data: any) => {
+    onCompleted: async (data: any) => {
       const { accessToken, refreshToken, user } = data.loginUser;
-
+      await client.clearStore(); 
+      localStorage.clear();
       // 1. Сохраняем оба токена в LocalStorage для Apollo Links
       localStorage.setItem('token', accessToken);
       localStorage.setItem('refreshToken', refreshToken);

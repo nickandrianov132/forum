@@ -1,58 +1,61 @@
 import { useApolloClient, useQuery } from "@apollo/client/react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
 import { GET_ME, USER_HEADER_FRAGMENT } from "../graphql/querry/getAuth";
 import { logout, setCredentials } from "../store/slices/authSlice";
-import { useFragment } from "../gql";
 import type { UserHeaderFieldsFragment } from "../gql/graphql";
 
 
 export function useAuthInit() {
     const dispatch = useDispatch();
-    const client = useApolloClient(); // Достаем инстанс клиента прямо из контекста Apollo
+    const client = useApolloClient();
     const [isReady, setIsReady] = useState(false);
 
-    // 1. Читаем токены один раз за рендер и мемоизируем их, 
-    // чтобы не дергать localStorage внутри эффектов и не плодить новые ссылки
-    const tokens = useMemo(() => {
-        return {
-            accessToken: localStorage.getItem('token') || '',
-            refreshToken: localStorage.getItem('refreshToken') || ''
-        }
-    }, [])
+    // 1. Убираем useMemo с пустым массивом для токенов, 
+    // либо привязываем его к состоянию готовности, чтобы не блокировать чтение.
+    // На самом деле, читать localStorage раз в рендер — это абсолютно не накладно.
+    const accessToken = localStorage.getItem('token') || '';
+    const refreshToken = localStorage.getItem('refreshToken') || '';
+    
+    const hasToken = !!accessToken;
 
-    const hasToken = !!tokens.accessToken;
-
+    // 2. КРИТИЧЕСКОЕ ИЗМЕНЕНИЕ: Если приложение УЖЕ инициализировано (isReady),
+    // мы пропускаем (skip) этот запрос навсегда, чтобы он не стрелял при логинах нового юзера!
     const { loading, error, data } = useQuery(GET_ME, {
-        skip: !hasToken,
-        errorPolicy: 'all'
+        skip: !hasToken || isReady, 
+        errorPolicy: 'all',
+        fetchPolicy: 'network-only' // гарантирует, что при старте мы проверим токен на сервере, а не в кэше
     });
 
     useEffect(() => {
-        // Сценарий 1: Токена нет — сразу завершаем инициализацию
+        // Если уже готовы — ничего не делаем
+        if (isReady) return;
+
+        // Сценарий 1: Токена нет — завершаем
         if (!hasToken) {
             setIsReady(true);
-            return
+            return;
         }
 
-        // Ждем, пока Apollo завершит запрос (исчезнет loading)
         if (loading) return;
 
         if (error || !data?.me) {
             dispatch(logout());
             client.clearStore();
             setIsReady(true);
-            return
+            return;
         }
 
         const user = client.readFragment<UserHeaderFieldsFragment>({
             id: client.cache.identify(data.me),
             fragment: USER_HEADER_FRAGMENT,
         });
+
         if (user) {
+            // Пишем АКТУАЛЬНЫЕ токены, а не застрявшие в мемоизации
             dispatch(setCredentials({
-                accessToken: tokens.accessToken,
-                refreshToken: tokens.refreshToken,
+                accessToken: accessToken,
+                refreshToken: refreshToken,
                 user
             }));
             setIsReady(true);
@@ -61,11 +64,11 @@ export function useAuthInit() {
             client.clearStore();
             setIsReady(true);
         }
+    // Добавляем актуальные переменные в зависимости
+    }, [loading, error, data, hasToken, accessToken, refreshToken, isReady, dispatch, client]);
 
-
-    }, [loading, error, data, hasToken, tokens, dispatch, client]);
-
-    const isAuthLoading = loading && !isReady;
+    const isAuthLoading = !isReady; // Упрощаем лоадер: пока не готовы — показываем экран загрузки
     
-    return { isAuthLoading }
+    return { isAuthLoading };
 }
+

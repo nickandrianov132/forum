@@ -13,6 +13,7 @@ export const GET_ONE_POST = graphql(`
         dislikesCount
         isOwner
         user {
+            id
             login
             avatar
         }
