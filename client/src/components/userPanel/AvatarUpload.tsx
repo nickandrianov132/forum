@@ -13,10 +13,10 @@ export const AvatarUpload = ({
   userId, 
   currentAvatarUrl, 
   onUploadSuccess 
-}: AvatarUploadProps) => { // <-- Просто указываем интерфейс здесь
+  }: AvatarUploadProps) => { // <-- Просто указываем интерфейс здесь
   
   const [avatarUrl, setAvatarUrl] = useState<string>(currentAvatarUrl || 'https://placeholder.com');
-  const [isUploading, setIsUploading] = useState<boolean>(false);
+  const [isUploading, setIsUploading] = useState(false);
 
   const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;

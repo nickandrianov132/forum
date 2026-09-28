@@ -125,14 +125,18 @@ const Posts = () => {
     return (
         <div className="flex flex-col gap-3 min-h-full p-4">
         {/* Шапка категории */}
-        <div className="flex h-14 items-center justify-between px-4 rounded-xl bg-slate-900/40 border border-white/5 backdrop-blur-xs mb-2">
-            <h2 className="text-lg font-semibold text-slate-100 tracking-wide">
-                {category?.name}
-            </h2>
+        <div className="flex h-14 w-9/10 self-center items-center gap-2 justify-between overflow-hidden rounded-xl bg-slate-900/40 border border-white/5 backdrop-blur-xs mb-2">
+            <div className="flex h-full rounded-xl items-center flex-3/4">
+                <span className="inline-flex animate-once-shine px-5 items-center bg-linear-to-tr from-blue-600 via-indigo-600 to-purple-600/70 text-white font-semibold shadow-xs h-full">Category</span>
+                <h2 className="w-full text-center text-2xl font-semibold text-slate-200 tracking-wide">
+                    {category?.name}
+                </h2>
+                
+            </div>
             {user && (
                 <Link
                     to={CREATE_NEW_POST}
-                    className="flex items-center h-9 px-4 text-sm font-medium text-slate-200! rounded-lg bg-emerald-500/80 hover:text-white! hover:bg-emerald-500 transition-all duration-200 hover:shadow-lg hover:shadow-emerald-500/20 active:scale-95"
+                    className="flex items-center h-9 px-4 text-sm mr-6 font-medium text-slate-200! rounded-lg bg-emerald-500/80 hover:text-white! hover:bg-emerald-500 transition-all duration-200 hover:shadow-lg hover:shadow-emerald-500/20 active:scale-95"
                 >Create
                 </Link>
             )}

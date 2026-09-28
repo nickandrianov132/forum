@@ -6,7 +6,7 @@ const LogoutBtn = () => {
 
     return (
         <button 
-            className="group inline-flex h-fit border border-slate-100 bg-linear-to-tr from-blue-800 from-0% via-sky-600 via-60% to-cyan-500 to-100% text-shadow-sm/20 text-shadow-blue-950 text-slate-200 py-0.5 px-1 rounded-md transition-colors duration-400 active:bg-sky-500 hover:bg-sky-600 hover:border-white hover:text-white hover:shadow-md hover:shadow-sky-600/50 "
+            className="group inline-flex h-fit border border-slate-100/50 bg-linear-to-tr from-blue-800 from-0% via-sky-600 via-60% to-cyan-500 to-100% text-shadow-sm/20 text-shadow-blue-950 text-slate-200 py-0.5 px-1 rounded-md transition-colors duration-400 active:bg-sky-500 hover:bg-sky-600 hover:border-white/70 hover:text-white hover:shadow-md hover:shadow-sky-600/50 "
             onClick={() => dispatch(logout())}
         >Logout
             <svg className="w-4 ml-1 stroke-gray-200 stroke-2 group-hover:stroke-white" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">

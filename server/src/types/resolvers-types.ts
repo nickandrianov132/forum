@@ -138,11 +138,8 @@ export type MutationUpdatePostArgs = {
 
 
 export type MutationUpdateUserArgs = {
-  avatar?: InputMaybe<Scalars['String']['input']>;
-  email?: InputMaybe<Scalars['String']['input']>;
   id: Scalars['ID']['input'];
-  login?: InputMaybe<Scalars['String']['input']>;
-  password?: InputMaybe<Scalars['String']['input']>;
+  input: UpdateUserInput;
 };
 
 export type Post = {
@@ -196,6 +193,13 @@ export type QueryPostsByCategoryArgs = {
 
 export type QueryUserArgs = {
   id: Scalars['ID']['input'];
+};
+
+export type UpdateUserInput = {
+  avatar?: InputMaybe<Scalars['String']['input']>;
+  email?: InputMaybe<Scalars['String']['input']>;
+  login?: InputMaybe<Scalars['String']['input']>;
+  password?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type User = {
@@ -294,6 +298,7 @@ export type ResolversTypes = ResolversObject<{
   Post: ResolverTypeWrapper<IPost>;
   Query: ResolverTypeWrapper<Record<PropertyKey, never>>;
   String: ResolverTypeWrapper<Scalars['String']['output']>;
+  UpdateUserInput: UpdateUserInput;
   User: ResolverTypeWrapper<IUser>;
 }>;
 
@@ -310,6 +315,7 @@ export type ResolversParentTypes = ResolversObject<{
   Post: IPost;
   Query: Record<PropertyKey, never>;
   String: Scalars['String']['output'];
+  UpdateUserInput: UpdateUserInput;
   User: IUser;
 }>;
 
@@ -356,7 +362,7 @@ export type MutationResolvers<ContextType = MyContext, ParentType extends Resolv
   loginUser?: Resolver<ResolversTypes['AuthResponse'], ParentType, ContextType, RequireFields<MutationLoginUserArgs, 'login' | 'password'>>;
   refreshToken?: Resolver<ResolversTypes['AuthResponse'], ParentType, ContextType, RequireFields<MutationRefreshTokenArgs, 'token'>>;
   updatePost?: Resolver<Maybe<ResolversTypes['Post']>, ParentType, ContextType, RequireFields<MutationUpdatePostArgs, 'id'>>;
-  updateUser?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, RequireFields<MutationUpdateUserArgs, 'id'>>;
+  updateUser?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, RequireFields<MutationUpdateUserArgs, 'id' | 'input'>>;
 }>;
 
 export type PostResolvers<ContextType = MyContext, ParentType extends ResolversParentTypes['Post'] = ResolversParentTypes['Post']> = ResolversObject<{

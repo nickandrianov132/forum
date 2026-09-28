@@ -21,7 +21,7 @@ const Header = () => {
             <nav className="nav-header">
                 <HeaderLogo />
                 {user !== null ? 
-                    <div className="flex w-fit items-center">
+                    <div className="flex w-fit items-center gap-2">
                         <UserAvatar />
                         <LogoutBtn />
                     </div>

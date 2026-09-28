@@ -309,3 +309,35 @@
   }
 }
 
+
+
+@theme {
+  --animate-once-shine: once-shine 1.5s ease-out forwards;
+
+  @keyframes once-shine {
+    0% {
+      background-position: 0% 50%;
+      filter: brightness(1);
+    }
+    50% {
+      filter: brightness(1.4) drop-shadow(0 0 8px rgba(56, 189, 248, 0.6));
+    }
+    100% {
+      background-position: 100% 50%;
+      filter: brightness(1);
+    }
+  }
+}
+
+@theme {
+  --animate-shimmer: shimmer 0.5s ease-out;
+
+  @keyframes shimmer {
+    0% {
+      transform: translate3d(-100%, 0, 0); /* Добавили 3D-координаты для старта */
+    }
+    100% {
+      transform: translate3d(150%, 0, 0);  /* Заставит GPU обрабатывать анимацию */
+    }
+  }
+}

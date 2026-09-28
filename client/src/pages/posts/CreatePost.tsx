@@ -114,11 +114,12 @@ const CreatePost = () => {
 
             {/* Селект категории */}
             <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-4">
-                <label className="text-sm font-medium text-slate-300 min-w-20">
+                <label htmlFor="category" className="text-sm font-medium text-slate-300 min-w-20">
                 Category
                 </label>
                 <div className="relative w-full sm:w-64">
-                <select 
+                <select
+                    id="category" 
                     className="w-full px-3 py-2 bg-slate-800 border border-slate-700 text-sm text-slate-200 rounded-xl focus:outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 transition-all appearance-none cursor-pointer"
                     value={cat} 
                     onChange={(e) => setCat(e.target.value)}
@@ -129,7 +130,7 @@ const CreatePost = () => {
                     </option>
                     ))}
                 </select>
-                {/* Кастомная стрелочка для селекта */}
+
                 <div className="absolute inset-y-0 right-3 flex items-center pointer-events-none text-slate-400">
                     ▼
                 </div>
@@ -138,12 +139,15 @@ const CreatePost = () => {
 
             {/* Инпут заголовка */}
             <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-4">
-                <label className="text-sm font-medium text-slate-300 min-w-20">
-                Title
-                </label>
+                <label 
+                    htmlFor="title"
+                    className="text-sm font-medium text-slate-300 min-w-20"
+                >Title</label>
                 <div className="relative flex-1">
                 <input 
-                    type="text" 
+                    id="title"
+                    type="text"
+                    minLength={3} 
                     maxLength={30} 
                     className="w-full px-3 py-2 bg-slate-800 border border-slate-700 text-sm text-slate-200 rounded-xl placeholder-slate-500 focus:outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 transition-all"
                     value={title} 

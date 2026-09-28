@@ -35,30 +35,26 @@ const generateRefreshToken = (id: string) => {
 const resolvers: Resolvers<MyContext> = {
     Query: {
         me: async (
-        _parent: unknown,           // У me нет родителя, поэтому можно указать unknown или any
-        _args: unknown,             // У me нет входящих аргументов (в схеме просто me: User), поэтому unknown
-        context: MyContext          // Передаем кастомный контекст, где есть userId и loaders
-        ) => {
-        
-        // 1. Проверяем наличие id в контексте
-        if (!context.userId) {
-            throw new GraphQLError('Not authenticated', {
-            extensions: { code: 'UNAUTHENTICATED' },
-            });
-        }
-
-        // 2. Достаем пользователя из базы по id напрямую
-        const currentUser = await UserModel.findById(context.userId);
-
-        // 3. Проверяем, существует ли он
-        if (!currentUser) {
-            throw new GraphQLError('User not found', {
-            extensions: { code: 'UNAUTHENTICATED' },
-            });
-        }
-
-        // 4. Возвращаем пользователя (благодаря mappers в codegen TS примет этот объект)
-        return currentUser;
+            _parent: unknown,           // У me нет родителя, поэтому указываем unknown или any
+            _args: unknown,             // У me нет входящих аргументов (в схеме просто me: User), поэтому unknown
+            context: MyContext          // кастомный контекст, где есть userId и loaders
+            ) => {
+                // 1. Проверка наличия id в контексте
+                if (!context.userId) {
+                    throw new GraphQLError('Not authenticated', {
+                    extensions: { code: 'UNAUTHENTICATED' },
+                    });
+                }
+                // 2. Достся пользователь из базы по id напрямую
+                const currentUser = await UserModel.findById(context.userId);
+                // 3. Проверка, существует ли он
+                if (!currentUser) {
+                    throw new GraphQLError('User not found', {
+                    extensions: { code: 'UNAUTHENTICATED' },
+                    });
+                }
+                // 4. Возвращаем пользователя (благодаря mappers в codegen TS примет этот объект)
+            return currentUser;
         },
         user: authenticated( async (_, {id}) => UserModel.findById(id)),
         users: async () => await UserModel.find(),
@@ -121,8 +117,13 @@ const resolvers: Resolvers<MyContext> = {
 
 
 
-        updateUser: authenticated( async (_, {id, ...args}) => {
-            const user = await UserModel.findByIdAndUpdate(id, args, {new: true})
+        updateUser: authenticated( async (_, {id, input}) => {
+            
+            if (input.password) {
+                input.password = await bcrypt.hash(input.password, 10)
+            }
+            
+            const user = await UserModel.findByIdAndUpdate(id, input, {new: true})
             return user
         }),
         deleteUser: authenticated(async (_, { id }) => {

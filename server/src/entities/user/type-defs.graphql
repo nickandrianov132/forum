@@ -8,6 +8,13 @@ type User {
     dislike: [Dislike!]
 }
 
+input UpdateUserInput {
+    login: String
+    email: String
+    avatar: String
+    password: String
+}
+
 type AuthResponse {
   accessToken: String!
   refreshToken: String!
@@ -15,7 +22,7 @@ type AuthResponse {
 }
 
 type Query {
-    me: User # Новый роут
+    me: User # Новый роут для userInfo
     users: [User!]!
     user(id: ID!): User
 }
@@ -27,5 +34,5 @@ type Mutation {
     addUser(login: String!, password: String!, email: String!, avatar: String): AuthResponse!
     refreshToken(token: String!): AuthResponse!
     deleteUser(id: ID!): Boolean
-    updateUser(id: ID!, login: String, password: String, email: String, avatar: String): User
+    updateUser(id: ID!, input: UpdateUserInput!): User
 }
