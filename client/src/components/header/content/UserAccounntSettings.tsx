@@ -5,7 +5,6 @@ import { useMutation } from "@apollo/client/react";
 import { UPDATE_USER } from "../../../graphql/mutations/updateUser";
 import  Spinner from "../../Spinner";
 
-const baseAvatarUrl = "https://bqezaqgwkajiuqvwsuye.supabase.co/storage/v1/object/public/forum-media/avatars/user_icon2.png"
 
 const UserAccountSettings = () => {
     const { user } = useAppSelector((state) => state.user)
@@ -13,7 +12,6 @@ const UserAccountSettings = () => {
     const [avatarUrl, setAvatarUrl] = useState('');
     const [isUploading, setIsUploading] = useState(false);
     const [successMessage, setSuccessMessage] = useState(false);
-    const [errorMessage, setErrorMessage] = useState(false);
     const [updateUserMutation, {error, loading}] = useMutation(UPDATE_USER, {
         onCompleted: (data) => {
             console.log(data);
@@ -24,8 +22,6 @@ const UserAccountSettings = () => {
             setTimeout(() => setSuccessMessage(false), 3000);
         },
         onError: (error) => {
-            setErrorMessage(true)
-            setTimeout(() => setErrorMessage(false), 3000);
             console.log(error.message);
         }
     })

@@ -70,130 +70,17 @@ const resolvers: Resolvers<MyContext> = {
             return loaders.dislikeLoader.load(parent.id.toString());
         },
 
-            // УБИРАЕМ authenticated() отсюда!
         isOwner: (parent, _, { userId }) => {
         console.log("Parent Post userId:", parent.userId);
         console.log("Current Context userId:", userId);
         
-        // Если пользователь не залогинен (userId === null) 
-        // или у поста нет автора, он физически не может быть владельцем
         if (!userId || !parent.userId) {
             return false; 
         }
         
         return parent.userId.toString() === userId.toString();
         },
-        // isOwner: authenticated((parent, _, { userId }) => {
-        //     console.log(parent);
-        //     console.log(userId);
-        //     if (!userId || !parent.userId) return false;
-        //     return parent.userId.toString() === userId.toString();
-        // }),
     }
-
-    // Query: {
-    //     user: async (_, {id}) => UserModel.findById(id),
-    //     post: async (_, {id}) => await PostModel.findById(id),
-    //     posts: async () => await PostModel.find(),
-    //     // postsByTopic: async (_, {topic}) => await PostModel.find({topic})
-    // },
-    // Mutation: {
-    //     createPost: authenticated( async (_, {topic, title, content, userId}) => {
-    //         const newPost = new PostModel({
-    //             topic, title, content, userId
-    //         })
-    //         await newPost.save()
-    //         const posts = await PostModel.find()
-    //         pubsub.publish("POSTS_RENEW", { postsSub: posts})
-    //         // pubsub.publish("POST_CREATED", { postCreated: newPost})
-    //         return newPost
-    //     }),
-    //     updatePost: authenticated( async (_, {id, ...args}) => {
-    //         const post = await PostModel.findByIdAndUpdate(id, args, {new: true})
-    //         return post
-    //     }),
-    //     deletePost: authenticated( async (_, {id}) => {
-    //         const result = await PostModel.findByIdAndDelete(id)
-    //         const posts = await PostModel.find()
-    //         pubsub.publish("POSTS_RENEW", { postsSub: posts})
-    //         return !!result
-    //     }),
-    // },
-    // Post: {
-    //     // 1. Исправляем для загрузки автора
-    //     user: async (parent, _, { loaders }) => {
-    //         // Добавляем .toString(), чтобы превратить ObjectId в string
-    //         const user = await loaders.userLoader.load(parent.userId.toString());
-    //         if (!user) throw new Error("User not found");
-    //         return user;
-    //     },
-
-    //     // 2. Исправляем для счетчиков и лайков
-    //     likesCount: (parent, _, { loaders }) => {
-    //         // parent.id в Mongoose обычно уже строка или ObjectId, 
-    //         // но .toString() делает это безопасным для TS
-    //         return loaders.likeCountLoader.load(parent.id.toString());
-    //     },
-
-    //     dislikesCount: (parent, _, { loaders }) => {
-    //         return loaders.dislikeCountLoader.load(parent.id.toString());
-    //     },
-
-    //     isLiked: (parent, _, { loaders }) => {
-    //         return loaders.likeLoader.load(parent.id.toString());
-    //     },
-
-    //     isDisliked: (parent, _, { loaders }) => {
-    //         return loaders.dislikeLoader.load(parent.id.toString());
-    //     },
-
-    //     // 3. Для isOwner (сравнение двух ID)
-    //     isOwner: (parent, _, { userId }) => {
-    //         if (!userId || !parent.userId) return false;
-    //         // Всегда сравниваем через .toString()
-    //         return parent.userId.toString() === userId.toString();
-    //     },
-    // }
-
-    // Post: {
-    //     user: async (parent) => {
-    //         const user = await UserModel.findById(parent.userId);
-    //         if (!user) {
-    //             throw new Error("User not found");
-    //         }
-    //         return user; // Теперь TS видит, что возвращается только User, без null
-    //     },
-    //     likesCount: async (parent) => await LikeModel.countDocuments({postId: parent.id}),
-    //     dislikesCount: async (parent) => await DislikeModel.countDocuments({postId: parent.id}),
-    //     isLiked: async (parent, _, context) => {
-    //         if (!context.userId) return false;
-    //         // Ищем в коллекции лайков запись с нужным postId и userId
-    //         const like = await LikeModel.findOne({ 
-    //             postId: parent.id, 
-    //             userId: context.userId 
-    //         });
-            
-    //         return !!like; // Превращаем объект (или null) в true/false
-    //     },
-    //     isDisliked: async (parent, _, context) => {
-    //         if (!context.userId) return false;
-    //         const dislike = await DislikeModel.findOne({ 
-    //         postId: parent.id, 
-    //         userId: context.userId 
-    //     });
-        
-    //     return !!dislike; // Превращаем объект (или null) в true/false
-    //     },
-    //     isOwner: async (parent, _, context) => {
-    //         const parentId = parent.userId?.toString();
-    //         const contextId = context.userId?.toString();
-    //         if (!contextId || !parentId) {
-    //             return false;
-    //         }
-    //         const match = parentId === contextId;
-    //         return match;
-    //     },
-    // }
     
 }
 

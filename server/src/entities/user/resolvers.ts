@@ -9,14 +9,6 @@ import { authenticated } from "../../utils/authGuard.ts";
 import { env } from "../../config.ts";
 import bcrypt from 'bcrypt'; 
 
-// const generateJwt = (login: string, password: string, id: string) => {
-// return  jwt.sign(
-//         {login, password, id}, 
-//         env.JWT_SECRET_KEY || 'SECRET',
-//         {expiresIn: '1h'}
-//         )
-// }
-
 const generateJwt = (login: string, id: string) => {
   return jwt.sign(
     { login, id }, // убрал пароль
@@ -137,10 +129,6 @@ const resolvers: Resolvers<MyContext> = {
             const result = await UserModel.findByIdAndDelete(id);
             return !!result;
         }),
-        // deleteUser: authenticated( async (_, {id}) => {
-        //     const result = await UserModel.findByIdAndDelete(id)
-        //     return !!result
-        // }),
         
     },
     User: {

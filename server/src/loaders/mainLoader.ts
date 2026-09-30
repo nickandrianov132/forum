@@ -78,24 +78,6 @@ export const createLoaders = (currentUserId?: string) => ({
     // Возвращаем массив boolean в том же порядке, в котором пришли IDs
     return postIds.map(id => dislikedPostIds.has(id.toString()));
     }),
-// Лоадер для количества лайков (агрегация)
-  //   likeCountLoader: new DataLoader(async (postIds: readonly string[]) => {
-  //   const counts = await LikeModel.aggregate([
-  //     { $match: { postId: { $in: postIds.map(id => new mongoose.Types.ObjectId(id)) } } },
-  //     { $group: { _id: "$postId", count: { $sum: 1 } } }
-  //   ]);
-  //   const countMap = new Map(counts.map(c => [c._id.toString(), c.count]));
-  //   return postIds.map(id => countMap.get(id.toString()) || 0);
-  // }),
-  // Лоадер для количества дизлайков
-  // dislikeCountLoader: new DataLoader(async (postIds: readonly string[]) => {
-  //   const counts = await DislikeModel.aggregate([
-  //     { $match: { postId: { $in: postIds.map(id => new mongoose.Types.ObjectId(id)) } } },
-  //     { $group: { _id: "$postId", count: { $sum: 1 } } }
-  //   ]);
-  //   const countMap = new Map(counts.map(c => [c._id.toString(), c.count]));
-  //   return postIds.map(id => countMap.get(id.toString()) || 0);
-  // }),
 
  // Лоадер для количества дизлайков
   dislikeCountLoader: new DataLoader(async (postIds: readonly string[]) => {

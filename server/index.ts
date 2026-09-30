@@ -1,7 +1,5 @@
 import { ApolloServer } from "@apollo/server";
 import { startStandaloneServer } from "@apollo/server/standalone";
-// import { typeDefs } from "./schema.ts";
-// import { resolvers } from "./resolvers.ts";
 import mongoose from "mongoose";
 import dns from 'node:dns/promises';
 dns.setDefaultResultOrder('ipv4first');
@@ -17,10 +15,11 @@ import cors from 'cors';
 import express from 'express';
 import schema from "./src/schema.ts"
 import { useServer } from 'graphql-ws/use/ws';
-import { UserModel } from "./src/models/Users.ts";
 import { getUserIdFromHeader, verifyToken } from "./src/utils/auth.ts";
 import type { ILoaders } from "./src/loaders/mainLoader.ts";
 import { createLoaders } from "./src/loaders/mainLoader.ts";
+import { env } from "./src/config.ts";
+
 
 const app = express();
 const httpServer = createServer(app);
@@ -28,7 +27,6 @@ export interface MyContext {
   userId?: string | null;
   loaders: ILoaders; // теперь TS знает про userLoader, likeLoader и т.д.
 }
-
 
 // Creating the WebSocket server
 const wsServer = new WebSocketServer({
@@ -105,35 +103,18 @@ app.use(
   }),
   express.json(),
   expressMiddleware(server, {
-  context: async ({ req }): Promise<MyContext> => {
-  const userId = getUserIdFromHeader(req.headers.authorization);
-  // let userId: string | null = null; // 1. Объявляем переменную заранее
-  // const authHeader = req.headers.authorization || '';
-  // if (authHeader.startsWith('Bearer ')) {
-  //   const token = authHeader.split(' ')[1];
-  //   try {
-  //     if (token) {
-  //       const decoded = verifyToken(token);
-  //       if (decoded) {
-  //         // ВАЖНО: берем decoded.id (как в логе), а не ищем в базе
-  //         userId = decoded.id; 
-  //       }
-
-  //     }
-  //   } catch (err) {
-  //     console.error("JWT verification failed", err);
-  //   }
-  // }
-  // 3. Теперь userId доступен здесь для лоадеров
-  return { 
-    userId, 
-    loaders: createLoaders(userId || undefined) 
-  };
-},
+    context: async ({ req }): Promise<MyContext> => {
+        const userId = getUserIdFromHeader(req.headers.authorization);  
+    
+        return { 
+          userId, 
+          loaders: createLoaders(userId || undefined) 
+      };
+    },
 
   }),
 );
-const PORT = 7000;
+const PORT = env.PORT;
 
 // Now that our HTTP server is fully set up, we can listen to it.
 httpServer.listen(PORT, () => {
@@ -147,11 +128,11 @@ httpServer.listen(PORT, () => {
 // await mongoose.connect(uri, {dbName: "forum"}).
 // then(res => console.log("Connected to MongoDB_forum")).
 // catch(error => console.log(error))
-const uri = 'mongodb://127.0.0.1:27017';
+// const uri = process.env.MONGO_URI || 'mongodb://127.0.0.1:27017';
 
 async function connectDB() {
   try {
-    await mongoose.connect(uri, { dbName: "forum" });
+    await mongoose.connect(env.MONGO_URI, { dbName: "forum" });
     console.log("Connected to MongoDB_forum");
   } catch (error) {
     console.error("Connection error:", error);
