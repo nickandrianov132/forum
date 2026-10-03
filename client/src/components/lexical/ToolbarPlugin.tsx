@@ -4,9 +4,7 @@ import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext
 import { 
   $getSelection, 
   $isRangeSelection, 
-  FORMAT_TEXT_COMMAND,
-  REDO_COMMAND,
-  UNDO_COMMAND
+  FORMAT_TEXT_COMMAND
 } from 'lexical';
 import { $patchStyleText } from '@lexical/selection';
 import { $getNearestBlockElementAncestorOrThrow } from '@lexical/utils';
@@ -151,7 +149,7 @@ return (
       className={blockType === 'ul' ? "btn-active" : "btn"} 
       onClick={() => editor.dispatchCommand(INSERT_UNORDERED_LIST_COMMAND, undefined)}
     >
-      <svg className="toolbar-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+      <svg className="toolbar-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round">
         <line x1="9" y1="6" x2="20" y2="6"></line>
         <line x1="9" y1="12" x2="20" y2="12"></line>
         <line x1="9" y1="18" x2="20" y2="18"></line>

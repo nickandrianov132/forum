@@ -21,6 +21,7 @@ const config: CodegenConfig = {
                  useIndexSignature: true, 
                  scalars: {
                     ID: 'string',
+                    DateTime: 'Date',
                  },
                  useTypeImports: true, // <--- Добавьте эту строку
                  // Эта опция помогает правильно обрабатывать расширения в ESM

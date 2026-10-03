@@ -98,6 +98,7 @@ const UserAccountSettings = () => {
                         htmlFor="new-password"
                     >Change Password:</label>
                     <input
+                        id="new-password"
                         type="password"
                         className="w-60 text-lg tracking-widest px-3 py-1 rounded-lg bg-slate-950/40 border border-white/15 text-slate-100 focus:outline-hidden focus:border-sky-500/50 focus:bg-slate-950/60 font-medium transition-all"
                         minLength={4}

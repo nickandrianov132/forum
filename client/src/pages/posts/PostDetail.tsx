@@ -151,9 +151,9 @@ const PostDetail = () => {
             
             {/* Левая колонка: Автор / Аватар */}
             <div className="flex flex-col items-center justify-start p-5 w-full md:w-44 shrink-0 bg-slate-900/20 border-b md:border-b-0 md:border-r border-white/5">
-                <div className="relative group">
+                <div className="relative group flex items-center justify-center">
                     <img 
-                        className="w-20 h-20 md:w-24 md:h-24 rounded-full border-2 border-slate-700/50 object-cover bg-slate-800 shadow-md transition-transform group-hover:scale-105" 
+                        className="block w-20 h-20 md:w-24 md:h-24 rounded-full border-2 border-slate-700/50 object-cover bg-slate-800 shadow-md transition-transform group-hover:scale-105" 
                         src={post.user?.avatar || "https://placeholder.com"}
                         alt="Avatar"
                     />

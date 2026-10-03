@@ -1,5 +1,6 @@
 import "graphql-import-node";
 import { makeExecutableSchema } from "@graphql-tools/schema";
+import { GraphQLDateTime } from "graphql-scalars";
 
 import {
     resolvers as userResolvers,
@@ -25,7 +26,7 @@ import {
 
 const schema = makeExecutableSchema({
     typeDefs: [userTypeDefs, postTypeDefs, likeTypeDefs, dislikeTypeDefs, categoryTypeDefs],
-    resolvers: [userResolvers, postResolvers, likeResolvers, dislikeResolvers, categoryResolvers],
+    resolvers: [ { DateTime: GraphQLDateTime}, userResolvers, postResolvers, likeResolvers, dislikeResolvers, categoryResolvers],
 });
 
 export default schema;

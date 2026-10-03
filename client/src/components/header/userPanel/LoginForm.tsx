@@ -12,15 +12,17 @@ interface LoginFormProps {
 const LoginForm = ({onClose}: LoginFormProps) => {
   const dispatch = useAppDispatch();
   const client = useApolloClient();
+  const [clientError, setClientError] = useState('');
   const [formData, setFormData] = useState({ login: '', password: '' });
   // useMutation возвращает кортеж - функцию для вызова и объект с состоянием
-  const [loginMutation, { loading, error }] = useMutation(LOGIN_USER, {
+  const [loginMutation, { loading, error: serverError }] = useMutation(LOGIN_USER, {
 
     /// Переделаный под 2 токена рефреш и auth/refresh токены
     onCompleted: async (data: any) => {
       const { accessToken, refreshToken, user } = data.loginUser;
+      localStorage.removeItem('token');
+      localStorage.removeItem('refreshToken')
       await client.clearStore(); 
-      localStorage.clear();
       // 1. Сохраняем оба токена в LocalStorage для Apollo Links
       localStorage.setItem('token', accessToken);
       localStorage.setItem('refreshToken', refreshToken);
@@ -28,17 +30,24 @@ const LoginForm = ({onClose}: LoginFormProps) => {
       // 2. В Redux идёт только Access Token и весь объект пользователя
     dispatch(setCredentials({ accessToken, refreshToken, user }));
     onClose();  
-    console.log('Успешный вход! Токены сохранены.');
+    console.log('Saccessfully loged-in.');
     console.log(accessToken);
     },
-    onError: (err) => console.error("Ошибка входа:", err.message)
+    onError: (err) => console.error("Log-in error:", err.message)
   });
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+
+    if (!formData.login.trim() || !formData.password.trim()) {
+      setClientError("Please, fill-up all fields!")
+    }
+
     await loginMutation({ variables: formData });
     await client.resetStore();
   };
+
+  const displayError = clientError || serverError?.message;
 
   return (
     <div className="modal-container" onClick={onClose}>
@@ -51,19 +60,22 @@ const LoginForm = ({onClose}: LoginFormProps) => {
             className='form-input' 
             type="text" 
             placeholder="Login..." 
+            value={formData.login}
             onChange={(e) => setFormData({...formData, login: e.target.value})} 
           />
           <input
             id='password'
             className='form-input' 
             type="password" 
+            autoComplete='current-password' // для менеджера паролей
             placeholder="Password" 
+            value={formData.password}
             onChange={(e) => setFormData({...formData, password: e.target.value})} 
           />
           <button className='login-btn' type="submit" disabled={loading}>
             {loading ? 'Login...' : 'Login'}
           </button>
-          {error && <p className='form_error_p' >{error.message}</p>}
+          {displayError && <p className='form_error_p' >{displayError}</p>}
         </form>
       </div>
     </div>

@@ -11,7 +11,7 @@ import bcrypt from 'bcrypt';
 
 const generateJwt = (login: string, id: string) => {
   return jwt.sign(
-    { login, id }, // убрал пароль
+    { login, id }, 
     env.JWT_SECRET_KEY || 'SECRET',
     { expiresIn: '5m' }
   );
@@ -19,7 +19,7 @@ const generateJwt = (login: string, id: string) => {
 const generateRefreshToken = (id: string) => {
   return jwt.sign(
     { id },
-    env.JWT_REFRESH_SECRET || 'REFRESH_SECRET', // Используй другой секрет!
+    env.JWT_REFRESH_SECRET || 'REFRESH_SECRET', 
     { expiresIn: '15d' } // Длинный срок
   );
 };
@@ -85,14 +85,15 @@ const resolvers: Resolvers<MyContext> = {
                 });
             }
         },
-        addUser: async (_, { login, password, email }) => {
+        addUser: async (_, { login, password, email, avatar }) => {
             // Хэшируем пароль перед сохранением (salt rounds = 10)
             const hashedPassword = await bcrypt.hash(password, 10);
             
             const newUser = new UserModel({
                 login, 
                 password: hashedPassword, // сохраняем хэш
-                email
+                email,
+                avatar
             });
 
             await newUser.save();

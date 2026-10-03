@@ -39,7 +39,7 @@ a:focus {
 a {
   text-decoration: none;
   cursor: pointer;
-  color: inherit;
+  /* color: inherit; */
 }
 
 ul {

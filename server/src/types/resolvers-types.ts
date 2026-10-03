@@ -1,4 +1,4 @@
-import type { GraphQLResolveInfo } from 'graphql';
+import type { GraphQLResolveInfo, GraphQLScalarType, GraphQLScalarTypeConfig } from 'graphql';
 import type { IUser } from '../models/Users.js';
 import type { IPost } from '../models/Posts.js';
 import type { ICategory } from '../models/Category.js';
@@ -21,6 +21,7 @@ export type Scalars = {
   Boolean: { input: boolean; output: boolean; }
   Int: { input: number; output: number; }
   Float: { input: number; output: number; }
+  DateTime: { input: Date; output: Date; }
 };
 
 export type AuthResponse = {
@@ -205,6 +206,7 @@ export type UpdateUserInput = {
 export type User = {
   __typename?: 'User';
   avatar: Scalars['String']['output'];
+  createdAt: Scalars['DateTime']['output'];
   dislike?: Maybe<Array<Dislike>>;
   email: Scalars['String']['output'];
   id: Scalars['ID']['output'];
@@ -290,6 +292,7 @@ export type ResolversTypes = ResolversObject<{
   AuthResponse: ResolverTypeWrapper<Omit<AuthResponse, 'user'> & { user: ResolversTypes['User'] }>;
   Boolean: ResolverTypeWrapper<Scalars['Boolean']['output']>;
   Category: ResolverTypeWrapper<ICategory>;
+  DateTime: ResolverTypeWrapper<Scalars['DateTime']['output']>;
   Dislike: ResolverTypeWrapper<IDislike>;
   ID: ResolverTypeWrapper<Scalars['ID']['output']>;
   Int: ResolverTypeWrapper<Scalars['Int']['output']>;
@@ -307,6 +310,7 @@ export type ResolversParentTypes = ResolversObject<{
   AuthResponse: Omit<AuthResponse, 'user'> & { user: ResolversParentTypes['User'] };
   Boolean: Scalars['Boolean']['output'];
   Category: ICategory;
+  DateTime: Scalars['DateTime']['output'];
   Dislike: IDislike;
   ID: Scalars['ID']['output'];
   Int: Scalars['Int']['output'];
@@ -332,6 +336,10 @@ export type CategoryResolvers<ContextType = MyContext, ParentType extends Resolv
   posts?: Resolver<Array<ResolversTypes['Post']>, ParentType, ContextType>;
   slug?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
 }>;
+
+export interface DateTimeScalarConfig extends GraphQLScalarTypeConfig<ResolversTypes['DateTime'], any> {
+  name: 'DateTime';
+}
 
 export type DislikeResolvers<ContextType = MyContext, ParentType extends ResolversParentTypes['Dislike'] = ResolversParentTypes['Dislike']> = ResolversObject<{
   createdAt?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -393,6 +401,7 @@ export type QueryResolvers<ContextType = MyContext, ParentType extends Resolvers
 
 export type UserResolvers<ContextType = MyContext, ParentType extends ResolversParentTypes['User'] = ResolversParentTypes['User']> = ResolversObject<{
   avatar?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  createdAt?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   dislike?: Resolver<Maybe<Array<ResolversTypes['Dislike']>>, ParentType, ContextType>;
   email?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
@@ -404,6 +413,7 @@ export type UserResolvers<ContextType = MyContext, ParentType extends ResolversP
 export type Resolvers<ContextType = MyContext> = ResolversObject<{
   AuthResponse?: AuthResponseResolvers<ContextType>;
   Category?: CategoryResolvers<ContextType>;
+  DateTime?: GraphQLScalarType;
   Dislike?: DislikeResolvers<ContextType>;
   Like?: LikeResolvers<ContextType>;
   Mutation?: MutationResolvers<ContextType>;

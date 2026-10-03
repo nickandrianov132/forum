@@ -68,7 +68,7 @@
 }
 
 @utility header-container {
-  @apply flex flex-row bg-gray-800 p-4 w-full ;
+  @apply flex items-center bg-gray-800 p-2 h-22 w-full ;
 }
 
 @utility nav-header {
@@ -96,6 +96,9 @@
   @apply flex flex-col w-fit h-fit p-4 
 }
 
+@utility form-label {
+  @apply text-slate-300 mr-4 text-sm
+}
 
 @utility modal-container {
   @apply fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4
@@ -106,33 +109,83 @@
 @utility close-btn {
   @apply absolute top-0 right-2 text-slate-400 hover:text-white transition-colors cursor-pointer
 }
+
 @utility form-input {
   @apply w-40 bg-slate-950/60 text-xs text-slate-100 caret-white border border-slate-800 rounded-sm py-1 px-1 outline-none transition-all duration-200 not-last:mb-2;
 
   &::placeholder {
     @apply text-slate-500;
   }
- /* 🛠️ ИСПРАВЛЕНИЕ АВТОЗАПОЛНЕНИЯ БРАУЗЕРА */
-  @variant autofill {
-    /* Сбрасываем системный фон и текст на наши цвета темной темы */
-    box-shadow: 0 0 0px 1000px var(--color-slate-950) inset !important;
-    -webkit-text-fill-color: var(--color-slate-100) !important;
-    &:focus {
-    /* Меняем цвет рамки и добавляем свечение (ring), как при обычном фокусе */
-    border-color: rgba(59, 130, 246, 0.8) !important; /* аналог blue-500/80 */
-    box-shadow: 0 0 0px 1000px var(--color-slate-950) inset, 
-                0 0 0px 2px rgba(59, 130, 246, 0.2) !important; /* добавляем ring-2 blue-500/20 поверх заливки */
-  }
-  }
-  &:autofill:focus {
-    /* Меняем цвет рамки и добавляем свечение (ring), как при обычном фокусе */
-    border-color: rgba(59, 130, 246, 0.8) !important; /* аналог blue-500/80 */
-    box-shadow: 0 0 0px 1000px var(--color-slate-950) inset, 
-                0 0 0px 2px rgba(59, 130, 246, 0.2) !important; /* добавляем ring-2 blue-500/20 поверх заливки */
-  }
+
   @variant focus {
     @apply bg-slate-800 border-blue-500/80 ring-2 ring-blue-500/20;
   }
+}
+
+input.form-input:-webkit-autofill,
+input.form-input:-webkit-autofill:hover {
+  /* Заливаем сплошным темным цветом, идеально сливающимся с формой */
+  -webkit-box-shadow: 0 0 0px 1000px #0d1527 inset !important; 
+
+  /* Цвет текста slate-100 */
+  -webkit-text-fill-color: #f1f5f9 !important;
+  /* Цвет каретки */
+  caret-color: #ffffff !important;
+  /* Дефолтная рамка slate-800 */
+  border-color: #1e293b !important;
+}
+
+input.form-input:-webkit-autofill:focus {
+  /* При фокусе меняем заливку на цвет slate-800 */
+  -webkit-box-shadow: 0 0 0px 1000px #1e293b inset !important; 
+
+  /* Синяя рамка blue-500/80 */
+  border-color: rgba(59, 130, 246, 0.8) !important;
+  -webkit-text-fill-color: #f1f5f9 !important;
+  caret-color: #ffffff !important;
+}
+
+/* 📦 ВНЕШНИЙ КОНТЕЙНЕР (Оставляем паддинги!) */
+@utility form-input-container {
+  @apply w-40 bg-slate-950/60 border border-slate-800 rounded-sm py-1 px-1 transition-all duration-200 flex items-center overflow-hidden;
+
+  /* Состояние фокуса для контейнера */
+  &:focus-within {
+    @apply bg-slate-800 border-blue-500/80 ring-2 ring-blue-500/20;
+  }
+}
+
+/* ✒️ ВНУТРЕННИЙ ИНПУТ */
+.form-input-clean {
+  @apply w-full bg-transparent text-sm text-slate-100 caret-white outline-none border-none p-0 m-0;
+
+  &::placeholder {
+    @apply text-slate-500;
+  }
+}
+
+/* 🛠️ ИСПРАВЛЕНИЕ АВТОЗАПОЛНЕНИЯ (СЛИЯНИЕ ЦВЕТОВ) */
+input.form-input-clean:-webkit-autofill,
+input.form-input-clean:-webkit-autofill:hover {
+  /* #0d1527 — это точный цвет bg-slate-950/60 поверх bg-slate-800. 
+     Теперь тень инпута сольется с фоном контейнера, и темная рамка исчезнет! */  
+  -webkit-box-shadow: 0 0 0px 1000px #0d1527 inset !important;
+  box-shadow: 0 0 0px 1000px #0d1527 inset !important;
+  
+  -webkit-text-fill-color: #f1f5f9 !important;
+  caret-color: #ffffff !important;
+  border: none !important;
+}
+
+/* Когда инпут в автозаполнении ФОКУСИРУЕТСЯ */
+.form-input-container:focus-within input.form-input-clean:-webkit-autofill {
+  /* Когда контейнер становится bg-slate-800, мы красим тень инпута в точный цвет #1e293b (slate-800) */
+  -webkit-box-shadow: 0 0 0px 1000px #1e293b inset !important;
+  box-shadow: 0 0 0px 1000px #1e293b inset !important;
+  
+  -webkit-text-fill-color: #f1f5f9 !important;
+  caret-color: #ffffff !important;
+  border: none !important;
 }
 
 @utility login-btn {
@@ -168,7 +221,7 @@
 }
 
 @utility toolbar-svg {
-  @apply text-current w-4 h-4
+  @apply text-current w-6 h-6
 }
 
 /* Стили для самого текстового поля Lexical */
@@ -341,3 +394,5 @@
     }
   }
 }
+
+

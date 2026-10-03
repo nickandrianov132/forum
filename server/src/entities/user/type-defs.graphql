@@ -1,8 +1,11 @@
+scalar DateTime
+
 type User {
     id: ID!
     login: String!
     email: String!
     avatar: String!
+    createdAt: DateTime!
     posts: [Post]
     likes: [Like!]
     dislike: [Dislike!]

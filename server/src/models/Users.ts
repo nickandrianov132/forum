@@ -10,7 +10,8 @@ const userSchema = new Schema({
     postsId: [{ type: mongoose.Types.ObjectId, ref: "Post" }],
     likesId: [{ type: mongoose.Types.ObjectId, ref: "Like" }],
     dislikesId: [{ type: mongoose.Types.ObjectId, ref: "Dislike" }]
-})
+}, { timestamps: true } // Автоматически добавит createdAt и updatedAt с типом Date
+)
 
 export type IUser = InferSchemaType<typeof userSchema> & { _id: Types.ObjectId; id: string; avatar: string; };
 
