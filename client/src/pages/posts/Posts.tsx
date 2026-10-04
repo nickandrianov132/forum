@@ -147,7 +147,7 @@ const Posts = () => {
             <Link 
                 key={post.id}  
                 to={`/post/${categorySlug}/${post.id}`} 
-                className="group flex flex-col gap-2 p-4 rounded-xl bg-slate-900/40  border border-white/5 backdrop-blur-xs transition-all duration-200 hover:bg-slate-900/60 hover:border-white/10 hover:shadow-lg hover:-translate-y-0.5"
+                className="group flex flex-col gap-2 p-4 rounded-lg bg-slate-900/40  border border-white/5 backdrop-blur-xs transition-all duration-200 hover:bg-slate-900/60 hover:border-white/10 hover:shadow-lg hover:-translate-y-0.5"
             >
                 {/* Верхняя строка: Название и Дата */}
                 <div className="flex justify-between items-start gap-4">

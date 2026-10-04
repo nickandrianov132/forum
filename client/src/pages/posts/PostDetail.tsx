@@ -1,7 +1,6 @@
 import { useNavigate, useParams } from "react-router";
 import { GET_ONE_POST } from "../../graphql/querry/getOnePost.js";
 import { useMutation, useQuery } from "@apollo/client/react";
-import { POSTS_ROUTE } from "../../utils/constants.js";
 import { useAppSelector } from "../../store/hooks.js";
 import { ADD_LIKE } from "../../graphql/mutations/addLike.js";
 import { ADD_DISLIKE } from "../../graphql/mutations/addDislike.js";
@@ -106,34 +105,33 @@ const PostDetail = () => {
             setIsEdit(false);
         }
     };
-    // 1. Сначала обрабатываем состояние загрузки
+    // 1. Loading state
     if (loading) return (
-            /* Скелетон/Лоадер при загрузке данных */
-            <div className="flex flex-col gap-4 animate-pulse py-6">
-            <div className="h-10 w-31 bg-slate-800 rounded-md"></div>
-            <div className="h-50 w-215 bg-slate-800 rounded-xl"></div>
+            /* Skeleton */
+            <div className="flex flex-col animate-pulse gap-4 w-full max-w-4xl mx-auto p-4">
+                <div className="h-10 w-31 bg-slate-800 rounded-md"></div>
+                <div className="h-50 w-215 bg-slate-800 rounded-xl"></div>
             </div>
     );
 
-    // 2. Обрабатываем ошибку (если есть)
+    // 2. Error state
     if (error) {
         console.log(error);
         return <div>Error: {error.message}</div>;
     }
 
-    // 3. Проверяем наличие данных. После этого условия TS поймет, что data определена.
+    // 3. TS type guard for data
     if (!data || !data.post) {
         return <div>Post not found</div>;
     }
 
-    // Теперь здесь переменная post будет иметь четкий тип без undefined
+    // post without undefined here
     const { post } = data;
 
 
     return (
     <div className="post-detail">
-        
-        {/* Верхняя панель навигации (Кнопка назад) */}
+        {/* button <- Back  */}
         <div className="flex justify-between items-center">
             <button 
                 className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-slate-300 rounded-lg bg-slate-900/40 border border-white/5 hover:bg-slate-900/60 hover:text-white transition-all duration-200 cursor-pointer" 
@@ -146,10 +144,10 @@ const PostDetail = () => {
             </button>
         </div>
 
-        {/* Главная карточка просмотра/редактирования поста */}
+        {/* Main post card */}
         <div className="flex flex-col md:flex-row rounded-xl bg-slate-900/40 border border-white/5 backdrop-blur-xs overflow-hidden">
             
-            {/* Левая колонка: Автор / Аватар */}
+            {/* Left side: Avatar */}
             <div className="flex flex-col items-center justify-start p-5 w-full md:w-44 shrink-0 bg-slate-900/20 border-b md:border-b-0 md:border-r border-white/5">
                 <div className="relative group flex items-center justify-center">
                     <img 
@@ -167,10 +165,10 @@ const PostDetail = () => {
                 </span>
             </div>
 
-            {/* Правая колонка: Контент поста */}
+            {/* Right side: Content */}
             <div className="flex flex-col flex-auto min-w-0">
                 {isEdit ? (
-                    /* РЕЖИМ РЕДАКТИРОВАНИЯ */
+                    /* Editing */
                     <div className="flex flex-col gap-4 p-5">
                         <div className="flex flex-col gap-1.5">
                             <label htmlFor="title" className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
@@ -213,10 +211,10 @@ const PostDetail = () => {
                         </div>
                     </div>
                 ) : (
-                    /* РЕЖИМ ПРОСМОТРА */
+                    /* View */
                     <div className="flex flex-col h-full justify-between">
                         
-                        {/* Шапка поста */}
+                        {/* Post header */}
                         <div className="flex items-center justify-between px-5 py-4 border-b border-white/5 bg-slate-900/10 gap-4">
                             <h1 className="text-xl font-bold text-slate-100 tracking-wide leading-tight wrap-break-word">
                                 {post.title}
@@ -232,15 +230,15 @@ const PostDetail = () => {
                             )}
                         </div>
 
-                        {/* Тело поста */}
+                        {/* Post body */}
                         <div className="p-5 text-slate-300 text-base leading-relaxed flex-auto overflow-y-auto">
                             <LexicalHTMLRenderer jsonString={post.content} />
                         </div>
 
-                        {/* Подвал поста (Реакции) */}
+                        {/* Footer likes/dislikes */}
                         <div className="flex items-center justify-between px-5 py-3 bg-slate-950/20 border-t border-white/5">
                             <div className="flex items-center gap-3">
-                                {/* Лайк */}
+                                {/* Like */}
                                 <button 
                                     onClick={() => handleLike(post)} 
                                     className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium cursor-pointer transition-all ${
@@ -253,7 +251,7 @@ const PostDetail = () => {
                                     <span>{post.likesCount}</span>
                                 </button>
 
-                                {/* Дизлайк */}
+                                {/* Dislike */}
                                 <button 
                                     onClick={() => handleDislike(post)} 
                                     className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium cursor-pointer transition-all ${
@@ -268,7 +266,7 @@ const PostDetail = () => {
                             </div>
                             
                             <span className="text-[11px] text-slate-500">
-                                Global Community Forum
+                                MU Void Community Forum
                             </span>
                         </div>
 
@@ -278,89 +276,6 @@ const PostDetail = () => {
 
         </div>
     </div>
-        // <div className="post-detail">
-        //     <div className="flex justify-between items-center">
-        //         <button 
-        //             className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-slate-300 rounded-lg bg-slate-900/40 border border-white/5 hover:bg-slate-900/60 hover:text-white transition-all duration-200 cursor-pointer" 
-        //             onClick={() => navigate(`/posts/${categorySlug}`)}
-        //         >
-        //             <svg xmlns="http://w3.org" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4">
-        //                 <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18" />
-        //             </svg>
-        //             <span>Back to list</span>
-        //         </button>
-
-        //     </div>
-        //     <div className="flex flex-col text-sm flex-auto">
-        //     { isEdit ? (
-                
-        //         <div className="flex flex-col items-start justify-start p-4">
-        //             <label htmlFor="title">Title of Post:</label>
-        //             <input
-        //                 id="title" 
-        //                 type="text" 
-        //                 // className="editor_title_input"
-        //                 className="editor-title-input"
-        //                 value={postTitle}
-        //                 onChange={(e) => setPostTitle(e.target.value)}
-        //             ></input>
-        //             {/* ЗАМЕНЯЕМ textarea НА LEXICAL */}
-        //             <Editor 
-        //                 initialContent={post.content} 
-        //                 onChange={(jsonString) => setPostContent(jsonString)} 
-        //             />
-        //             {/* <textarea 
-        //                 defaultValue={post.content}
-        //                 onChange={(e) => setPostContent(e.target.value)}
-        //             ></textarea> */}
-        //             <button 
-        //                 className="px-3 py-1.5 inline-flex h-fit border border-transparent bg-blue-700 text-shadow-sm/20 text-shadow-emerald-950 text-gray-100 rounded-md transition-colors active:bg-blue-500 hover:bg-blue-600 hover:border-sky-500 hover:text-white hover:shadow-md hover:shadow-blue-500/30"
-        //                 onClick={() => handleUpdatePost(post.id, postTitle, postContent)}
-        //             >Save</button>
-        //         </div>
-        //         )
-        //         : 
-        //         (
-        //         <div>
-        //             <div className="flex items-center justify-around bg-gray-400/30 px-2 py-2.5 box-border border-b border-slate-400/40">
-        //                 <h1 className="post-title">{post.title}</h1>
-        //                 {post.isOwner && accessToken.length != 0 &&
-        //                 <button 
-        //                     className="w-fit py-1 px-2.5 bg-slate-400 text-sm text-gray-800 border-transparent rounded-md transition-all hover:bg-emerald-400 hover:text-white hover:text-shadow-2xs hover:text-shadow-gray-800 active:scale-95"
-        //                     onClick={() => setIsEdit(isEdit => !isEdit)}
-        //                 >✒️edit</button>
-        //             }
-        //             </div>
-        //             {/* ЗАМЕНЯЕМ <p> НА РЕНДЕРЕР HTML */}
-        //             <LexicalHTMLRenderer jsonString={post.content} />
-        //             {/* <p className="post_content_p">{postContent}</p> */}
-
-        //         </div>
-        //         )
-        //     }
-        //     <div className="post-footer">
-        //         <div className="flex mb-3">
-        //                 {/* Лайк */}
-        //                     <div onClick={() => handleLike(post)} className="flex items-center text-md mr-2">
-        //                         {post.isLiked ? <FaHeart className="like-red"/> : <FaHeart className="like-gray"/>}
-        //                         <p className="text-xs">{post.likesCount}</p>
-        //                     </div>
-        //                 {/* Дизлайк */}
-        //                     <div onClick={() => handleDislike(post)} className="flex items-center text-md">
-        //                         {post.isDisliked ? <BiSolidDislike className="dislike-blue" /> : <BiSolidDislike className="dislike-gray"/>}
-        //                         <p className="text-xs">{post.dislikesCount}</p>
-        //                     </div>  
-        //         </div>
-        //         {/* <span className="like_span">Likes: {post.likesCount}</span>
-        //         <span className="dislike_span">Dislikes: {post.dislikesCount}</span> */}
-
-        //     </div>
-        //     <button 
-        //         className="post-btn" 
-        //         onClick={() => navigate(`/posts/${categorySlug}`)}
-        //     >Back</button>
-        // </div>
-        // </div>
     );
 }
 

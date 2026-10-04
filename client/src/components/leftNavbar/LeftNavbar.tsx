@@ -14,15 +14,13 @@ const LeftNavbar = () => {
     return (
         <aside className="left-bar">
             <nav className="bg-gray-800 p-4 rounded-l-lg h-fit lg:h-full border border-slate-400/20">
-                <ul className="text-gray-300 text-sm">
-                 {/* Перебираем категории из базы данных */}
+                <ul className="text-gray-300 text-sm w-full">
                     {data?.categories.map((category: any) => (
-                        <li key={category.id} className="nav-link">
-                            {/* Формируем динамический URL на основе slug категории */}
+                        <li key={category.id}>
                             <NavLink 
                                 to={`/posts/${category.slug}`}
                                 className={({ isActive }) => 
-                                    isActive ? "text-amber-300 font-bold" : "text-gray-300 hover:text-white"
+                                    `nav-link-base ${isActive ? "nav-link-active" : ""}`
                                 }
                             >
                                 {category.name}
@@ -32,28 +30,6 @@ const LeftNavbar = () => {
                 </ul>
             </nav>
         </aside>
-        // <aside className="left-bar">
-        //     <nav className="bg-gray-800 p-4 rounded-l-md h-fit lg:h-full">
-        //         <ul className="text-gray-300 text-sm">
-        //             <li className='nav-link after:text-amber-300'>
-        //                 <NavLink to={NEWS_ROUTE}>
-        //                     News
-        //                 </NavLink>
-        //             </li>
-        //             <li className='nav-link'>
-        //                 <NavLink to={POSTS_ROUTE}>
-        //                     Posts
-        //                 </NavLink>
-        //             </li>
-        //             <li className='nav-link'>
-        //                 <NavLink to={GUIDES_ROUTE}>
-        //                     Guides
-        //                 </NavLink>
-        //             </li>
-        //         </ul>
-        //     </nav>
-        // </aside>
-
     );
 }
 

@@ -5,20 +5,14 @@ import { useMutation } from "@apollo/client/react";
 import { ADD_USER } from "../graphql/mutations/createUser";
 import Spinner from "../components/Spinner";
 
-const baseAvatarUrl = "https://bqezaqgwkajiuqvwsuye.supabase.co/storage/v1/object/public/forum-media/avatars/user_icon2.png"
+// const baseAvatarUrl = "https://bqezaqgwkajiuqvwsuye.supabase.co/storage/v1/object/public/forum-media/avatars/user_icon2.png"
 
 const Registration = () => {
     const [isUploading, setIsUploading] = useState(false);
     const [errors, setErrors] = useState<Partial<Record<keyof RegistrationFormData, string>>>({})
+    const [isSuccess, setIsSuccess] = useState(false);
     const [avatarUrl, setAvatarUrl] = useState("");
-    const [addUerMutation, {error: userError, loading: userLoading}] = useMutation(ADD_USER, {
-        onCompleted: () => {
-            setAvatarUrl("");
-        },
-        onError: (err) => {
-            console.log(`Server error: ${err.message}`);
-        }
-    })
+    const [addUerMutation, {error: userError, loading: userLoading}] = useMutation(ADD_USER);
 
     const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
         const files = event.target.files;
@@ -36,9 +30,10 @@ const Registration = () => {
         }
     };
 
-    const handleSubmit = (e: SubmitEvent<HTMLFormElement>) => {
+    const handleSubmit = async (e: SubmitEvent<HTMLFormElement>) => {
         e.preventDefault();
         setErrors({});
+        setIsSuccess(false);
 
         const formData = new FormData(e.currentTarget);
         
@@ -64,20 +59,43 @@ const Registration = () => {
 
         const validatedData: RegistrationFormData = result.data;
         console.log("Valid data is ready for send:", validatedData);
-
-        addUerMutation({
-            variables: {
-                ...validatedData,
-            }
-        })
+        try {
+            await addUerMutation({
+                variables: {
+                    ...validatedData,
+                }
+            })
+            setIsSuccess(true);
+            
+            
+        } catch (err: any) {
+            console.log(`Server error: ${err.message}`);
+        }
 
     }
 
-    
-    if (userError) return (<div>{userError.message}</div>)
 
     return (
-        <div className="flex items-center justify-center bg-slate-800 rounded-lg py-4">
+        <div className="flex relative flex-col items-center justify-center w-full bg-slate-800 rounded-lg py-4">
+            {isSuccess && (
+                <div className="absolute inset-0 z-10 flex items-center justify-center bg-slate-950/40 backdrop-blur-xs rounded-xl transition-all duration-300">
+                    <div className="flex flex-col items-center justify-between p-6 border border-emerald-500/20 rounded-xl bg-slate-900 min-w-72 min-h-40 max-h-fit shadow-2xl shadow-emerald-950/60">
+                        <div className="flex items-center justify-center w-10 h-10 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 mb-2">
+                            <svg xmlns="http://w3.org" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-5 h-5">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+                            </svg>
+                        </div>
+                        <span className="text-sm font-medium text-slate-200 text-center mb-5">
+                            Account successfully created!
+                        </span>
+                        <button 
+                            className="w-full inline-flex justify-center items-center h-9 font-semibold text-sm bg-emerald-500 text-slate-950 rounded-lg cursor-pointer transition-all hover:bg-emerald-400 hover:shadow-lg hover:shadow-emerald-500/20 active:scale-98"
+                            onClick={() => setIsSuccess(false)}
+                        >Back to Login
+                        </button>
+                    </div>
+                </div> 
+            )}
             {userLoading ?
                 <Spinner />
                 :
@@ -93,6 +111,7 @@ const Registration = () => {
                                     type="text" 
                                     name="login"
                                     autoComplete="off"
+                                    required
                                 />
                             </div>
                             {!errors.login && <p className="text-red-400 text-xs mt-1 ml-24">{errors.login}</p>}
@@ -169,9 +188,14 @@ const Registration = () => {
                     </div>
                     <button 
                         type="submit" 
-                        className="inline-flex h-fit items-center justify-center rounded-md border border-cyan-500/30 bg-slate-950/40 bg-linear-to-b from-slate-900/50 to-slate-950/80 px-6 py-2.5 text-sm font-semibold uppercase tracking-wider text-cyan-400 shadow-[inset_0_1px_1px_rgba(255,255,255,0.1)] backdrop-blur-md transition-all duration-300 ease-in-out hover:border-cyan-400 hover:text-white hover:shadow-[0_0_15px_rgba(6,182,212,0.4),inset_0_1px_2px_rgba(255,255,255,0.2)] active:scale-[0.98] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-500"
+                        className="inline-flex h-fit max-w-50 items-center justify-center rounded-md border border-cyan-500/30 bg-slate-950/40 bg-linear-to-b from-slate-900/50 to-slate-950/80 px-6 py-2.5 text-sm font-semibold uppercase tracking-wider text-cyan-400 shadow-[inset_0_1px_1px_rgba(255,255,255,0.1)] backdrop-blur-md transition-all duration-300 ease-in-out hover:border-cyan-400 hover:text-white hover:shadow-[0_0_15px_rgba(6,182,212,0.4),inset_0_1px_2px_rgba(255,255,255,0.2)] active:scale-[0.98] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-500"
                     >Register</button>
                 </form>
+            }
+            {userError &&
+                <span 
+                    className="mt-1 ml-4 text-xs font-medium text-rose-500"
+                >{userError.message}</span>
             }
         </div>
     );

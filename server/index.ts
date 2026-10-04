@@ -4,7 +4,7 @@ import mongoose from "mongoose";
 import dns from 'node:dns/promises';
 dns.setDefaultResultOrder('ipv4first');
 dns.setServers(['8.8.8.8', '1.1.1.1']);
-
+import { GraphQLError } from "graphql";
 /// for Subscriptions Http and WebSockets:
 import { createServer } from 'http';
 import { ApolloServerPluginDrainHttpServer } from '@apollo/server/plugin/drainHttpServer';
@@ -76,6 +76,30 @@ const serverCleanup = useServer(
 
 const server = new ApolloServer({
   schema,
+    // Перехватчик ошибок для Apollo Server
+  formatError: (formattedError, error: any) => {
+    const originalError = error?.originalError;
+
+    // Проверка ошибки дублирования MongoDB (E11000)
+    if (originalError && originalError.code === 11000) {
+      const keyValue = originalError.keyValue || {};
+      const field = Object.keys(keyValue)[0] || "field";
+
+      // Возвращаем строго отформатированный объект GraphQLFormattedError
+      return {
+        ...formattedError, // сохраняем базовые свойства (path, locations), если они есть
+        message: `This ${field} already exist!`,
+        extensions: {
+          ...formattedError.extensions,
+          code: 'BAD_USER_INPUT',
+          argumentName: field,
+        }
+      };
+    }
+
+    // Во всех остальных случаях возвращаем стандартную ошибку без изменений
+    return formattedError;
+  },
   plugins: [
     // Proper shutdown for the HTTP server.
     ApolloServerPluginDrainHttpServer({ httpServer }),

@@ -13,15 +13,17 @@ export async function uploadMediaFile(
   entityId: string
 ): Promise<string | null> {
   try {
-    const fileExtension = file.name.split('.').pop() || 'jpg';
+    // const fileExtension = file.name.split('.').pop() || 'jpg';
     // Путь внутри бакета: "avatars/user123.png" или "video_previews/video456.jpg"
-    const filePath = `${type}/${entityId}.${fileExtension}`;
+    // const filePath = `${type}/${entityId}.${fileExtension}`;
+    const filePath = `${type}/${entityId}`;
 
     // 1. Загружаем файл в бакет 'forum-media'
     const { error } = await supabase.storage
       .from('forum-media')
       .upload(filePath, file, {
-        upsert: true // Перезапишет старый файл, если у пользователя изменился аватар
+        upsert: true, // Перезаписывает старый файл, если у пользователя изменился аватар
+        contentType: file.type // Явно передает MIME-type (jpg, png etc.)
       });
 
     if (error) throw error;

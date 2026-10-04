@@ -32,8 +32,10 @@ const Header = () => {
                         <LoginBtn setLoginForm={setIsLoginFormOpen} />
                         <Link 
                             to={USER_REGISTRATION}
-                            className="text-slate-300 text-sm hover:text-white" 
-                        >Register</Link>
+                            className="relative inline-flex items-center text-xs font-medium text-cyan-400/80 hover:text-cyan-400 transition-colors duration-200 py-1 px-1.5 cursor-pointer group focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500/70 focus-visible:rounded-md active:scale-[101%]" 
+                        >Register
+                        <span className="absolute bottom-0 left-0 right-0 h-px bg-cyan-400 shadow-[0_1px_6px_rgba(34,211,238,0.8)] scale-x-0 group-hover:scale-x-100 transition-transform duration-200 origin-center" />
+                        </Link>
                     </div>
                 }
             </nav>

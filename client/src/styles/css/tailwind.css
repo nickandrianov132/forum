@@ -78,9 +78,52 @@
     @apply w-full;
   }
 }
+
+/* Базовый класс для неактивных категорий */
+@utility nav-link-base {
+  display: flex;
+  align-items: center;
+  padding: 0.625rem 1.25rem;
+  border-radius: 0.25rem; 
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #94a3b8;
+  border-left: 3px solid transparent; /* Заготовка под левую линию */
+  transition: all 0.2s ease-in-out;
+
+  @variant hover {
+    color: #ffffff;
+    background-color: rgba(255, 255, 255, 0.03);
+  }
+}
+
+/* Класс для активной категории с эффектом растворения */
+@utility nav-link-active {
+  color: #ffffff !important;
+  
+  /* Скругляем только левые углы, так как справа полоса уходит в бесконечность */
+  border-top-right-radius: 0px;
+  border-bottom-right-radius: 0px;
+
+  /* Яркий левый акцент в тон кнопки Category */
+  border-left-color: #304ef6; 
+
+  /* Градиент слева направо: начинается с сине-фиолетового и полностью исчезает */
+  background: linear-gradient(
+    90deg, 
+    rgba(37, 99, 235, 0.4) 0%,     /* Синий (#2563eb) */
+    rgba(124, 58, 237, 0.15) 40%,  /* Фиолетовый (#7c3aed) */
+    rgba(124, 58, 237, 0) 100%     /* Растворение в фоне */
+  );
+  
+  /* Мягкая тень только у левого (яркого) края */
+  box-shadow: -4px 0 12px -2px rgba(37, 99, 235, 0.2);
+}
+
+/* 
 @utility nav-link {
   @apply hover:text-blue-400; 
-}
+} */
 @utility section-news {
   @apply flex flex-col w-auto
 }
@@ -93,7 +136,7 @@
 }
 
 @utility login-form {
-  @apply flex flex-col w-fit h-fit p-4 
+  @apply flex flex-col w-fit h-fit p-4
 }
 
 @utility form-label {
@@ -104,14 +147,14 @@
   @apply fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4
 }
 @utility modal-content {
-  @apply relative flex  flex-col items-center w-fit max-w-md bg-slate-900 border border-white/10 rounded-xl p-4 shadow-2xl
+  @apply relative flex  flex-col items-center w-62 max-w-md bg-slate-900 border border-white/10 rounded-xl p-4 shadow-2xl
 }
 @utility close-btn {
   @apply absolute top-0 right-2 text-slate-400 hover:text-white transition-colors cursor-pointer
 }
 
 @utility form-input {
-  @apply w-40 bg-slate-950/60 text-xs text-slate-100 caret-white border border-slate-800 rounded-sm py-1 px-1 outline-none transition-all duration-200 not-last:mb-2;
+  @apply w-full pl-9 mb-3 bg-slate-950/60 text-xs text-slate-100 caret-white border border-slate-800 rounded-sm py-1 px-1 outline-none transition-all duration-200;
 
   &::placeholder {
     @apply text-slate-500;
@@ -147,7 +190,7 @@ input.form-input:-webkit-autofill:focus {
 
 /* 📦 ВНЕШНИЙ КОНТЕЙНЕР (Оставляем паддинги!) */
 @utility form-input-container {
-  @apply w-40 bg-slate-950/60 border border-slate-800 rounded-sm py-1 px-1 transition-all duration-200 flex items-center overflow-hidden;
+  @apply min-w-45 max-w-fit mr-2 bg-slate-950/60 border border-slate-800 rounded-sm py-2 px-1.5 transition-all duration-200 flex items-center overflow-hidden;
 
   /* Состояние фокуса для контейнера */
   &:focus-within {
@@ -157,7 +200,7 @@ input.form-input:-webkit-autofill:focus {
 
 /* ✒️ ВНУТРЕННИЙ ИНПУТ */
 .form-input-clean {
-  @apply w-full bg-transparent text-sm text-slate-100 caret-white outline-none border-none p-0 m-0;
+  @apply w-full bg-transparent text-xs text-slate-100 caret-white outline-none border-none p-0 m-0;
 
   &::placeholder {
     @apply text-slate-500;
@@ -189,12 +232,30 @@ input.form-input-clean:-webkit-autofill:hover {
 }
 
 @utility login-btn {
-  @apply mx-auto px-2 py-1 w-fit text-sm text-white rounded-sm border border-slate-400; 
+  @apply w-full mx-auto mt-5 px-5 py-2.5 text-sm font-semibold text-white rounded-md 
+         bg-linear-to-r from-blue-600 to-indigo-600 
+         shadow-md shadow-blue-500/20 
+         transition-all duration-300 ease-out cursor-pointer;
 
   @variant hover {
-    @apply text-shadow-all text-shadow-amber-50;
+    @apply from-blue-500 to-indigo-500 
+           shadow-lg shadow-blue-500/30 
+           px-6;
+  }
+
+  @variant focus {
+    @apply outline-none ring-2 ring-blue-500 ring-offset-2 ring-offset-zinc-900;
+  }
+
+  @variant active {
+    @apply from-blue-700 to-indigo-700 shadow-sm;
+  }
+
+  @variant disabled {
+    @apply opacity-50 pointer-events-none;
   }
 }
+
 
 @utility editor-container {
   @apply flex flex-col w-full h-fit overflow-hidden border border-white/5 rounded-lg bg-slate-950/20 backdrop-blur-xs focus-within:border-sky-500/30 transition-all
