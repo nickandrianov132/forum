@@ -143,6 +143,12 @@ export type MutationUpdateUserArgs = {
   input: UpdateUserInput;
 };
 
+export type PaginatedPosts = {
+  __typename?: 'PaginatedPosts';
+  posts: Array<Post>;
+  totalCount: Scalars['Int']['output'];
+};
+
 export type Post = {
   __typename?: 'Post';
   category: Category;
@@ -165,8 +171,8 @@ export type Query = {
   categoryBySlug?: Maybe<Category>;
   me?: Maybe<User>;
   post?: Maybe<Post>;
-  posts: Array<Post>;
-  postsByCategory: Array<Post>;
+  posts: PaginatedPosts;
+  postsByCategory: PaginatedPosts;
   user?: Maybe<User>;
   users: Array<User>;
 };
@@ -187,8 +193,16 @@ export type QueryPostArgs = {
 };
 
 
+export type QueryPostsArgs = {
+  limit: Scalars['Int']['input'];
+  offset: Scalars['Int']['input'];
+};
+
+
 export type QueryPostsByCategoryArgs = {
-  categoryId: Scalars['ID']['input'];
+  limit: Scalars['Int']['input'];
+  offset: Scalars['Int']['input'];
+  slug: Scalars['String']['input'];
 };
 
 
@@ -298,6 +312,7 @@ export type ResolversTypes = ResolversObject<{
   Int: ResolverTypeWrapper<Scalars['Int']['output']>;
   Like: ResolverTypeWrapper<ILike>;
   Mutation: ResolverTypeWrapper<Record<PropertyKey, never>>;
+  PaginatedPosts: ResolverTypeWrapper<Omit<PaginatedPosts, 'posts'> & { posts: Array<ResolversTypes['Post']> }>;
   Post: ResolverTypeWrapper<IPost>;
   Query: ResolverTypeWrapper<Record<PropertyKey, never>>;
   String: ResolverTypeWrapper<Scalars['String']['output']>;
@@ -316,6 +331,7 @@ export type ResolversParentTypes = ResolversObject<{
   Int: Scalars['Int']['output'];
   Like: ILike;
   Mutation: Record<PropertyKey, never>;
+  PaginatedPosts: Omit<PaginatedPosts, 'posts'> & { posts: Array<ResolversParentTypes['Post']> };
   Post: IPost;
   Query: Record<PropertyKey, never>;
   String: Scalars['String']['output'];
@@ -373,6 +389,11 @@ export type MutationResolvers<ContextType = MyContext, ParentType extends Resolv
   updateUser?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, RequireFields<MutationUpdateUserArgs, 'id' | 'input'>>;
 }>;
 
+export type PaginatedPostsResolvers<ContextType = MyContext, ParentType extends ResolversParentTypes['PaginatedPosts'] = ResolversParentTypes['PaginatedPosts']> = ResolversObject<{
+  posts?: Resolver<Array<ResolversTypes['Post']>, ParentType, ContextType>;
+  totalCount?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+}>;
+
 export type PostResolvers<ContextType = MyContext, ParentType extends ResolversParentTypes['Post'] = ResolversParentTypes['Post']> = ResolversObject<{
   category?: Resolver<ResolversTypes['Category'], ParentType, ContextType>;
   content?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -393,8 +414,8 @@ export type QueryResolvers<ContextType = MyContext, ParentType extends Resolvers
   categoryBySlug?: Resolver<Maybe<ResolversTypes['Category']>, ParentType, ContextType, RequireFields<QueryCategoryBySlugArgs, 'slug'>>;
   me?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
   post?: Resolver<Maybe<ResolversTypes['Post']>, ParentType, ContextType, RequireFields<QueryPostArgs, 'id'>>;
-  posts?: Resolver<Array<ResolversTypes['Post']>, ParentType, ContextType>;
-  postsByCategory?: Resolver<Array<ResolversTypes['Post']>, ParentType, ContextType, RequireFields<QueryPostsByCategoryArgs, 'categoryId'>>;
+  posts?: Resolver<ResolversTypes['PaginatedPosts'], ParentType, ContextType, RequireFields<QueryPostsArgs, 'limit' | 'offset'>>;
+  postsByCategory?: Resolver<ResolversTypes['PaginatedPosts'], ParentType, ContextType, RequireFields<QueryPostsByCategoryArgs, 'limit' | 'offset' | 'slug'>>;
   user?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, RequireFields<QueryUserArgs, 'id'>>;
   users?: Resolver<Array<ResolversTypes['User']>, ParentType, ContextType>;
 }>;
@@ -417,6 +438,7 @@ export type Resolvers<ContextType = MyContext> = ResolversObject<{
   Dislike?: DislikeResolvers<ContextType>;
   Like?: LikeResolvers<ContextType>;
   Mutation?: MutationResolvers<ContextType>;
+  PaginatedPosts?: PaginatedPostsResolvers<ContextType>;
   Post?: PostResolvers<ContextType>;
   Query?: QueryResolvers<ContextType>;
   User?: UserResolvers<ContextType>;

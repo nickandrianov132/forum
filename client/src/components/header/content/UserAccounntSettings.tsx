@@ -68,7 +68,7 @@ const UserAccountSettings = () => {
     const isSaveDisabled = !avatarUrl && !newPassword;
 
     return (
-        <div className="flex flex-col w-full border border-slate-600/50 rounded-lg py-5 px-4 mt-2 bg-slate-800 h-full">
+        <div className="flex flex-col w-full border border-slate-600/50 rounded-lg py-5 px-4 mt-2 bg-gray-800 h-full">
             {loading ? (
                 <Spinner />
             ) : (

@@ -9,7 +9,7 @@ const resolvers: Resolvers<MyContext> = {
         categories: async () => await CategoryModel.find(),
         category: async (_, { id }) => await CategoryModel.findById(id),
         categoryBySlug: async (_, { slug }) => await CategoryModel.findOne({ slug }),
-        postsByCategory: async (_, { categoryId }) => await PostModel.find({ category: categoryId })
+        // postsByCategory: async (_, { categoryId }) => await PostModel.find({ category: categoryId })
     },
     Category: {
         posts: async (parent) => {

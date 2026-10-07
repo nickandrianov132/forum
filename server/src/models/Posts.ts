@@ -5,7 +5,7 @@ import type { InferSchemaType } from "mongoose";
 
 
 const postSchema = new Schema({
-    // ИЗМЕНЕНО:  привязываем пост к ObjectId модели Category
+    //  привязываем пост к ObjectId модели Category
     category: { 
         type: mongoose.Schema.Types.ObjectId, 
         ref: "Category", 
@@ -23,9 +23,7 @@ const postSchema = new Schema({
         default: '{"root":{"children":[{"children":[],"direction":null,"format":"","indent":0,"type":"paragraph","version":1}],"direction":null,"format":"","indent":0,"type":"root","version":1}}'
     },
     userId: { type: mongoose.Types.ObjectId, ref: "User", required: true },
-    // likes: [{ type: mongoose.Types.ObjectId, ref: "Like"}],
-    // dislikes: [{ type: mongoose.Types.ObjectId, ref: "Dislike"}]
-},{ timestamps: true }) // Рекомендую добавить timestamps для дат создания/обновления
+},{ timestamps: true }) //  timestamps для дат создания/обновления
 
 
 export type IPost = InferSchemaType<typeof postSchema> & { _id: Types.ObjectId; id: string };

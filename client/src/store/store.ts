@@ -9,5 +9,5 @@ export const store = configureStore({
 })
 // 1. Создаем тип RootState на основе самого стора
 export type RootState = ReturnType<typeof store.getState>;
-// 2. Тип для диспатча (тоже пригодится)
+// 2. Тип для dispatch
 export type AppDispatch = typeof store.dispatch;

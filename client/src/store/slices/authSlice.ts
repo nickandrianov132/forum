@@ -1,8 +1,6 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit"
 import type { UserHeaderFieldsFragment } from "../../gql/graphql"
 
-// делаем облегченный тип для авторизованного пользователя
-// export type AuthUser = Pick<User, "id" | "login" | "avatar">;
 
 type AccessToken = {
     accessToken: string

@@ -1,45 +1,23 @@
-// import { gql } from "@apollo/client";
 import { graphql } from '../../gql';
 
 export const GET_POSTS = graphql(`
-    query getPosts{
-        posts {
-            id
-            title
-            content
-            isDisliked
-            isLiked
-            likesCount
-            dislikesCount
-            isOwner
-            user {
-            id
-            login
+    query getPosts($limit: Int!, $offset: Int!) {
+        posts(limit: $limit, offset: $offset) {
+            totalCount
+            posts {
+                id
+                title
+                content
+                isDisliked
+                isLiked
+                likesCount
+                dislikesCount
+                isOwner
+                user {
+                    id
+                    login
+                }
             }
         }
     }
 `)
-
-// export const GET_POSTS = gql`
-//     query getPosts{
-//         posts {
-//             id
-//             title
-//             content
-//             isDisliked
-//             isLiked
-//             likes {
-//             id
-//             }
-//             likesCount
-//             dislikes {
-//             id
-//             }
-//             dislikesCount
-//             user {
-//             id
-//             login
-//             }
-//         }
-//     }
-// `

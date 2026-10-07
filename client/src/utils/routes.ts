@@ -19,12 +19,9 @@ export const authRoutes = [
         path: CREATE_NEW_POST,
         Component: CreatePost
     }
-
-
 ]
 
 export const publicRoutes = [
-
     {
         path: POSTS_ROUTE,
         Component: Posts

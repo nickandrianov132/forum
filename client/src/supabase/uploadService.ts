@@ -35,11 +35,11 @@ export async function uploadMediaFile(
 
     return publicUrlData.publicUrl;
 
-} catch (error) {
-  console.error('ERROR SUPABASE:', error);
-  
-  const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-  alert('Не удалось загрузить изображение: ' + errorMessage);
-  return null;
-}
+  } catch (error) {
+    console.error('ERROR SUPABASE:', error);
+    
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    alert('Failed to upload image : ' + errorMessage);
+    return null;
+  }
 }

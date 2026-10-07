@@ -16,7 +16,7 @@ export const createLoaders = (currentUserId?: string) => ({
   // }),
 
 
-  // 2. ДОБАВИЛИ ЛОАДЕР КАТЕГОРИЙ для решения проблемы N+1
+  // Loader КАТЕГОРИЙ для решения проблемы N+1
   categoryLoader: new DataLoader(async (ids: readonly string[]) => {
     try {
       // Ищем все категории из папки id одной пачкой
@@ -79,7 +79,7 @@ export const createLoaders = (currentUserId?: string) => ({
     return postIds.map(id => dislikedPostIds.has(id.toString()));
     }),
 
- // Лоадер для количества дизлайков
+ // Loader для количества дизлайков
   dislikeCountLoader: new DataLoader(async (postIds: readonly string[]) => {
     // 1. Фильтруем только валидные ID, чтобы избежать ошибки "Argument passed in must be a string of 12 bytes...
   const validObjectIds = postIds
@@ -99,7 +99,7 @@ export const createLoaders = (currentUserId?: string) => ({
     return postIds.map(id => countMap.get(id.toString()) || 0);
   }),
 
-  // Лоадер для количества лайков (агрегация)
+  // Loader для количества лайков (агрегация)
   likeCountLoader: new DataLoader(async (postIds: readonly string[]) => {
   // 1. Фильтруем только валидные ID, чтобы избежать ошибки "Argument passed in must be a string of 12 bytes..."
   const validObjectIds = postIds

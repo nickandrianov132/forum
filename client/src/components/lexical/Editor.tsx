@@ -45,8 +45,6 @@ export default function Editor({ initialContent, onChange }: EditorProps): React
     namespace: 'MyEditor',
     nodes: EDITOR_NODES,
     editorState: getInitialState(initialContent),
-    // Если в базе пусто, Lexical может упасть, поэтому проверяем на наличие данных
-    // editorState: initialContent || undefined,
     theme,
     onError: (error: Error) => console.error(error),
   };

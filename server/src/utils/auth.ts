@@ -12,9 +12,8 @@ const JWTPayloadSchema = z.object({
 
 export const verifyToken = (token: string) => {
   try {
-    // 1. Декодируем (результат всё еще unknown)
+    // 1. Декодируем 
     const rawPayload = jwt.verify(token, env.JWT_SECRET_KEY);
-    // console.log('RAW PAYLOAD FROM JWT:', rawPayload); // <--- Что тут?
     // 2. Валидируем через Zod
     // Если в токене нет login или password, parse() выбросит ошибку
     return JWTPayloadSchema.parse(rawPayload);

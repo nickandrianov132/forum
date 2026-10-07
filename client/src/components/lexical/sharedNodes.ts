@@ -8,4 +8,4 @@ export const EDITOR_NODES = [
   ListNode,
   ListItemNode,
 ];
-// Теперь используй EDITOR_NODES и в Editor, и в LexicalHTMLRenderer
+// для использования в EDITOR_NODES и в Editor, и в LexicalHTMLRenderer

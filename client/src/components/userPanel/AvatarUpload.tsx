@@ -1,19 +1,19 @@
 import React, { useState } from 'react';
 import { uploadMediaFile } from '../../supabase/uploadService';
 
-// 1. Описываем интерфейс пропсов так же, как и раньше
+
 interface AvatarUploadProps {
   userId: string;
   currentAvatarUrl?: string;
   onUploadSuccess: (url: string) => void;
 }
 
-// 2. Пишем обычную функцию, типизируя деструктурированные пропсы напрямую
+
 export const AvatarUpload = ({ 
   userId, 
   currentAvatarUrl, 
   onUploadSuccess 
-  }: AvatarUploadProps) => { // <-- Просто указываем интерфейс здесь
+  }: AvatarUploadProps) => { 
   
   const [avatarUrl, setAvatarUrl] = useState<string>(currentAvatarUrl || 'https://placeholder.com');
   const [isUploading, setIsUploading] = useState(false);

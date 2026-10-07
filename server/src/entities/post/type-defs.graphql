@@ -4,22 +4,25 @@
          content: String!
          user: User
          category: Category!
-           # Можно также добавить поля для счета лайков и дислайков
-        #  likes: [Like!]!
-        #  dislikes: [Dislike!]!
-        # Теперь это обязательные поля (спасибо DataLoader)
          likesCount: Int!
          dislikesCount: Int!
-        # Полезно знать: лайкнул ли пост текущий юзер?
          isLiked: Boolean!
          isDisliked: Boolean!    
          isOwner: Boolean!
          createdAt: String!
-     }
-    type Query {
+    }
+
+    type PaginatedPosts {
         posts: [Post!]!
+        totalCount: Int!
+    }
+
+    type Query {
+        # posts: [Post!]!
+        # postsByCategory(categoryId: ID!): [Post!]!
+        posts(limit: Int!, offset: Int!): PaginatedPosts!
         post(id: ID!): Post 
-        postsByCategory(categoryId: ID!): [Post!]!
+        postsByCategory(slug: String!, limit: Int!, offset: Int!): PaginatedPosts!
     }
     type Mutation {
         createPost(categoryId: ID!, title: String!, content: String!, userId: ID!): Post

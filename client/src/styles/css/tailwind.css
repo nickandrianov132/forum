@@ -292,7 +292,7 @@ input.form-input-clean:-webkit-autofill:hover {
 
 /* Стиль для плейсхолдера, чтобы он не улетал наружу */
 @utility placeholder {
-  @apply absolute top-4 left-4 text-slate-400 text-sm pointer-events-none select-none
+  @apply absolute top-3 left-4 text-slate-400 text-sm pointer-events-none select-none
 }
 
 
@@ -340,11 +340,11 @@ input.form-input-clean:-webkit-autofill:hover {
 
 /* 2. Стили для заголовков в редакторе и посте */
 @utility my-h1-style {
-  @apply text-2xl font-extrabold text-slate-100 tracking-wide mt-4 mb-2;
+  @apply text-xl font-extrabold text-slate-100 tracking-wide mt-4 mb-2;
 }
 
 @utility my-h2-style {
-  @apply text-xl font-bold text-slate-200 tracking-wide mt-3 mb-1.5;
+  @apply text-lg font-bold text-slate-200 tracking-wide mt-3 mb-1.5;
 }
 
 /* 3. Утилиты для списков внутри самого редактора */
@@ -412,14 +412,22 @@ input.form-input-clean:-webkit-autofill:hover {
       }
     }
   }
-
+  
   /* Стилизация заголовков, если рендерер выплевывает чистый HTML */
   & h1 {
-    @apply text-2xl font-extrabold text-slate-100 tracking-wide mt-4 mb-2;
+    @apply text-xl font-extrabold text-slate-100 tracking-wide mt-4 mb-2;
   }
 
   & h2 {
-    @apply text-xl font-bold text-slate-200 tracking-wide mt-3 mb-1.5;
+    @apply text-lg font-bold text-slate-200 tracking-wide mt-3 mb-1.5;
+  }
+  /* Стили для андэрлайна */
+  & u {
+    @apply text-sm underline decoration-sky-400/70;
+  }
+  /* Стили для курсива */
+  & i {
+    @apply text-sm font-light;
   }
 }
 

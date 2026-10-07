@@ -74,7 +74,6 @@ const PostDetail = () => {
         }
     };
 
-    //// Новый хэндлер апдейта поста с учетом использования Lexical:
     const handleUpdatePost = (pId: string, pTitle: string, pContent: string) => {
         if (accessToken.length !== 0) {
             updatePost({
@@ -84,7 +83,7 @@ const PostDetail = () => {
                     postContent: pContent 
                 },
                 // Оптимистичный ответ должен полностью соответствовать структуре мутации
-                // В кратце optimisticResponse берет объект из кэша, меняет и выдает на фронтб в фоне улетает запрос на сервер 
+                // В кратце optimisticResponse берет объект из кэша, меняет и выдает на фронт, в фоне улетает запрос на сервер 
                 // когда запрос пришел OK: то он просто подменяет значения
                 // иначе просто откатывает данные назад
                 optimisticResponse: {

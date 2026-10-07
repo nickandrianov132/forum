@@ -7,7 +7,7 @@ import { useAppSelector } from "../../store/hooks";
 import { useNavigate } from "react-router";
 import { GET_POSTS_BY_CATEGORY } from "../../graphql/querry/getPostsByCategory";
 
-
+const ITEMS_PER_PAGE = 5;
 
 const CreatePost = () => {
     const navigate = useNavigate();
@@ -35,10 +35,8 @@ const CreatePost = () => {
         }
          console.log(cat);
     }, [data, cat]);
-
     // console.log(data);   
-   
-    
+
     if (loading || postLoading )  return (
             <div className="relative flex flex-col gap-6 w-full max-w-3xl mx-auto p-6 bg-slate-900 border border-slate-800 rounded-2xl shadow-xl animate-pulse">
                 <div className="h-7 w-full pb-4 border-b border-slate-800"></div>
@@ -59,9 +57,7 @@ const CreatePost = () => {
     const handleSubmit = (e: SubmitEvent<HTMLFormElement>) => {
         e.preventDefault();
         if (!title.trim() || !cat || loading || !user) return
-
-        const selectedCategory = data?.categories.find((c) => c.id === cat);
-        const categorySlug = selectedCategory?.slug;
+        // const selectedCategory = data?.categories.find((c) => c.id === cat);
 
         createPostMutation({
             variables: {
@@ -74,7 +70,11 @@ const CreatePost = () => {
             refetchQueries: [   
                 {
                     query: GET_POSTS_BY_CATEGORY,
-                    variables: { slug: categorySlug }
+                    variables: { 
+                        slug: cat,
+                        limit: ITEMS_PER_PAGE,
+                        offset: 0
+                    }
                 }
             ]
         });
@@ -82,9 +82,26 @@ const CreatePost = () => {
 
 
  return (
-    <form onSubmit={handleSubmit} className="relative flex flex-col gap-6 w-full max-w-3xl mx-auto p-6 bg-slate-900 border border-slate-800 rounded-2xl shadow-xl">
-      
-      {/* Модальное окно успешного создания */}
+    <form 
+        onSubmit={handleSubmit} 
+        className="relative flex flex-col gap-6 w-full max-w-3xl mx-auto p-6 bg-slate-900 border border-slate-800 rounded-2xl shadow-xl">
+      {/* Back/Cancel button */}
+      <button
+        className="group absolute top-0 right-0 mt-1 mr-1"
+        onClick={() => navigate(-1)}
+      >
+        <svg 
+            xmlns="http://w3.org" 
+            fill="none" 
+            viewBox="0 0 24 24" 
+            className="w-10 h-10 stroke-1.5 stroke-slate-300 group-hover:stroke-cyan-500 group-active:fill-slate-700/60"
+        >
+            <circle cx="12" cy="12" r="9" />
+
+            <path strokeLinecap="round" strokeLinejoin="round" d="M9.75 9.75l4.5 4.5m0-4.5l-4.5 4.5" />
+        </svg>
+      </button>
+      {/* Success modal */}
       {isSuccess && (
         <div className="absolute inset-0 z-50 flex flex-col items-center justify-center p-6 bg-slate-950/80 backdrop-blur-md rounded-2xl animate-fade-in">
           <div className="flex flex-col items-center w-full max-w-sm p-6 text-center bg-slate-900 border border-slate-700 rounded-2xl shadow-2xl shadow-teal-500/10">
@@ -104,15 +121,12 @@ const CreatePost = () => {
         </div>  
       )}
 
-      {/* Основной контент формы */}
-
-            <div className="flex flex-col gap-5">
-            {/* Заголовок формы (опционально, для лучшего UX) */}
+      {/* Main content */}
+        <div className="flex flex-col gap-5">
             <div className="border-b border-slate-800 pb-4">
                 <h2 className="text-xl font-bold text-white">Creating new post</h2>
             </div>
-
-            {/* Селект категории */}
+            {/* Category select */}
             <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-4">
                 <label htmlFor="category" className="text-sm font-medium text-slate-300 min-w-20">
                 Category
@@ -137,7 +151,7 @@ const CreatePost = () => {
                 </div>
             </div>
 
-            {/* Инпут заголовка */}
+            {/* Title input */}
             <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-4">
                 <label 
                     htmlFor="title"
@@ -160,7 +174,7 @@ const CreatePost = () => {
                 </div>
             </div>
 
-            {/* Редактор */}
+            {/* Editor */}
             <div className="flex flex-col gap-2">
                 <label className="text-sm font-medium text-slate-300">Content</label>
                 <div className="rounded-xl border border-slate-700 bg-slate-800 overflow-hidden focus-within:border-teal-500 focus-within:ring-2 focus-within:ring-teal-500/20 transition-all">
@@ -170,27 +184,24 @@ const CreatePost = () => {
                 />
                 </div>
             </div>
-            </div>
-        
-
-      {/* Кнопка отправки формы */}
-      <div className="flex justify-end border-t border-slate-800 pt-4 mt-2">
-        <button 
-          type="submit" 
-          disabled={loading} 
-          className="px-6 py-2.5 bg-linear-to-r from-teal-500 to-emerald-600 hover:from-teal-400 hover:to-emerald-500 text-white font-medium text-sm rounded-xl transition-all duration-200 shadow-md shadow-teal-500/10 hover:shadow-teal-500/25 active:scale-98 disabled:opacity-50 disabled:pointer-events-none disabled:transform-none"
-        >
-          {loading ? (
-            <span className="flex items-center gap-2">
-              <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
-              Creating...
-            </span>
-          ) : (
-            "Create"
-          )}
-        </button>
-      </div>
-
+        </div>
+        {/* Submit form button */}
+        <div className="flex justify-end border-t border-slate-800 pt-4 mt-2">
+            <button 
+            type="submit" 
+            disabled={loading} 
+            className="px-6 py-2.5 bg-linear-to-r from-teal-500 to-emerald-600 hover:from-teal-400 hover:to-emerald-500 text-white font-medium text-sm rounded-xl transition-all duration-200 shadow-md shadow-teal-500/10 hover:shadow-teal-500/25 active:scale-98 disabled:opacity-50 disabled:pointer-events-none disabled:transform-none"
+            >
+            {loading ? (
+                <span className="flex items-center gap-2">
+                <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+                Creating...
+                </span>
+            ) : (
+                "Create"
+            )}
+            </button>
+        </div>
     </form>
   );
 

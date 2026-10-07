@@ -1,5 +1,5 @@
 import { graphql } from "../../gql";
-// import { gql } from '@apollo/client';
+
 
 export const CREATE_POST = graphql(`
    mutation CreatePost($categoryId: ID!, $title: String!, $content: String!, $userId: ID!) {

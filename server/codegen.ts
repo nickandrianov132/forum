@@ -7,10 +7,8 @@ const config: CodegenConfig = {
         "./src/types/resolvers-types.ts": {
             plugins: ["typescript", "typescript-resolvers"],
             config: {
-                // useIndexSignature: true,
-                // defaultMapper: "Partial<{T}>",
-                //  contextType: "./src/types/context#MyContext",
                 contextType: "../../index.js#MyContext",
+                // defaultMapper: "Partial<{T}>",
                  mappers:{
                      User: "../models/Users.js#IUser",
                      Post: "../models/Posts.js#IPost",

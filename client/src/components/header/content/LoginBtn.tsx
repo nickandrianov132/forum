@@ -1,5 +1,5 @@
 import React from 'react'
-// 1. Описываем интерфейс пропсов
+
 interface LoginBtnProps {
   setLoginForm: React.Dispatch<React.SetStateAction<boolean>>;
 }

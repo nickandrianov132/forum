@@ -1,6 +1,4 @@
 import type { MyContext } from "../../../index.ts";
-import { DislikeModel } from "../../models/Dislikes.ts";
-import { LikeModel } from "../../models/Likes.ts";
 import { PostModel } from "../../models/Posts.ts";
 import { UserModel } from "../../models/Users.ts";
 import type { Resolvers } from "../../types/resolvers-types.ts";
@@ -12,7 +10,59 @@ const resolvers: Resolvers<MyContext> = {
     Query: {
         user: async (_, {id}) => UserModel.findById(id),
         post: async (_, {id}) => await PostModel.findById(id),
-        posts: async () => await PostModel.find(),
+        posts: async (_, { limit, offset }) => {
+            const [posts, totalCount] = await Promise.all([
+                PostModel.find()
+                .sort({ createdAt: -1 })
+                .skip(offset)
+                .limit(limit)
+                .lean(),
+                PostModel.countDocuments()
+            ]);
+
+            return {
+                posts: posts.map((post) => ({
+                    ...post,
+                    id: post._id.toString()
+                })),
+                totalCount
+            }
+        },
+        postsByCategory: async (_, { slug, limit, offset }) => {
+            try {
+                const { CategoryModel } = await import("../../models/Category.ts");
+                
+                // 1. Сначала находим саму категорию по красивой строке из URL
+                const category = await CategoryModel.findOne({ slug }).lean();
+                
+                // Если категория не найдена, возвращаем пустую страницу (защита от краша)
+                if (!category) {
+                    return { posts: [], totalCount: 0 };
+                }
+
+                // 2. Ищем посты по реальному ObjectId найденной категории
+                const [posts, totalCount] = await Promise.all([
+                    PostModel.find({ category: category._id })
+                        .sort({ createdAt: -1 })
+                        .skip(offset || 0)
+                        .limit(limit || 5)
+                        .lean(),
+                    PostModel.countDocuments({ category: category._id })
+                ]);
+
+                return {
+                    posts: (posts || []).map((post) => ({
+                        ...post,
+                        id: post._id.toString()
+                    })),
+                    totalCount: totalCount ?? 0 // 100% защита от null
+                }
+
+            } catch (error) {
+                console.error("Resolver error postsByCategory:", error);
+                return { posts: [], totalCount: 0 }
+            }
+        }
     },
     Mutation: {
         // Заменили topic на categoryId
