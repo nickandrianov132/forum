@@ -32,10 +32,19 @@ const UserAccountSettings = () => {
         if (!files || files.length === 0) return;
         
         const file = files[0];
+        const MAX_FILE_SIZE_BYTES = 500 * 1024; // 500кб
+
+        if (file.size > MAX_FILE_SIZE_BYTES) {
+        alert(`The file size exceeds the limit 500Kb. Your file size: ${(file.size / 1024).toFixed(1)}Kb`)
+        event.target.value = ""; // сброс инппута
+        return; // прерываем операцию что бы файл не улетел в Supabase
+        }
+
+
         setIsUploading(true);
 
         
-        const uploadedUrl = await uploadMediaFile(file, 'avatars', user?.id);
+        const uploadedUrl = await uploadMediaFile(file, 'avatars', user?.id, user.avatar);
         setIsUploading(false);
 
         if (uploadedUrl) {
@@ -73,10 +82,10 @@ const UserAccountSettings = () => {
                 <Spinner />
             ) : (
             <form onSubmit={handlerUpdateUser}>
-                <div className="flex items-center gap-2 mb-4">
+                <div className="flex items-center h-12 gap-2 mb-4">
                     <label 
                         htmlFor="new-avatar"
-                        className="w-fit text-sm py-2 px-3 rounded-lg cursor-pointer text-slate-200 shadow-xs relative overflow-hidden bg-linear-to-tr from-sky-600 via-blue-700 to-indigo-500 before:absolute before:inset-0 before:-translate-x-full before:bg-linear-to-r before:from-transparent before:via-white/20 before:to-transparent hover:before:animate-shimmer hover:-translate-y-0.5 active:text-white active:translate-y-0 hover"
+                        className="w-fit h-fit text-sm py-3 px-3 rounded-lg cursor-pointer text-slate-200 shadow-xs relative overflow-hidden bg-linear-to-tr from-sky-600 via-blue-700 to-indigo-500 before:absolute before:inset-0 before:-translate-x-full before:bg-linear-to-r before:from-transparent before:via-white/20 before:to-transparent hover:before:animate-shimmer hover:-translate-y-0.5 active:text-white active:translate-y-0 hover"
                     >
                         {isUploading ? "Uploading..." : "Upload Avatar"}
                     </label>
@@ -88,9 +97,20 @@ const UserAccountSettings = () => {
                         disabled={isUploading}
                         hidden
                     />
-                    
-                    {isUploading && <span className="text-slate-400 text-sm animate-pulse">Image loading...</span>}
-                    {avatarUrl && !isUploading && <span className="text-emerald-400 text-sm font-medium">✓</span>}
+                        {avatarUrl && !isUploading && 
+                            <div className="flex items-center">
+                                <img src={avatarUrl} alt="Preview" className="w-10 h-10 rounded-full object-cover m-3" />
+                                {isUploading && <span className="text-slate-400 text-sm animate-pulse">Image loading...</span>}
+                                {avatarUrl && !isUploading && <span className="text-emerald-500 text-md font-bold">✓</span>}
+                            </div>
+                            }
+                            {!avatarUrl && !isUploading &&
+                                <div className="flex flex-col items-center justify-center h-full">
+                                        <span className="text-xs font-light font-sans text-slate-200/60">(Max. size 500Kb)</span>
+                                    
+
+                                </div>
+                            }
                 </div>
                 <div>
                     <label

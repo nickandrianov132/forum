@@ -1,45 +1,71 @@
 // src/services/uploadService.ts
-import { supabase } from './supabase'
+import { supabase } from './supabase';
 
 // Строгий тип для папок, чтобы защититься от опечаток
-export type MediaType = 'avatars' | 'video_previews'
+export type MediaType = 'avatars' | 'posts-media'
 
 /**
  * Загружает файл в Supabase Storage и возвращает прямую публичную ссылку.
+ * @param file - Загружаемый файл
+ * @param type - Папка в бакете ('avatars' | 'video_previews' | 'posts-media')
+ * @param entityId - ID сущности (например, userId или postId)
+ * @param currentMediaUrl - (Опционально) Текущая старая ссылка из БД для удаления старого файла
  */
 export async function uploadMediaFile(
   file: File, 
   type: MediaType, 
-  entityId: string
+  entityId: string,
+  currentMediaUrl?: string | null
 ): Promise<string | null> {
   try {
-    // const fileExtension = file.name.split('.').pop() || 'jpg';
-    // Путь внутри бакета: "avatars/user123.png" или "video_previews/video456.jpg"
-    // const filePath = `${type}/${entityId}.${fileExtension}`;
-    const filePath = `${type}/${entityId}`;
+    const fileExtension = file.name.split('.').pop() || 'jpg';
+    
+    // 1. Формируем УНИКАЛЬНЫЙ путь внутри нужной папки (type остаётся!)
+    // Пример: "avatars/user123_1712345678.png" или "posts-media/post999_1712345678.jpg"
+    const uniqueFileName = `${entityId}_${Date.now()}.${fileExtension}`;
+    const newFilePath = `${type}/${uniqueFileName}`;
 
-    // 1. Загружаем файл в бакет 'forum-media'
+    // 2. Если передана старая ссылка, подчищаем за собой бакет
+    if (currentMediaUrl) {
+        const bucketSegment = '/forum-media/';
+        const pathParts = currentMediaUrl.split(bucketSegment);
+        
+        if (pathParts.length > 1) {
+          const oldFilePath = pathParts[1]; // Строго берем вторую часть после /forum-media/
+          
+          const { error } = await supabase.storage
+            .from('forum-media')
+            .remove([oldFilePath]);
+
+          if (error) {
+            console.error('Delete error from Supabase:', error);
+          }
+        }
+    }
+
+
+    // 3. Загружаем новый файл в выбранную папку
     const { error } = await supabase.storage
       .from('forum-media')
-      .upload(filePath, file, {
-        upsert: true, // Перезаписывает старый файл, если у пользователя изменился аватар
-        contentType: file.type // Явно передает MIME-type (jpg, png etc.)
+      .upload(newFilePath, file, {
+        contentType: file.type
       });
 
     if (error) throw error;
 
-    // 2. Получаем готовую публичную ссылку
+    // 4. Получаем чистую публичную ссылку для сохранения в БД
     const { data: publicUrlData } = supabase.storage
       .from('forum-media')
-      .getPublicUrl(filePath);
+      .getPublicUrl(newFilePath);
 
     return publicUrlData.publicUrl;
 
   } catch (error) {
     console.error('ERROR SUPABASE:', error);
-    
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     alert('Failed to upload image : ' + errorMessage);
     return null;
   }
 }
+
+

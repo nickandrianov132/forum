@@ -17,19 +17,23 @@ import {
   ListNode
 } from '@lexical/list';
 import { $setBlocksType } from '@lexical/selection';
-
+import { INSERT_IMAGE_COMMAND } from './utils/ImagePlugin';
+import { uploadMediaFile } from '../../supabase/uploadService';
 const FONT_FAMILY_OPTIONS = ['Arial', 'Courier New', 'Georgia', 'Times New Roman', 'Verdana', 'Roboto', 'Inter', 'Poppins'];
 
 export function ToolbarPlugin(): ReactElement {
   const [editor] = useLexicalComposerContext();
-  
+  // Состояние для инпута картинки
+  const [isUploadingImg, setIsUploadingImg] = useState(false);
+
   // Состояния для инлайновых форматов
   const [isBold, setIsBold] = useState(false);
   const [isItalic, setIsItalic] = useState(false);
   const [isUnderline, setIsUnderline] = useState(false);
-  
+
   // Состояние для типов блоков (h1, h2, ul, ol, paragraph)
   const [blockType, setBlockType] = useState<string>('paragraph');
+
 
   useEffect(() => {
     return editor.registerUpdateListener(({ editorState }) => {
@@ -86,7 +90,38 @@ export function ToolbarPlugin(): ReactElement {
       }
     });
   };
+  // Хендлер для загрузки какртини в Supabase
+  const handlerFileChange = async (e: ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
 
+    const file = files[0];
+    const MAX_FILE_SIZE_BYTES = 500 * 1024; // 500кб
+
+    if (file.size > MAX_FILE_SIZE_BYTES) {
+      alert(`The file size exceeds the limit 500Kb. Your file size: ${(file.size / 1024).toFixed(1)}Kb`)
+      e.target.value = ""; // сброс инппута
+      return; // прерываем операцию что бы файл не улетел в Supabase
+    }
+
+
+
+    setIsUploadingImg(true);
+
+    try {
+      const uniqueImageId = crypto.randomUUID();
+      const publicUrl = await uploadMediaFile(file, 'posts-media', uniqueImageId);
+
+      if (publicUrl) {
+        editor.dispatchCommand(INSERT_IMAGE_COMMAND, publicUrl);
+      }
+    } catch (error) {
+      console.error('Ошибка встраивания изображения:', error);
+    } finally {
+      setIsUploadingImg(false);
+      e.target.value = '';
+    }
+  }
 return (
   <div className="toolbar">
     {/* Выпадающий список шрифтов */}
@@ -168,6 +203,32 @@ return (
         <path d="M3.59 3.03h12.2v1.26H3.59zm0 4.29h12.2v1.26H3.59zm0 4.35h12.2v1.26H3.59zM.99 4.79h.49V2.52H.6v.45h.39v1.82zm.87 3.88H.91l.14-.11.3-.24c.35-.28.49-.5.49-.79A.74.74 0 0 0 1 6.8a.77.77 0 0 0-.81.84h.52A.34.34 0 0 1 1 7.25a.31.31 0 0 1 .31.31.6.6 0 0 1-.22.44l-.87.75v.39h1.64zm-.36 3.56a.52.52 0 0 0 .28-.48.67.67 0 0 0-.78-.62.71.71 0 0 0-.77.75h.5a.3.3 0 0 1 .27-.32.26.26 0 1 1 0 .51H.91v.38H1c.23 0 .37.11.37.29a.29.29 0 0 1-.33.29.35.35 0 0 1-.36-.35H.21a.76.76 0 0 0 .83.8.74.74 0 0 0 .83-.72.53.53 0 0 0-.37-.53z"/>
       </svg>
     </button>
+
+    {/* Разделитель */}
+    <div className="w-px h-5 bg-white/5 my-auto mx-1" />
+
+    {/* insert img block*/}
+    <div
+      className="flex items-center"
+    >
+      <input
+        id="toolbar-image-upload"
+        type="file"
+        accept="image/*"
+        onChange={handlerFileChange}
+        disabled={isUploadingImg}
+        hidden
+      />
+      <label
+        htmlFor="toolbar-image-upload"
+        className={`btn flex items-center justify-center gap-1 min-w-8 text-[11px] font-semibold cursor-pointer ${
+          isUploadingImg ? "opacity-40 cursor-not-allowed" : ""
+        }`}
+      >
+        {isUploadingImg ? "⏳" : "🖼️"}
+      </label>
+    </div>
+ 
   </div>
 );  
 }

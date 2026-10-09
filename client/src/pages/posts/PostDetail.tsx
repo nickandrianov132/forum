@@ -18,6 +18,7 @@ const PostDetail = () => {
     const [isEdit, setIsEdit] = useState(false);
     const [postContent, setPostContent] = useState('') // Сюда Lexical будет писать JSON-строку
     const [postTitle, setPostTitle] = useState('')
+    const [activeImgUrl, setActiveImgUrl] = useState<string | null>(null);
     const navigate = useNavigate();
     const { accessToken, user } = useAppSelector((state) => state.user);
     const [addLike] = useMutation(ADD_LIKE);
@@ -36,6 +37,17 @@ const PostDetail = () => {
         }
     }, [data]);
     // console.log(data);
+    const handlePostContentClick = (e: React.MouseEvent<HTMLDivElement>) => {
+        const target = e.target as HTMLElement;
+
+        if (target.tagName === "IMG") {
+            const imgSrc = target.getAttribute("src");
+            if (imgSrc) {
+                setActiveImgUrl(imgSrc); 
+            }
+        }
+    };
+
     const handleLike = (post: any) => {
         if(accessToken.length === 0) return
         addLike({
@@ -211,7 +223,9 @@ const PostDetail = () => {
                     </div>
                 ) : (
                     /* View */
-                    <div className="flex flex-col h-full justify-between">
+                    <div
+                        onClick={handlePostContentClick}  
+                        className="flex flex-col h-full justify-between">
                         
                         {/* Post header */}
                         <div className="flex items-center justify-between px-5 py-4 border-b border-white/5 bg-slate-900/10 gap-4">
@@ -230,10 +244,28 @@ const PostDetail = () => {
                         </div>
 
                         {/* Post body */}
-                        <div className="p-5 text-slate-300 text-base leading-relaxed flex-auto overflow-y-auto">
+                        <div className="p-5 text-slate-300 text-base leading-relaxed flex-auto overflow-y-auto prose-images:cursor-pointer [&_img]:cursor-pointer [&_img]:transition-transform [&_img]:duration-200 hover:[&_img]:scale-[1.01]">
                             <LexicalHTMLRenderer jsonString={post.content} />
                         </div>
-
+                        {activeImgUrl && (
+                            <div
+                                onClick={() => {setActiveImgUrl(null)}}
+                                className="fixed inset-0 z-50 flex items-center justify-center bg-slate-800/70 backdrop-blur-lg animate-fade-in p-4 cursor-zoom-out"
+                            >
+                                <button
+                                    onClick={() => {setActiveImgUrl(null)}}
+                                    className="absolute top-4 right-4 text-lg px-3 py-1  text-white/70 border border-white/50 rounded-full bg-slate-800 hover:text-white hover:bg-slate-700/70 hover:border-white transition-colors duration-200 cursor-pointer"
+                                >
+                                    X
+                                </button>
+                                <img
+                                    src={activeImgUrl}
+                                    alt="Enlarged image"
+                                    onClick={(e) => e.stopPropagation()}
+                                    className="max-w-full max-h-[90vh] object-contain rounded-lg shadow-2xl border border-white/10 animate-scale-up cursor-default"
+                                />
+                            </div>
+                        )}
                         {/* Footer likes/dislikes */}
                         <div className="flex items-center justify-between px-5 py-3 bg-slate-950/20 border-t border-white/5">
                             <div className="flex items-center gap-3">

@@ -13,6 +13,7 @@ import type { EditorState } from 'lexical';
 import { ToolbarPlugin } from './ToolbarPlugin.js';
 import { EDITOR_NODES } from './sharedNodes.js';
 import getInitialState from './utils/initialStateHelper.js';
+import { ImagePlugin } from './utils/ImagePlugin.js';
 
 interface EditorProps {
   initialContent: string;
@@ -67,6 +68,7 @@ export default function Editor({ initialContent, onChange }: EditorProps): React
         </div>
         <HistoryPlugin />
         <ListPlugin />
+        <ImagePlugin />
         <OnChangePlugin onChange={handleOnChange} />
       </div>
     </LexicalComposer>

@@ -98,7 +98,11 @@ const Posts = () => {
                 refetchQueries: [
                     {
                         query: GET_POSTS_BY_CATEGORY,
-                        variables: { slug: categorySlug }
+                        variables: { 
+                            slug: categorySlug, 
+                            limit: ITEMS_PER_PAGE,
+                            offset: (currentPage - 1) * ITEMS_PER_PAGE
+                        }
                     }
                 ]
             })

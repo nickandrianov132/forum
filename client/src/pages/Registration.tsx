@@ -19,6 +19,14 @@ const Registration = () => {
         if (!files || files.length === 0) return;
         
         const file = files[0];
+        const MAX_FILE_SIZE_BYTES = 500 * 1024; // 500кб
+
+        if (file.size > MAX_FILE_SIZE_BYTES) {
+        alert(`The file size exceeds the limit 500Kb. Your file size: ${(file.size / 1024).toFixed(1)}Kb`)
+        event.target.value = ""; // сброс инппута
+        return; // прерываем операцию что бы файл не улетел в Supabase
+        }
+
         setIsUploading(true);
 
         

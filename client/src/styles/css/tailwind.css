@@ -165,6 +165,19 @@
   }
 }
 
+@utility lexical-image-container {
+  @apply flex p-0 m-0 justify-center w-full max-w-50 h-50;
+}
+
+@utility lexical-image {
+  @apply max-w-full h-auto rounded-xl border border-white/5 object-cover shadow-lg;
+}
+
+@utility lexical-image-container-full {
+  @apply absolute flex p-0 m-0 justify-center w-full max-w-50 h-50;
+}
+
+
 input.form-input:-webkit-autofill,
 input.form-input:-webkit-autofill:hover {
   /* Заливаем сплошным темным цветом, идеально сливающимся с формой */
@@ -287,7 +300,7 @@ input.form-input-clean:-webkit-autofill:hover {
 
 /* Стили для самого текстового поля Lexical */
 @utility editor-input {
-  @apply min-h-70 max-h-fit p-4 text-slate-200! text-sm outline-hidden relative bg-slate-800/50! focus:bg-slate-900/60! transition-colors
+  @apply min-h-70 max-h-fit p-4 text-slate-200! text-xs outline-hidden relative bg-slate-800/50! focus:bg-slate-900/60! transition-colors
 }
 
 /* Стиль для плейсхолдера, чтобы он не улетал наружу */
@@ -379,12 +392,12 @@ input.form-input-clean:-webkit-autofill:hover {
 
 /* 4. Стили для блока вывода готового HTML (.lexical-render-output) */
 .lexical-render-output {
-  @apply flex flex-col gap-2 text-slate-300 text-base leading-relaxed;
+  @apply flex flex-col gap-1 text-slate-300 text-base leading-relaxed;
 
 
   /* Стилизация всех обычных абзацев, если они выводятся без классов */
   & p {
-    @apply mb-2 last:mb-0;
+    @apply text-xs;
   }
 
   /* Стилизация маркированного списка в готовом посте */
@@ -464,4 +477,21 @@ input.form-input-clean:-webkit-autofill:hover {
   }
 }
 
+/* Стили для увеличения картинов в постах */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
 
+@keyframes scaleUp {
+  from { transform: scale(0.95); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.2s ease-out forwards;
+}
+
+.animate-scale-up {
+  animation: scaleUp 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
