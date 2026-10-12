@@ -8,6 +8,6 @@ type Dislike {
     createdAt: String
 }
 
-type Mutation {
+extend type Mutation {
     addDislike(postId: ID!): Post!
 }

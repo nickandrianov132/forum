@@ -17,14 +17,14 @@
         totalCount: Int!
     }
 
-    type Query {
+    extend type Query {
         # posts: [Post!]!
         # postsByCategory(categoryId: ID!): [Post!]!
         posts(limit: Int!, offset: Int!): PaginatedPosts!
         post(id: ID!): Post 
         postsByCategory(slug: String!, limit: Int!, offset: Int!): PaginatedPosts!
     }
-    type Mutation {
+    extend type Mutation {
         createPost(categoryId: ID!, title: String!, content: String!, userId: ID!): Post
         updatePost(id: ID!, categoryId: ID, title: String, content: String): Post
         deletePost(id: ID!): Boolean

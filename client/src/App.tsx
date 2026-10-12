@@ -186,6 +186,63 @@ const wsLink = new GraphQLWsLink(createClient({
       authorization: token ? `Bearer ${token}` : "",
     };
   },
+  // Позволяет сокету пытаться переподключиться при закрытии соединения
+    shouldRetry: () => true, 
+    
+  on: {
+      // 1. Метод синхронный, event имеет тип unknown — как и требует graphql-ws
+      closed: (event: unknown) => {
+        
+        // 2. Безопасно проверяем, что это объект с числовым полем code
+        if (
+          event && 
+          typeof event === 'object' && 
+          'code' in event && 
+          event.code === 4403
+        ) {
+          console.log('WS Connection closed due to 4403. Attempting to refresh token...');
+
+          const currentRefreshToken = localStorage.getItem('refreshToken');
+          if (!currentRefreshToken) return;
+
+          // 3. Выносим всю асинхронную логику внутрь самовызывающейся функции
+          (async () => {
+            try {
+              const res = await fetch('http://localhost:7000/graphql', { 
+                method: 'POST', 
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  query: `
+                    mutation Refresh($token: String!) {
+                      refreshToken(token: $token) {
+                        accessToken
+                        refreshToken
+                        user { id login avatar }
+                      }
+                    }
+                  `,
+                  variables: { token: currentRefreshToken }
+                })
+              });
+
+              const result = await res.json();
+              
+              if (result.data?.refreshToken) {
+                const { accessToken, refreshToken, user } = result.data.refreshToken;
+                
+                localStorage.setItem('token', accessToken);
+                localStorage.setItem('refreshToken', refreshToken);
+                store.dispatch(setCredentials({ accessToken, refreshToken, user }));
+                
+                console.log('Token successfully refreshed for WS. Reconnecting...');
+              }
+            } catch (err) {
+              console.error('Failed to refresh token during WS connection closure:', err);
+            }
+          })();
+        }
+      }
+    }
 }));
 
 // 5. Собираем HTTP цепочку в правильном порядке

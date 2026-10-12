@@ -9,7 +9,7 @@ const AppRouter = () => {
     const {user} = useAppSelector(state => state.user)
 
     return (
-        <div className="lg:col-span-4 space-y-6">
+        <div className="router-container">
             <Routes>
                 {user && authRoutes.map(({path, Component}) => 
                     <Route key={path} path={path} element={<Component/>} />

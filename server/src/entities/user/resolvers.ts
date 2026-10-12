@@ -8,6 +8,7 @@ import jwt from "jsonwebtoken"
 import { authenticated } from "../../utils/authGuard.ts";
 import { env } from "../../config.ts";
 import bcrypt from 'bcrypt'; 
+import { MessageModel } from "../../models/Messages.ts";
 
 const generateJwt = (login: string, id: string) => {
   return jwt.sign(
@@ -133,11 +134,14 @@ const resolvers: Resolvers<MyContext> = {
         
     },
     User: {
+        messages: async (parent) => {
+        return await MessageModel.find({ userId: parent._id });
+        },
         posts: async (parent) => await PostModel.find({userId: parent.id}),
         likes: async (parent) => {
             // Находим все объекты лайков по массиву ID из модели User
             return await LikeModel.find({ _id: { $in: parent.likesId } });
-        } 
+        }
     }
 }
 

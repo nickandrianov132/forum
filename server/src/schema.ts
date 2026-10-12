@@ -22,11 +22,15 @@ import {
     resolvers as categoryResolvers,
     typeDefs as categoryTypeDefs,
 } from "./entities/category/index.ts";
+import {
+    resolvers as messageResolvers,
+    typeDefs as messageTypeDefs,
+} from "./entities/message/index.ts";
 
 
 const schema = makeExecutableSchema({
-    typeDefs: [userTypeDefs, postTypeDefs, likeTypeDefs, dislikeTypeDefs, categoryTypeDefs],
-    resolvers: [ { DateTime: GraphQLDateTime}, userResolvers, postResolvers, likeResolvers, dislikeResolvers, categoryResolvers],
+    typeDefs: [userTypeDefs, postTypeDefs, likeTypeDefs, dislikeTypeDefs, categoryTypeDefs, messageTypeDefs],
+    resolvers: [ { DateTime: GraphQLDateTime}, userResolvers, postResolvers, likeResolvers, dislikeResolvers, categoryResolvers, messageResolvers],
 });
 
 export default schema;

@@ -19,7 +19,7 @@
 
   /* На десктопе (от 1024px) */
   @media (width >= 64rem) {
-    @apply grid-cols-6 items-stretch w-full gap-2;
+    @apply grid-cols-8 items-stretch w-full gap-2;
     
     /* Сбрасываем сжатие строк, чтобы на ПК сайдбары снова красиво растягивались по высоте до футера */
     grid-auto-rows: unset; 
@@ -35,6 +35,7 @@
   @media (width >= 64rem) {
     @apply h-full;
     grid-column: span 1 / span 1;
+    grid-column: 1 / 2;
   }
 
   /* Стили для внутренних ссылок (оставляем как у вас) */
@@ -46,6 +47,11 @@
     }
   }
 }
+
+@utility router-container {
+  @apply lg:col-span-5 space-y-6;
+}
+
 @utility right-bar {
   /* На мобильных: блок занимает всю ширину, а высота строго по контенту */
   @apply w-full h-fit;
@@ -54,7 +60,7 @@
   @media (width >= 64rem) {
     @apply h-full;
     /* grid-column: span 1 / span 1; */
-    grid-column: 6 / 7;
+    grid-column: 7 / 9;
   }
 
   /* Стили для внутренних ссылок (оставляем как у вас) */
@@ -118,6 +124,10 @@
   
   /* Мягкая тень только у левого (яркого) края */
   box-shadow: -4px 0 12px -2px rgba(37, 99, 235, 0.2);
+}
+
+@utility chat-message-container {
+  @apply flex-1 overflow-y-auto space-y-4 [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-slate-900 [&::-webkit-scrollbar-thumb]:bg-slate-700 [&::-webkit-scrollbar-thumb]:rounded-full;
 }
 
 /* 

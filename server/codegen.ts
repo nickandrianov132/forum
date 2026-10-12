@@ -14,14 +14,15 @@ const config: CodegenConfig = {
                      Post: "../models/Posts.js#IPost",
                      Category: "../models/Category.js#ICategory",
                      Like: "../models/Likes.js#ILike",
-                     Dislike: "../models/Dislikes.js#IDislike"
+                     Dislike: "../models/Dislikes.js#IDislike",
+                     Message: "../models/Message.js#IMessage"
                  },
                  useIndexSignature: true, 
                  scalars: {
                     ID: 'string',
-                    DateTime: 'Date',
+                    DateTime: 'Date | string',
                  },
-                 useTypeImports: true, // <--- Добавьте эту строку
+                 useTypeImports: true, 
                  // Эта опция помогает правильно обрабатывать расширения в ESM
                 emitLegacyCommonJSImports: false 
             }
