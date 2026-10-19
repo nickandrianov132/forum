@@ -82,7 +82,8 @@ const resolvers: Resolvers<MyContext> = {
             const post = await PostModel.findByIdAndUpdate(id, args, {new: true})
             return post
         }),
-        deletePost: authenticated( async (_, {id}) => {
+        deletePost: authenticated( async (parent, {id}) => {
+            console.log(parent);
             const result = await PostModel.findByIdAndDelete(id)
             const posts = await PostModel.find()
             pubsub.publish("POSTS_RENEW", { postsSub: posts})
@@ -121,14 +122,13 @@ const resolvers: Resolvers<MyContext> = {
         },
 
         isOwner: (parent, _, { userId }) => {
-        console.log("Parent Post userId:", parent.userId);
-        console.log("Current Context userId:", userId);
+            // console.log("Parent Post userId:", parent.userId);
+            // console.log("Current Context userId:", userId);
+            if (!userId || !parent.userId) {
+                return false; 
+            }
         
-        if (!userId || !parent.userId) {
-            return false; 
-        }
-        
-        return parent.userId.toString() === userId.toString();
+            return parent.userId.toString() === userId.toString();
         },
     }
     

@@ -9,10 +9,11 @@ import { authenticated } from "../../utils/authGuard.ts";
 import { env } from "../../config.ts";
 import bcrypt from 'bcrypt'; 
 import { MessageModel } from "../../models/Messages.ts";
+import { DislikeModel } from "../../models/Dislikes.ts";
 
-const generateJwt = (login: string, id: string) => {
+const generateJwt = (login: string, id: string, role: string) => {
   return jwt.sign(
-    { login, id }, 
+    { login, id, role }, 
     env.JWT_SECRET_KEY || 'SECRET',
     { expiresIn: '5m' }
   );
@@ -60,7 +61,7 @@ const resolvers: Resolvers<MyContext> = {
             }
 
             return {
-            accessToken: generateJwt(user.login!, user.id),
+            accessToken: generateJwt(user.login!, user.id, user.role),
             refreshToken: generateRefreshToken(user.id),
             user: user
         };
@@ -76,7 +77,7 @@ const resolvers: Resolvers<MyContext> = {
 
                 // Генерируем новую пару (Rotation)
                 return {
-                    accessToken: generateJwt(user.login!, user.id),
+                    accessToken: generateJwt(user.login!, user.id, user.role),
                     refreshToken: generateRefreshToken(user.id),
                     user: user
                 };
@@ -99,12 +100,9 @@ const resolvers: Resolvers<MyContext> = {
 
             await newUser.save();
             
-            // Токен тоже без пароля
-            // const token = generateJwt(login, newUser.id);
-            // return { user: newUser, token: token };
             return { 
             user: newUser, 
-            accessToken: generateJwt(login, newUser.id),
+            accessToken: generateJwt(login, newUser.id, newUser.role),
             refreshToken: generateRefreshToken(newUser.id)
         };
         },
@@ -123,11 +121,13 @@ const resolvers: Resolvers<MyContext> = {
         deleteUser: authenticated(async (_, { id }) => {
             // 1. Удаляем посты пользователя
             await PostModel.deleteMany({ userId: id });
-            
             // 2. Удаляем лайки пользователя 
             await LikeModel.deleteMany({ userId: id });
-
-            // 3. Удаляем самого пользователя
+            // 3. Удаляем дизлайки пользователя
+            await DislikeModel.deleteMany({ userId: id })
+            // 4. Удаляем чат-сообщения пользователя
+            await MessageModel.deleteMany({ userId: id })
+            // 5. Удаляем самого пользователя
             const result = await UserModel.findByIdAndDelete(id);
             return !!result;
         }),

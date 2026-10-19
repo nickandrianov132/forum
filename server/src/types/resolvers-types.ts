@@ -4,7 +4,7 @@ import type { IPost } from '../models/Posts.js';
 import type { ICategory } from '../models/Category.js';
 import type { ILike } from '../models/Likes.js';
 import type { IDislike } from '../models/Dislikes.js';
-import type { IMessage } from '../models/Messages.js';
+import type { IMessage } from '../models/Message.js';
 import type { MyContext } from '../../index.js';
 export type Maybe<T> = T | null;
 export type InputMaybe<T> = Maybe<T>;
@@ -228,6 +228,12 @@ export type QueryUserArgs = {
   id: Scalars['ID']['input'];
 };
 
+export enum Role {
+  Admin = 'Admin',
+  Moderator = 'Moderator',
+  User = 'User'
+}
+
 export type Subscription = {
   __typename?: 'Subscription';
   _empty?: Maybe<Scalars['String']['output']>;
@@ -244,14 +250,17 @@ export type UpdateUserInput = {
 export type User = {
   __typename?: 'User';
   avatar: Scalars['String']['output'];
+  bannedUntil?: Maybe<Scalars['DateTime']['output']>;
   createdAt: Scalars['DateTime']['output'];
   dislike?: Maybe<Array<Dislike>>;
   email: Scalars['String']['output'];
   id: Scalars['ID']['output'];
+  isBanned: Scalars['Boolean']['output'];
   likes?: Maybe<Array<Like>>;
   login: Scalars['String']['output'];
   messages?: Maybe<Array<Maybe<Message>>>;
   posts?: Maybe<Array<Maybe<Post>>>;
+  role: Role;
 };
 
 export type WithIndex<TObject> = TObject & Record<string, any>;
@@ -341,6 +350,7 @@ export type ResolversTypes = ResolversObject<{
   PaginatedPosts: ResolverTypeWrapper<Omit<PaginatedPosts, 'posts'> & { posts: Array<ResolversTypes['Post']> }>;
   Post: ResolverTypeWrapper<IPost>;
   Query: ResolverTypeWrapper<Record<PropertyKey, never>>;
+  Role: Role;
   String: ResolverTypeWrapper<Scalars['String']['output']>;
   Subscription: ResolverTypeWrapper<Record<PropertyKey, never>>;
   UpdateUserInput: UpdateUserInput;
@@ -466,14 +476,17 @@ export type SubscriptionResolvers<ContextType = MyContext, ParentType extends Re
 
 export type UserResolvers<ContextType = MyContext, ParentType extends ResolversParentTypes['User'] = ResolversParentTypes['User']> = ResolversObject<{
   avatar?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  bannedUntil?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   createdAt?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   dislike?: Resolver<Maybe<Array<ResolversTypes['Dislike']>>, ParentType, ContextType>;
   email?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  isBanned?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   likes?: Resolver<Maybe<Array<ResolversTypes['Like']>>, ParentType, ContextType>;
   login?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   messages?: Resolver<Maybe<Array<Maybe<ResolversTypes['Message']>>>, ParentType, ContextType>;
   posts?: Resolver<Maybe<Array<Maybe<ResolversTypes['Post']>>>, ParentType, ContextType>;
+  role?: Resolver<ResolversTypes['Role'], ParentType, ContextType>;
 }>;
 
 export type Resolvers<ContextType = MyContext> = ResolversObject<{

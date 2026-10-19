@@ -7,6 +7,13 @@ const userSchema = new Schema({
     password: { type: String, required: true },
     email: {type: String, unique: true, required: true},
     avatar: {type: String, default: "https://bqezaqgwkajiuqvwsuye.supabase.co/storage/v1/object/public/forum-media/avatars/user_icon2.png"},
+    role: {
+        type: String,
+        enum: ['User', 'Moderator', 'Admin'],
+        default: 'User'
+    },
+    isBanned: { type: Boolean, default: false },
+    bannedUntil: { type: Date, default: null },
     postsId: [{ type: mongoose.Types.ObjectId, ref: "Post" }],
     likesId: [{ type: mongoose.Types.ObjectId, ref: "Like" }],
     dislikesId: [{ type: mongoose.Types.ObjectId, ref: "Dislike" }]

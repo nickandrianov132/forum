@@ -1,15 +1,24 @@
 scalar DateTime
 
+enum Role {
+    User
+    Moderator
+    Admin
+}
+
 type User {
     id: ID!
     login: String!
     email: String!
     avatar: String!
+    role: Role!
     createdAt: DateTime!
     posts: [Post]
     messages: [Message]
     likes: [Like!]
     dislike: [Dislike!]
+    isBanned: Boolean!
+    bannedUntil: DateTime
 }
 
 input UpdateUserInput {

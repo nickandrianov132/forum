@@ -15,16 +15,19 @@ import cors from 'cors';
 import express from 'express';
 import schema from "./src/schema.ts"
 import { useServer } from 'graphql-ws/use/ws';
-import { getUserIdFromHeader, verifyToken } from "./src/utils/auth.ts";
+import { getUserFromHeader, verifyToken } from "./src/utils/auth.ts";
 import type { ILoaders } from "./src/loaders/mainLoader.ts";
 import { createLoaders } from "./src/loaders/mainLoader.ts";
 import { env } from "./src/config.ts";
+// import { migrateOldUsers } from "./src/scripts/migrate-users.ts";
 
+// migrateOldUsers();
 
 const app = express();
 const httpServer = createServer(app);
 export interface MyContext {
   userId?: string | null;
+  role: string | null;
   loaders: ILoaders; // теперь TS знает про userLoader, likeLoader и т.д.
 }
 
@@ -46,11 +49,11 @@ const serverCleanup = useServer(
 
       // Если клиент ПЫТАЛСЯ авторизоваться (прислал заголовок)
       if (authHeader) {
-        const userId = getUserIdFromHeader(authHeader);
+        const user = getUserFromHeader(authHeader);
         
         // ЕслиuserId нет (токен протух), возвращаем false. 
         // Это закроет соединение со стороны сервера.
-        if (!userId) {
+        if (!user) {
           console.log("WS Connection rejected: Token expired");
           return false; 
         }
@@ -62,12 +65,13 @@ const serverCleanup = useServer(
       const connectionParams = ctx.connectionParams as { authorization?: string };
       const authHeader = connectionParams?.authorization;
 
-      const userId = getUserIdFromHeader(authHeader);
+      const user = getUserFromHeader(authHeader);
 
 
       return { 
-        userId, 
-        loaders: createLoaders(userId || undefined) 
+        userId: user?.id || null,
+        role: user?.role || null, 
+        loaders: createLoaders(user?.id || undefined) 
       };
     },
   },
@@ -128,11 +132,12 @@ app.use(
   express.json(),
   expressMiddleware(server, {
     context: async ({ req }): Promise<MyContext> => {
-        const userId = getUserIdFromHeader(req.headers.authorization);  
+        const user = getUserFromHeader(req.headers.authorization);  
     
         return { 
-          userId, 
-          loaders: createLoaders(userId || undefined) 
+          userId: user?.id || null,
+          role: user?.role || null, 
+          loaders: createLoaders(user?.id || undefined) 
       };
     },
 

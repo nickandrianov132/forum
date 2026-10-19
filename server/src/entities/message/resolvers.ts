@@ -43,15 +43,20 @@ const resolvers: Resolvers<MyContext> = {
   Message: {
     id: (parent) => parent._id.toString(),
     userId: (parent) => parent.userId.toString(),
-    
-    user: async (parent) => {
-      // parent — это IMessage. Достаем его userId и ищем юзера в базе
-      const user = await UserModel.findById(parent.userId);
-      if (!user) {
-        throw new GraphQLError("Автор сообщения не найден в базе данных");
-      }
-      return user;
+    // оптимизация с userLoader:
+    user: async (parent, _,{ loaders }) => {
+      const user = await loaders.userLoader.load(parent.userId.toString());
+      if(!user) throw new Error("User Not Found!")
+      return user
     }
+    // запросы на пользователя сообщения без userLoader (n+1):
+    // user: async (parent) => {
+    //   const user = await UserModel.findById(parent.userId);
+    //   if (!user) {
+    //     throw new GraphQLError("Автор сообщения не найден в базе данных");
+    //   }
+    //   return user;
+    // }
   }
 };
 

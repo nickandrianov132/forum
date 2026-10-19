@@ -8,14 +8,6 @@ import { CategoryModel } from '../models/Category.ts';
 export type ILoaders = ReturnType<typeof createLoaders>;
 
 export const createLoaders = (currentUserId?: string) => ({
-  // Группирует запросы авторов: вместо 20 запросов по одному ID -> 1 запрос с $in: [ids]
-  // userLoader: new DataLoader(async (ids: readonly string[]) => {
-  //   const users = await UserModel.find({ _id: { $in: ids } });
-  //   const userMap = new Map(users.map(u => [u.id.toString(), u]));
-  //   return ids.map(id => userMap.get(id.toString()) || null);
-  // }),
-
-
   // Loader КАТЕГОРИЙ для решения проблемы N+1
   categoryLoader: new DataLoader(async (ids: readonly string[]) => {
     try {
@@ -41,8 +33,6 @@ export const createLoaders = (currentUserId?: string) => ({
     return ids.map(id => {
       const user = userMap.get(id.toString());
       if (!user) {
-        // Вместо падения всего запроса, возвращаем конкретную ошибку для этого ID
-        // или просто null, если это допустимо по схеме GraphQL
         return null; 
       }
       return user;
@@ -60,7 +50,7 @@ export const createLoaders = (currentUserId?: string) => ({
       userId: currentUserId 
     });
     const likedPostIds = new Set(
-        likes.map(l => l.postId?.toString()).filter(Boolean)
+        likes.map(l => l.postId?.toString()).filter(Boolean) // короткий способ убрать undefined или любые falsy значения (в моем случае если у лайка нет постId то ? вернет undefined соответствунно toString() не вызывается и в массив летит undefined, затем .filter c с предикатом Booldean очистит массив от всех undefined)
     );
     return postIds.map(id => likedPostIds.has(id.toString()));
   }),

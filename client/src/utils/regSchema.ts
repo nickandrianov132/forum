@@ -1,4 +1,4 @@
-import { z } from 'zod'
+import { z } from 'zod';
 
 export const regSchema = z.object({
   login: z.string().min(4, "Login must be at least 4 characters").max(20),

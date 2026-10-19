@@ -193,7 +193,7 @@ const wsLink = new GraphQLWsLink(createClient({
       // 1. Метод синхронный, event имеет тип unknown — как и требует graphql-ws
       closed: (event: unknown) => {
         
-        // 2. Безопасно проверяем, что это объект с числовым полем code
+        // 2. Проверка на объект с числовым полем code
         if (
           event && 
           typeof event === 'object' && 
@@ -205,7 +205,7 @@ const wsLink = new GraphQLWsLink(createClient({
           const currentRefreshToken = localStorage.getItem('refreshToken');
           if (!currentRefreshToken) return;
 
-          // 3. Выносим всю асинхронную логику внутрь самовызывающейся функции
+          // 3.  асинхронная логика упакована внутрь самовызывающейся функции IIFE
           (async () => {
             try {
               const res = await fetch('http://localhost:7000/graphql', { 
@@ -245,7 +245,7 @@ const wsLink = new GraphQLWsLink(createClient({
     }
 }));
 
-// 5. Собираем HTTP цепочку в правильном порядке
+// 5.  HTTP цепочка в правильном порядке
 const combinedHttpLink = ApolloLink.from([
   authLink,    // 1. Сначала навешиваем заголовки
   refreshLink, // 2. Перехватываем ошибки и при необходимости обновляем токены

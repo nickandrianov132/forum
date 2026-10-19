@@ -220,6 +220,12 @@ export type QueryUserArgs = {
   id: Scalars['ID']['input'];
 };
 
+export enum Role {
+  Admin = 'Admin',
+  Moderator = 'Moderator',
+  User = 'User'
+}
+
 export type Subscription = {
   __typename?: 'Subscription';
   _empty?: Maybe<Scalars['String']['output']>;
@@ -236,14 +242,17 @@ export type UpdateUserInput = {
 export type User = {
   __typename?: 'User';
   avatar: Scalars['String']['output'];
+  bannedUntil?: Maybe<Scalars['DateTime']['output']>;
   createdAt: Scalars['DateTime']['output'];
   dislike?: Maybe<Array<Dislike>>;
   email: Scalars['String']['output'];
   id: Scalars['ID']['output'];
+  isBanned: Scalars['Boolean']['output'];
   likes?: Maybe<Array<Like>>;
   login: Scalars['String']['output'];
   messages?: Maybe<Array<Maybe<Message>>>;
   posts?: Maybe<Array<Maybe<Post>>>;
+  role: Role;
 };
 
 export type AddDislikeMutationVariables = Exact<{

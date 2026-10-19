@@ -8,6 +8,7 @@ type ResolverFn<TParent = any, TArgs = any> = (
   info: GraphQLResolveInfo
 ) => Promise<any> | any;
 
+
 export const authenticated = <TParent, TArgs>(
   next: ResolverFn<TParent, TArgs>
 ): ResolverFn<TParent, TArgs> => {
@@ -17,6 +18,30 @@ export const authenticated = <TParent, TArgs>(
         extensions: { code: 'UNAUTHENTICATED', http: { status: 401 } },
       });
     }
-    return next(parent, args, context, info);
+
+
+    return next;
+  };
+};
+
+export const hasRole = (allowedRoles: string[]) => {
+  return <TParent, TArgs>(
+    next: ResolverFn<TParent, TArgs>
+  ): ResolverFn<TParent, TArgs> => {
+    return (parent, args, context, info) => {
+      if (!context.userId) {
+        throw new GraphQLError('User is nor authenticated', {
+          extensions: { code: 'UNAUTHENTICATED', http: { status: 401 }}
+        });
+      }
+
+      if (!context.role || !allowedRoles.includes(context.role)) {
+        throw new GraphQLError('Forbidden: You do not have permission!', {
+          extensions: { code: 'FORBIDDEN', http: { status: 403 } },
+        });
+      }
+
+      return next(parent, args, context, info);
+    };
   };
 };
