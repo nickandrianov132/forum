@@ -75,13 +75,16 @@ export type Mutation = {
   addDislike: Post;
   addLike: Post;
   addUser: AuthResponse;
+  banUser?: Maybe<Scalars['Boolean']['output']>;
   createCategory: Category;
   createPost: Post;
   deletePost?: Maybe<Scalars['Boolean']['output']>;
+  deletePostByAdmin: Scalars['Boolean']['output'];
   deleteUser?: Maybe<Scalars['Boolean']['output']>;
   loginUser: AuthResponse;
   refreshToken: AuthResponse;
   sendMessage: Message;
+  unbanUser?: Maybe<Scalars['Boolean']['output']>;
   updatePost?: Maybe<Post>;
   updateUser?: Maybe<User>;
 };
@@ -105,6 +108,12 @@ export type MutationAddUserArgs = {
 };
 
 
+export type MutationBanUserArgs = {
+  id: Scalars['ID']['input'];
+  input: BanUserInput;
+};
+
+
 export type MutationCreateCategoryArgs = {
   description?: InputMaybe<Scalars['String']['input']>;
   name: Scalars['String']['input'];
@@ -121,6 +130,11 @@ export type MutationCreatePostArgs = {
 
 
 export type MutationDeletePostArgs = {
+  id: Scalars['ID']['input'];
+};
+
+
+export type MutationDeletePostByAdminArgs = {
   id: Scalars['ID']['input'];
 };
 
@@ -144,6 +158,11 @@ export type MutationRefreshTokenArgs = {
 export type MutationSendMessageArgs = {
   text: Scalars['String']['input'];
   userId: Scalars['ID']['input'];
+};
+
+
+export type MutationUnbanUserArgs = {
+  id: Scalars['ID']['input'];
 };
 
 
@@ -250,6 +269,7 @@ export type UpdateUserInput = {
 export type User = {
   __typename?: 'User';
   avatar: Scalars['String']['output'];
+  bannedReason?: Maybe<Scalars['String']['output']>;
   bannedUntil?: Maybe<Scalars['DateTime']['output']>;
   createdAt: Scalars['DateTime']['output'];
   dislike?: Maybe<Array<Dislike>>;
@@ -261,6 +281,11 @@ export type User = {
   messages?: Maybe<Array<Maybe<Message>>>;
   posts?: Maybe<Array<Maybe<Post>>>;
   role: Role;
+};
+
+export type BanUserInput = {
+  durationInDays?: InputMaybe<Scalars['Int']['input']>;
+  reason?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type WithIndex<TObject> = TObject & Record<string, any>;
@@ -355,6 +380,7 @@ export type ResolversTypes = ResolversObject<{
   Subscription: ResolverTypeWrapper<Record<PropertyKey, never>>;
   UpdateUserInput: UpdateUserInput;
   User: ResolverTypeWrapper<IUser>;
+  banUserInput: BanUserInput;
 }>;
 
 /** Mapping between all available schema types and the resolvers parents */
@@ -376,6 +402,7 @@ export type ResolversParentTypes = ResolversObject<{
   Subscription: Record<PropertyKey, never>;
   UpdateUserInput: UpdateUserInput;
   User: IUser;
+  banUserInput: BanUserInput;
 }>;
 
 export type AuthResponseResolvers<ContextType = MyContext, ParentType extends ResolversParentTypes['AuthResponse'] = ResolversParentTypes['AuthResponse']> = ResolversObject<{
@@ -426,13 +453,16 @@ export type MutationResolvers<ContextType = MyContext, ParentType extends Resolv
   addDislike?: Resolver<ResolversTypes['Post'], ParentType, ContextType, RequireFields<MutationAddDislikeArgs, 'postId'>>;
   addLike?: Resolver<ResolversTypes['Post'], ParentType, ContextType, RequireFields<MutationAddLikeArgs, 'postId'>>;
   addUser?: Resolver<ResolversTypes['AuthResponse'], ParentType, ContextType, RequireFields<MutationAddUserArgs, 'email' | 'login' | 'password'>>;
+  banUser?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationBanUserArgs, 'id' | 'input'>>;
   createCategory?: Resolver<ResolversTypes['Category'], ParentType, ContextType, RequireFields<MutationCreateCategoryArgs, 'name' | 'slug'>>;
   createPost?: Resolver<ResolversTypes['Post'], ParentType, ContextType, RequireFields<MutationCreatePostArgs, 'categoryId' | 'content' | 'title' | 'userId'>>;
   deletePost?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationDeletePostArgs, 'id'>>;
+  deletePostByAdmin?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationDeletePostByAdminArgs, 'id'>>;
   deleteUser?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationDeleteUserArgs, 'id'>>;
   loginUser?: Resolver<ResolversTypes['AuthResponse'], ParentType, ContextType, RequireFields<MutationLoginUserArgs, 'login' | 'password'>>;
   refreshToken?: Resolver<ResolversTypes['AuthResponse'], ParentType, ContextType, RequireFields<MutationRefreshTokenArgs, 'token'>>;
   sendMessage?: Resolver<ResolversTypes['Message'], ParentType, ContextType, RequireFields<MutationSendMessageArgs, 'text' | 'userId'>>;
+  unbanUser?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationUnbanUserArgs, 'id'>>;
   updatePost?: Resolver<Maybe<ResolversTypes['Post']>, ParentType, ContextType, RequireFields<MutationUpdatePostArgs, 'id'>>;
   updateUser?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, RequireFields<MutationUpdateUserArgs, 'id' | 'input'>>;
 }>;
@@ -476,6 +506,7 @@ export type SubscriptionResolvers<ContextType = MyContext, ParentType extends Re
 
 export type UserResolvers<ContextType = MyContext, ParentType extends ResolversParentTypes['User'] = ResolversParentTypes['User']> = ResolversObject<{
   avatar?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  bannedReason?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   bannedUntil?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   createdAt?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   dislike?: Resolver<Maybe<Array<ResolversTypes['Dislike']>>, ParentType, ContextType>;

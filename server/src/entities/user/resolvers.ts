@@ -5,7 +5,7 @@ import { UserModel  } from "../../models/Users.ts";
 import type { Resolvers } from "../../types/resolvers-types.ts";
 import { GraphQLError } from 'graphql';
 import jwt from "jsonwebtoken"
-import { authenticated } from "../../utils/authGuard.ts";
+import { authenticated, hasRole } from "../../utils/authGuard.ts";
 import { env } from "../../config.ts";
 import bcrypt from 'bcrypt'; 
 import { MessageModel } from "../../models/Messages.ts";
@@ -106,9 +106,6 @@ const resolvers: Resolvers<MyContext> = {
             refreshToken: generateRefreshToken(newUser.id)
         };
         },
-
-
-
         updateUser: authenticated( async (_, {id, input}) => {
             
             if (input.password) {
@@ -131,7 +128,48 @@ const resolvers: Resolvers<MyContext> = {
             const result = await UserModel.findByIdAndDelete(id);
             return !!result;
         }),
-        
+        banUser: hasRole(['Admin', 'Moderator'])(
+            async (_, { id, input}) => {
+                const user = await UserModel.findById(id);
+
+                if (!user) {
+                    throw new GraphQLError('User not found!', {
+                        extensions: { code: 'BAD_USER_INPUT' }
+                    });
+                }
+                user.isBanned = true;
+
+                if (input.durationInDays && input.durationInDays > 0) {
+                    const banEndDate = new Date();
+                    banEndDate.setDate(banEndDate.getDate() + input.durationInDays);
+                    user.bannedUntil = banEndDate;
+                } else {
+                    user.bannedUntil = null;
+                }
+
+                await user.save();
+                console.log(`[Admin] User ${user.login} was banned for ${input.durationInDays} Day(s)!`);
+                return true;
+            }
+        ),
+        unbanUser: hasRole(['Admin', 'Moderator']) (
+            async (_, { id }) => {
+                const user = await UserModel.findById(id);
+                if (!user) {
+                    throw new GraphQLError('User not found!', {
+                        extensions: { code: 'BAD_USER_INPUT' }
+                    });
+                }
+                
+                user.isBanned = false;
+                user.bannedUntil = null;
+                user.bannedReason = null;
+
+                await user.save();
+                console.log(`[Admin] User ${user.login} was Unbaned!`);
+                return true;
+            }
+        )
     },
     User: {
         messages: async (parent) => {

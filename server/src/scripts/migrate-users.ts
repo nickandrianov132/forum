@@ -5,16 +5,24 @@ export async function migrateOldUsers() {
         const result = await UserModel.updateMany(
             {
                 $or: [
-                    { role: { $exists: false } },
+                    { bannReason: { $exists: false } },
                     { isBanned: { $exists: false} }
                 ]
+                // $or: [
+                //     { role: { $exists: false } },
+                //     { isBanned: { $exists: false} }
+                // ]
             },
             {
                 $set: {
-                    role: 'User',
                     isBanned: false,
-                    bannedUntil: null
+                    bannedReason: null
                 }
+                // $set: {
+                //     role: 'User',
+                //     isBanned: false,
+                //     bannedUntil: null
+                // }
             }
         );
         console.log(`[Миграция] Успешно обновлено пользователей в БД: ${result.modifiedCount}`);        

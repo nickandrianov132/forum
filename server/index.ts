@@ -19,8 +19,11 @@ import { getUserFromHeader, verifyToken } from "./src/utils/auth.ts";
 import type { ILoaders } from "./src/loaders/mainLoader.ts";
 import { createLoaders } from "./src/loaders/mainLoader.ts";
 import { env } from "./src/config.ts";
-// import { migrateOldUsers } from "./src/scripts/migrate-users.ts";
 
+///// Migrations imports & run:
+// import { assignAdminRoles } from "./src/scripts/assign-roles-migration.ts";
+// import { migrateOldUsers } from "./src/scripts/migrate-users.ts";
+// assignAdminRoles();
 // migrateOldUsers();
 
 const app = express();
@@ -54,7 +57,7 @@ const serverCleanup = useServer(
         // ЕслиuserId нет (токен протух), возвращаем false. 
         // Это закроет соединение со стороны сервера.
         if (!user) {
-          console.log("WS Connection rejected: Token expired");
+          // console.log("WS Connection rejected: Token expired");
           return false; 
         }
       }

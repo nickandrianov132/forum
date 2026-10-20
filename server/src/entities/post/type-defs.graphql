@@ -28,7 +28,7 @@ extend type Mutation {
     createPost(categoryId: ID!, title: String!, content: String!, userId: ID!): Post
     updatePost(id: ID!, categoryId: ID, title: String, content: String): Post
     deletePost(id: ID!): Boolean
-
+    deletePostByAdmin(id: ID!): Boolean! 
     # Лайки и Дизлайки (возвращают Post для мгновенного обновления кэша)
     addLike(postId: ID!): Post!
     addDislike(postId: ID!): Post!

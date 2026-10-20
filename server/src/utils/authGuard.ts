@@ -20,7 +20,7 @@ export const authenticated = <TParent, TArgs>(
     }
 
 
-    return next;
+    return next(parent, args, context, info);
   };
 };
 

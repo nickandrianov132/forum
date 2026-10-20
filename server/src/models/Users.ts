@@ -14,10 +14,15 @@ const userSchema = new Schema({
     },
     isBanned: { type: Boolean, default: false },
     bannedUntil: { type: Date, default: null },
+    bannedReason: { type: String, default: null },
     postsId: [{ type: mongoose.Types.ObjectId, ref: "Post" }],
     likesId: [{ type: mongoose.Types.ObjectId, ref: "Like" }],
     dislikesId: [{ type: mongoose.Types.ObjectId, ref: "Dislike" }]
-}, { timestamps: true } // Автоматически добавит createdAt и updatedAt с типом Date
+}, { 
+      timestamps: true,  // Автоматически добавит createdAt и updatedAt с типом Date
+      toObject: { virtuals: true },
+      toJSON: { virtuals: true }
+    } 
 )
 
 export type IUser = InferSchemaType<typeof userSchema> & { _id: Types.ObjectId; id: string; avatar: string; };

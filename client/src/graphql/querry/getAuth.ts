@@ -5,6 +5,7 @@ export const USER_HEADER_FRAGMENT = graphql(`
       id
       login
       avatar
+      role
     }  
 `)
 

@@ -13,13 +13,12 @@ export function useAuthInit() {
 
     // 1. Убираем useMemo с пустым массивом для токенов, 
     // либо привязываем его к состоянию готовности, чтобы не блокировать чтение.
-    // На самом деле, читать localStorage раз в рендер — это абсолютно не накладно.
     const accessToken = localStorage.getItem('token') || '';
     const refreshToken = localStorage.getItem('refreshToken') || '';
     
     const hasToken = !!accessToken;
 
-    // 2. КРИТИЧЕСКОЕ ИЗМЕНЕНИЕ: Если приложение УЖЕ инициализировано (isReady),
+    // 2. Если приложение уже инициализировано (isReady),
     // мы пропускаем (skip) этот запрос навсегда, чтобы он не стрелял при логинах нового юзера!
     const { loading, error, data } = useQuery(GET_ME, {
         skip: !hasToken || isReady, 
@@ -31,7 +30,7 @@ export function useAuthInit() {
         // Если уже готовы — ничего не делаем
         if (isReady) return;
 
-        // Сценарий 1: Токена нет — завершаем
+        // Токена нет — завершаем
         if (!hasToken) {
             setIsReady(true);
             return;

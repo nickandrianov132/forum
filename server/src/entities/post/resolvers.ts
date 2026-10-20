@@ -3,7 +3,7 @@ import { PostModel } from "../../models/Posts.ts";
 import { UserModel } from "../../models/Users.ts";
 import type { Resolvers } from "../../types/resolvers-types.ts";
 import { PubSub } from "graphql-subscriptions";
-import { authenticated } from "../../utils/authGuard.ts";
+import { authenticated, hasRole } from "../../utils/authGuard.ts";
 const pubsub = new PubSub()
 
 const resolvers: Resolvers<MyContext> = {
@@ -32,15 +32,12 @@ const resolvers: Resolvers<MyContext> = {
             try {
                 const { CategoryModel } = await import("../../models/Category.ts");
                 
-                // 1. Сначала находим саму категорию по красивой строке из URL
                 const category = await CategoryModel.findOne({ slug }).lean();
-                
-                // Если категория не найдена, возвращаем пустую страницу (защита от краша)
                 if (!category) {
                     return { posts: [], totalCount: 0 };
                 }
 
-                // 2. Ищем посты по реальному ObjectId найденной категории
+                // Ищем посты по реальному ObjectId найденной категории
                 const [posts, totalCount] = await Promise.all([
                     PostModel.find({ category: category._id })
                         .sort({ createdAt: -1 })
@@ -55,7 +52,7 @@ const resolvers: Resolvers<MyContext> = {
                         ...post,
                         id: post._id.toString()
                     })),
-                    totalCount: totalCount ?? 0 // 100% защита от null
+                    totalCount: totalCount ?? 0 // защита от null
                 }
 
             } catch (error) {
@@ -65,10 +62,9 @@ const resolvers: Resolvers<MyContext> = {
         }
     },
     Mutation: {
-        // Заменили topic на categoryId
         createPost: authenticated( async (_, {categoryId, title, content, userId}) => {
             const newPost = new PostModel({
-                category: categoryId, // Передаем ID категории в Mongoose модель
+                category: categoryId, 
                 title, 
                 content, 
                 userId
@@ -89,9 +85,16 @@ const resolvers: Resolvers<MyContext> = {
             pubsub.publish("POSTS_RENEW", { postsSub: posts})
             return !!result
         }),
+        deletePostByAdmin: hasRole(['Admin', 'Moderator'])(
+            async (_, {id}) => {
+                const result = await PostModel.findByIdAndDelete(id)
+                return !!result
+            }
+        ),
+        
     },
     Post: {
-        // ДОБАВЛЕНО: Резолвер поля category для типа Post
+        // Резолвер поля category для типа Post
         category: async (parent, _, { loaders }) => {
             // Применяем .toString() к ID категории из базы данных
             const category = await loaders.categoryLoader.load(parent.category.toString());

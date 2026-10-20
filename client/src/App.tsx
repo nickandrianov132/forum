@@ -55,6 +55,7 @@ const refreshLink = new ApolloLink((operation, forward) => {
                   id
                   login
                   avatar
+                  role
                 }
               }
             }
@@ -140,7 +141,7 @@ const refreshLink = new ApolloLink((operation, forward) => {
         
         if (is401) {
           if (isRefreshing) {
-            enqueueRequest(); // ИСПРАВЛЕНО: Сетевые ошибки 401 теперь тоже ждут своей очереди
+            enqueueRequest();  // Сетевые ошибки 401 тоже ждут своей очереди
           } else {
             handleRefresh();
           }
@@ -149,7 +150,7 @@ const refreshLink = new ApolloLink((operation, forward) => {
         }
       },
       complete: () => {
-        // ИСПРАВЛЕНО: Не вызываем complete, если запрос ушел на повторный цикл (retrySub),
+        // Не вызываем complete, если запрос ушел на повторный цикл retrySub,
         // иначе хуки useQuery/useMutation в компонентах закроются раньше времени.
         if (!isRefreshing && !retrySub) {
           observer.complete();

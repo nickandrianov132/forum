@@ -19,6 +19,7 @@ type User {
     dislike: [Dislike!]
     isBanned: Boolean!
     bannedUntil: DateTime
+    bannedReason: String
 }
 
 input UpdateUserInput {
@@ -26,6 +27,11 @@ input UpdateUserInput {
     email: String
     avatar: String
     password: String
+}
+
+input banUserInput {
+    reason: String
+    durationInDays: Int
 }
 
 type AuthResponse {
@@ -48,6 +54,8 @@ type Mutation {
     refreshToken(token: String!): AuthResponse!
     deleteUser(id: ID!): Boolean
     updateUser(id: ID!, input: UpdateUserInput!): User
+    banUser(id: ID!, input: banUserInput!): Boolean
+    unbanUser(id: ID!): Boolean
 }
 
 type Subscription { 
