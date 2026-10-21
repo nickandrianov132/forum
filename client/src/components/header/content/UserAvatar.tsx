@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import { useAppSelector } from "../../../store/hooks";
 import { Link } from "react-router";
-import { ACCOUNT_INFO_ROUTE, ACCOUNT_SETTINGS_ROUTE } from "../../../utils/constants";
+import { ACCOUNT_INFO_ROUTE, ACCOUNT_SETTINGS_ROUTE, ADMIN_PANEL } from "../../../utils/constants";
+
 
 
 const UserAvatar = () => {
@@ -44,6 +45,13 @@ const UserAvatar = () => {
                     onClick={(e) => e.stopPropagation()} 
                     className="absolute z-50 top-full right-2 w-fit flex flex-col border border-slate-700/50 bg-slate-800 text-white rounded-b-md"
                 >
+                    {user?.role === "Admin" &&
+                        <Link
+                            to={ADMIN_PANEL}
+                            onClick={() => setIsUserMenu(false)}
+                            className="px-3 py-2 text-sm transition-colors text-slate-200 hover:text-white hover:bg-sky-600/80 "
+                        >Admin panel</Link>
+                    }
                     <Link
                         to={ACCOUNT_INFO_ROUTE}
                         onClick={() => setIsUserMenu(false)}

@@ -29,7 +29,8 @@ input UpdateUserInput {
     password: String
 }
 
-input banUserInput {
+input BanUserInput {
+    login: String!
     reason: String
     durationInDays: Int
 }
@@ -54,8 +55,8 @@ type Mutation {
     refreshToken(token: String!): AuthResponse!
     deleteUser(id: ID!): Boolean
     updateUser(id: ID!, input: UpdateUserInput!): User
-    banUser(id: ID!, input: banUserInput!): Boolean
-    unbanUser(id: ID!): Boolean
+    banUser( input: BanUserInput!): Boolean
+    unbanUser(login: String!): Boolean
 }
 
 type Subscription { 

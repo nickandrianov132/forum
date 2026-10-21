@@ -56,6 +56,7 @@ const refreshLink = new ApolloLink((operation, forward) => {
                   login
                   avatar
                   role
+                  isBanned
                 }
               }
             }
@@ -84,7 +85,7 @@ const refreshLink = new ApolloLink((operation, forward) => {
 
         // Повторяем запрос. Так как мы стоим ПОСЛЕ authLink, forward(operation) уйдет сразу в httpLink
         retrySub = forward(operation).subscribe(observer);
-        // ОЧИЩАЕМ КЭШ: Это заставит все активные на экранеuseQuery (включая посты) 
+        // ОЧИЩАЕМ КЭШ: Это заставит все активные на экране useQuery (включая посты) 
         // автоматически перезапросить данные с сервера с новыми правами!
         // client.refetchQueries({ include: "active" }); 
         // Пропускаем накопившуюся очередь запросов
@@ -218,7 +219,7 @@ const wsLink = new GraphQLWsLink(createClient({
                       refreshToken(token: $token) {
                         accessToken
                         refreshToken
-                        user { id login avatar }
+                        user { id login avatar role isBanned }
                       }
                     }
                   `,

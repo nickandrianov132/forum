@@ -129,8 +129,8 @@ const resolvers: Resolvers<MyContext> = {
             return !!result;
         }),
         banUser: hasRole(['Admin', 'Moderator'])(
-            async (_, { id, input}) => {
-                const user = await UserModel.findById(id);
+            async (_, { input }) => {
+                const user = await UserModel.findOne({login: input.login});
 
                 if (!user) {
                     throw new GraphQLError('User not found!', {
@@ -138,6 +138,7 @@ const resolvers: Resolvers<MyContext> = {
                     });
                 }
                 user.isBanned = true;
+                user.bannedReason = input.reason || null;
 
                 if (input.durationInDays && input.durationInDays > 0) {
                     const banEndDate = new Date();
@@ -153,8 +154,8 @@ const resolvers: Resolvers<MyContext> = {
             }
         ),
         unbanUser: hasRole(['Admin', 'Moderator']) (
-            async (_, { id }) => {
-                const user = await UserModel.findById(id);
+            async (_, { login }) => {
+                const user = await UserModel.findOne({ login });
                 if (!user) {
                     throw new GraphQLError('User not found!', {
                         extensions: { code: 'BAD_USER_INPUT' }

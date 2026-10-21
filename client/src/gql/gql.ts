@@ -16,15 +16,17 @@ import type { TypedDocumentNode as DocumentNode } from '@graphql-typed-document-
 type Documents = {
     "\n  mutation AddDislike($postId: ID!) {\n    addDislike(postId: $postId) {\n      id\n      likesCount\n      dislikesCount\n      isLiked\n      isDisliked\n    }\n  }\n": typeof types.AddDislikeDocument,
     "\n  mutation AddLike($postId: ID!) {\n    addLike(postId: $postId) {\n      id\n      likesCount\n      dislikesCount\n      isLiked\n      isDisliked\n    }\n  }\n": typeof types.AddLikeDocument,
+    "\n    mutation BanUser($input: BanUserInput!) {\n        banUser( input: $input )\n    }   \n": typeof types.BanUserDocument,
     "\n   mutation CreatePost($categoryId: ID!, $title: String!, $content: String!, $userId: ID!) {\n      createPost(categoryId: $categoryId, title: $title, content: $content, userId: $userId) {\n        id\n        category {\n            id\n            name\n        }\n        title\n        createdAt\n        user{\n            id\n            login\n        }\n      }\n   }\n": typeof types.CreatePostDocument,
     "\n    mutation AddUser($login: String!, $password: String!, $email: String!, $avatar: String) {\n        addUser(login: $login, password: $password, email: $email, avatar: $avatar) {\n            user{\n                id\n                login\n                email\n                avatar\n                createdAt\n            }\n        }\n    }\n": typeof types.AddUserDocument,
     "\n    mutation DeletePost($id: ID!) {\n        deletePost(id: $id)         \n    }    \n": typeof types.DeletePostDocument,
     "\n    mutation DeletePostByAdmin($id: ID!) {\n        deletePostByAdmin(id: $id)\n    }\n\n": typeof types.DeletePostByAdminDocument,
-    "\n  mutation loginUser($login: String!, $password: String!) {\n    loginUser(login: $login, password: $password) {\n      accessToken\n      refreshToken\n      user {\n        id\n        login\n        avatar\n      }\n    }\n  }\n": typeof types.LoginUserDocument,
+    "\n  mutation loginUser($login: String!, $password: String!) {\n    loginUser(login: $login, password: $password) {\n      accessToken\n      refreshToken\n      user {\n        id\n        login\n        avatar\n        role\n        isBanned\n      }\n    }\n  }\n": typeof types.LoginUserDocument,
     "\n    mutation SendMessage($text: String!, $userId: ID!) {\n        sendMessage(text: $text, userId: $userId) {\n            id\n            text\n            userId\n            createdAt\n            user {\n                id\n                login\n                avatar\n            }\n        }\n    }    \n": typeof types.SendMessageDocument,
+    "\n    mutation UnbanUser($login: String!) {\n        unbanUser(login: $login)\n    }    \n": typeof types.UnbanUserDocument,
     "\n  mutation UpdatePost($id: ID!, $postTitle: String, $postContent: String) {\n    updatePost(id: $id, title: $postTitle, content: $postContent) {\n      id              # Обязательно для идентификации в кэше\n      title           # Чтобы заголовок обновился в списке\n      content         # Чтобы контент обновился в списке\n      likesCount\n      dislikesCount\n      isLiked\n      isDisliked\n      __typename      # Помогает Apollo понять тип объекта\n      isOwner\n    }\n  }\n": typeof types.UpdatePostDocument,
     "\n    mutation UpdateUser($id: ID!, $input: UpdateUserInput!) {\n        updateUser(id: $id, input: $input) {\n            id\n            login\n            email\n            avatar\n        }\n    }\n": typeof types.UpdateUserDocument,
-    "\n    fragment UserHeaderFields on User {\n      id\n      login\n      avatar\n      role\n    }  \n": typeof types.UserHeaderFieldsFragmentDoc,
+    "\n    fragment UserHeaderFields on User {\n      id\n      login\n      avatar\n      role\n      isBanned\n    }  \n": typeof types.UserHeaderFieldsFragmentDoc,
     "\n  query Me {\n    me {\n      ...UserHeaderFields\n    }\n  }\n": typeof types.MeDocument,
     "\n    query GetCategories {\n        categories {\n            id\n            name\n            slug\n        }\n    }\n": typeof types.GetCategoriesDocument,
     "\n    query GetMessages {\n        messages {\n            id\n            text\n            userId\n            createdAt\n            user {\n                id\n                login\n                avatar\n            }\n        }\n    }    \n": typeof types.GetMessagesDocument,
@@ -37,15 +39,17 @@ type Documents = {
 const documents: Documents = {
     "\n  mutation AddDislike($postId: ID!) {\n    addDislike(postId: $postId) {\n      id\n      likesCount\n      dislikesCount\n      isLiked\n      isDisliked\n    }\n  }\n": types.AddDislikeDocument,
     "\n  mutation AddLike($postId: ID!) {\n    addLike(postId: $postId) {\n      id\n      likesCount\n      dislikesCount\n      isLiked\n      isDisliked\n    }\n  }\n": types.AddLikeDocument,
+    "\n    mutation BanUser($input: BanUserInput!) {\n        banUser( input: $input )\n    }   \n": types.BanUserDocument,
     "\n   mutation CreatePost($categoryId: ID!, $title: String!, $content: String!, $userId: ID!) {\n      createPost(categoryId: $categoryId, title: $title, content: $content, userId: $userId) {\n        id\n        category {\n            id\n            name\n        }\n        title\n        createdAt\n        user{\n            id\n            login\n        }\n      }\n   }\n": types.CreatePostDocument,
     "\n    mutation AddUser($login: String!, $password: String!, $email: String!, $avatar: String) {\n        addUser(login: $login, password: $password, email: $email, avatar: $avatar) {\n            user{\n                id\n                login\n                email\n                avatar\n                createdAt\n            }\n        }\n    }\n": types.AddUserDocument,
     "\n    mutation DeletePost($id: ID!) {\n        deletePost(id: $id)         \n    }    \n": types.DeletePostDocument,
     "\n    mutation DeletePostByAdmin($id: ID!) {\n        deletePostByAdmin(id: $id)\n    }\n\n": types.DeletePostByAdminDocument,
-    "\n  mutation loginUser($login: String!, $password: String!) {\n    loginUser(login: $login, password: $password) {\n      accessToken\n      refreshToken\n      user {\n        id\n        login\n        avatar\n      }\n    }\n  }\n": types.LoginUserDocument,
+    "\n  mutation loginUser($login: String!, $password: String!) {\n    loginUser(login: $login, password: $password) {\n      accessToken\n      refreshToken\n      user {\n        id\n        login\n        avatar\n        role\n        isBanned\n      }\n    }\n  }\n": types.LoginUserDocument,
     "\n    mutation SendMessage($text: String!, $userId: ID!) {\n        sendMessage(text: $text, userId: $userId) {\n            id\n            text\n            userId\n            createdAt\n            user {\n                id\n                login\n                avatar\n            }\n        }\n    }    \n": types.SendMessageDocument,
+    "\n    mutation UnbanUser($login: String!) {\n        unbanUser(login: $login)\n    }    \n": types.UnbanUserDocument,
     "\n  mutation UpdatePost($id: ID!, $postTitle: String, $postContent: String) {\n    updatePost(id: $id, title: $postTitle, content: $postContent) {\n      id              # Обязательно для идентификации в кэше\n      title           # Чтобы заголовок обновился в списке\n      content         # Чтобы контент обновился в списке\n      likesCount\n      dislikesCount\n      isLiked\n      isDisliked\n      __typename      # Помогает Apollo понять тип объекта\n      isOwner\n    }\n  }\n": types.UpdatePostDocument,
     "\n    mutation UpdateUser($id: ID!, $input: UpdateUserInput!) {\n        updateUser(id: $id, input: $input) {\n            id\n            login\n            email\n            avatar\n        }\n    }\n": types.UpdateUserDocument,
-    "\n    fragment UserHeaderFields on User {\n      id\n      login\n      avatar\n      role\n    }  \n": types.UserHeaderFieldsFragmentDoc,
+    "\n    fragment UserHeaderFields on User {\n      id\n      login\n      avatar\n      role\n      isBanned\n    }  \n": types.UserHeaderFieldsFragmentDoc,
     "\n  query Me {\n    me {\n      ...UserHeaderFields\n    }\n  }\n": types.MeDocument,
     "\n    query GetCategories {\n        categories {\n            id\n            name\n            slug\n        }\n    }\n": types.GetCategoriesDocument,
     "\n    query GetMessages {\n        messages {\n            id\n            text\n            userId\n            createdAt\n            user {\n                id\n                login\n                avatar\n            }\n        }\n    }    \n": types.GetMessagesDocument,
@@ -81,6 +85,10 @@ export function graphql(source: "\n  mutation AddLike($postId: ID!) {\n    addLi
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
+export function graphql(source: "\n    mutation BanUser($input: BanUserInput!) {\n        banUser( input: $input )\n    }   \n"): (typeof documents)["\n    mutation BanUser($input: BanUserInput!) {\n        banUser( input: $input )\n    }   \n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
 export function graphql(source: "\n   mutation CreatePost($categoryId: ID!, $title: String!, $content: String!, $userId: ID!) {\n      createPost(categoryId: $categoryId, title: $title, content: $content, userId: $userId) {\n        id\n        category {\n            id\n            name\n        }\n        title\n        createdAt\n        user{\n            id\n            login\n        }\n      }\n   }\n"): (typeof documents)["\n   mutation CreatePost($categoryId: ID!, $title: String!, $content: String!, $userId: ID!) {\n      createPost(categoryId: $categoryId, title: $title, content: $content, userId: $userId) {\n        id\n        category {\n            id\n            name\n        }\n        title\n        createdAt\n        user{\n            id\n            login\n        }\n      }\n   }\n"];
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
@@ -97,11 +105,15 @@ export function graphql(source: "\n    mutation DeletePostByAdmin($id: ID!) {\n 
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
-export function graphql(source: "\n  mutation loginUser($login: String!, $password: String!) {\n    loginUser(login: $login, password: $password) {\n      accessToken\n      refreshToken\n      user {\n        id\n        login\n        avatar\n      }\n    }\n  }\n"): (typeof documents)["\n  mutation loginUser($login: String!, $password: String!) {\n    loginUser(login: $login, password: $password) {\n      accessToken\n      refreshToken\n      user {\n        id\n        login\n        avatar\n      }\n    }\n  }\n"];
+export function graphql(source: "\n  mutation loginUser($login: String!, $password: String!) {\n    loginUser(login: $login, password: $password) {\n      accessToken\n      refreshToken\n      user {\n        id\n        login\n        avatar\n        role\n        isBanned\n      }\n    }\n  }\n"): (typeof documents)["\n  mutation loginUser($login: String!, $password: String!) {\n    loginUser(login: $login, password: $password) {\n      accessToken\n      refreshToken\n      user {\n        id\n        login\n        avatar\n        role\n        isBanned\n      }\n    }\n  }\n"];
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
 export function graphql(source: "\n    mutation SendMessage($text: String!, $userId: ID!) {\n        sendMessage(text: $text, userId: $userId) {\n            id\n            text\n            userId\n            createdAt\n            user {\n                id\n                login\n                avatar\n            }\n        }\n    }    \n"): (typeof documents)["\n    mutation SendMessage($text: String!, $userId: ID!) {\n        sendMessage(text: $text, userId: $userId) {\n            id\n            text\n            userId\n            createdAt\n            user {\n                id\n                login\n                avatar\n            }\n        }\n    }    \n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n    mutation UnbanUser($login: String!) {\n        unbanUser(login: $login)\n    }    \n"): (typeof documents)["\n    mutation UnbanUser($login: String!) {\n        unbanUser(login: $login)\n    }    \n"];
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
@@ -113,7 +125,7 @@ export function graphql(source: "\n    mutation UpdateUser($id: ID!, $input: Upd
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
-export function graphql(source: "\n    fragment UserHeaderFields on User {\n      id\n      login\n      avatar\n      role\n    }  \n"): (typeof documents)["\n    fragment UserHeaderFields on User {\n      id\n      login\n      avatar\n      role\n    }  \n"];
+export function graphql(source: "\n    fragment UserHeaderFields on User {\n      id\n      login\n      avatar\n      role\n      isBanned\n    }  \n"): (typeof documents)["\n    fragment UserHeaderFields on User {\n      id\n      login\n      avatar\n      role\n      isBanned\n    }  \n"];
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */

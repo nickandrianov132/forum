@@ -6,6 +6,7 @@ export const USER_HEADER_FRAGMENT = graphql(`
       login
       avatar
       role
+      isBanned
     }  
 `)
 

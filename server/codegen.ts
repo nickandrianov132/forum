@@ -15,7 +15,7 @@ const config: CodegenConfig = {
                      Category: "../models/Category.js#ICategory",
                      Like: "../models/Likes.js#ILike",
                      Dislike: "../models/Dislikes.js#IDislike",
-                     Message: "../models/Message.js#IMessage"
+                     Message: "../models/Messages.js#IMessage"
                  },
                  useIndexSignature: true, 
                  scalars: {

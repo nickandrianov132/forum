@@ -9,7 +9,7 @@ const ForumChat = () => {
         <div className='flex flex-col rounded-md overflow-hidden' >
             <ChatHeader />
             <ChatBody />
-            {user &&
+            {user && !user.isBanned &&
                 <ChatFooter />
             }
         </div>

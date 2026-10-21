@@ -10,14 +10,14 @@ import { Link } from "react-router";
 import { USER_REGISTRATION } from "../../utils/constants";
 
 const Header = () => {
-    const { accessToken, user } = useAppSelector(state => state.user)
+    const { user } = useAppSelector(state => state.user)
 
     const [isLoginFormOpen, setIsLoginFormOpen] = useState(false);
     useEffect(() => {
         console.log(user);
     }, [user])
-    console.log(user);
-    console.log(accessToken);
+
+    // console.log(accessToken);
     return (
         <header className="header-container">
             <nav className="nav-header">

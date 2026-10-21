@@ -166,7 +166,7 @@ return (
                     {category?.name}
                 </h2>
             </div>
-            {user && (
+            {user && !user.isBanned && (
                 <Link
                     to={CREATE_NEW_POST}
                     className="flex items-center h-9 px-4 text-sm mr-6 font-medium text-slate-200! rounded-lg bg-emerald-500/80 hover:text-white! hover:bg-emerald-500 transition-all duration-200 hover:shadow-lg hover:shadow-emerald-500/20 active:scale-95"

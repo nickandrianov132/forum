@@ -15,6 +15,8 @@ export const LOGIN_USER = gql`
         id
         login
         avatar
+        role
+        isBanned
       }
     }
   }
