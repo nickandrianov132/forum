@@ -129,7 +129,10 @@ await server.start();
 app.use(
   '/graphql',
   cors<cors.CorsRequest>({
-    origin: 'http://localhost:5173', // URL фронтенда
+    origin: [
+      'http://localhost:5173',
+      'https://forum-ltbay0o24-void-7215.vercel.app'
+    ], // URL фронтенда
     credentials: true,               // Разрешает куки и заголовки авторизации
   }),
   express.json(),
