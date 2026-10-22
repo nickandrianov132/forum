@@ -1,7 +1,7 @@
 import { useEffect, useState, type SubmitEvent } from "react";
 import { useNavigate } from "react-router";
 import { useAppSelector } from "../../store/hooks";
-import { unbanUserSchema, type UnbanFormData } from "../../utils/unBanUserSchema";
+import { unbanUserSchema, type UnbanFormData } from "../../utils/unbanUserSchema";
 import { useMutation } from "@apollo/client/react";
 import { UNBAN_USER } from "../../graphql/mutations/unbanUser";
 

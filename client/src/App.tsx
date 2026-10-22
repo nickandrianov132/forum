@@ -10,7 +10,7 @@ import { useAuthInit } from './hooks/useAuthInit.ts';
 
 // 1. HTTP Link
 const httpLink = new HttpLink({
-  uri: 'http://localhost:7000/graphql',
+  uri: import.meta.env.VITE_GRAPHQL_URI || 'http://localhost:7000/graphql',
 });
 
 // Глобальное состояние очереди для модуля (файла)
