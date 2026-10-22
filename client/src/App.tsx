@@ -8,9 +8,14 @@ import { logout, setCredentials } from './store/slices/authSlice.ts';
 import { store } from './store/store.ts';
 import { useAuthInit } from './hooks/useAuthInit.ts';
 
+const apiEnv = import.meta.env.VITE_GRAPHQL_URI; 
+const HTTP_URI = apiEnv || 'http://localhost:7000/graphql';
+const WS_URI = apiEnv 
+  ? apiEnv.replace(/^http/, 'ws') 
+  : 'ws://localhost:7000/graphql';
 // 1. HTTP Link
 const httpLink = new HttpLink({
-  uri: import.meta.env.VITE_GRAPHQL_URI || 'http://localhost:7000/graphql',
+  uri: HTTP_URI,
 });
 
 // Глобальное состояние очереди для модуля (файла)
@@ -42,7 +47,7 @@ const refreshLink = new ApolloLink((operation, forward) => {
         return;
       }
 
-      fetch('http://localhost:7000/graphql', { 
+      fetch(HTTP_URI, { 
         method: 'POST', 
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -181,7 +186,7 @@ const authLink = new ApolloLink((operation, forward) => {
 
 // 4. WebSocket Link
 const wsLink = new GraphQLWsLink(createClient({
-  url: 'ws://localhost:7000/graphql',
+  url: WS_URI,
   connectionParams: () => {
     const token = localStorage.getItem('token');
     return {
@@ -210,7 +215,7 @@ const wsLink = new GraphQLWsLink(createClient({
           // 3.  асинхронная логика упакована внутрь самовызывающейся функции IIFE
           (async () => {
             try {
-              const res = await fetch('http://localhost:7000/graphql', { 
+              const res = await fetch(HTTP_URI, { 
                 method: 'POST', 
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
