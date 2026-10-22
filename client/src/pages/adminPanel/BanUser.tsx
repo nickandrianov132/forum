@@ -26,7 +26,7 @@ const BanUser = () => {
         setIsSuccess(false);
 
         const formData = new FormData(e.currentTarget);
-        console.log(formData.get('duration'));
+        // console.log(formData.get('duration'));
         const rawData = {
             login: formData.get('login'),
             reason: formData.get('reason'),
@@ -34,7 +34,7 @@ const BanUser = () => {
         }
         console.log(rawData);
         const result = banUserSchema.safeParse(rawData);
-        console.log(result);
+        // console.log(result);
         if (!result.success) {
             const fieldErrors: Partial<Record<keyof BanUserFormData, string>> = {};
             result.error.issues.forEach((issue) => {
