@@ -27,12 +27,19 @@ import { env } from "./src/config.ts";
 // migrateOldUsers();
 
 const app = express();
+app.use(cors({
+  origin: true, // Временно разрешаем абсолютно любой домен для стопроцентного теста
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
 const httpServer = createServer(app);
 export interface MyContext {
   userId?: string | null;
   role: string | null;
   loaders: ILoaders; // теперь TS знает про userLoader, likeLoader и т.д.
 }
+
 
 // Creating the WebSocket server
 const wsServer = new WebSocketServer({
@@ -129,10 +136,11 @@ await server.start();
 app.use(
   '/graphql',
   cors<cors.CorsRequest>({
-    origin: [
-      'http://localhost:5173',
-      'https://forum-ltbay0o24-void-7215.vercel.app'
-    ], // URL фронтенда
+    origin: true,
+    // origin: [
+    //   'http://localhost:5173',
+    //   'https://forum-ltbay0o24-void-7215.vercel.app'
+    // ], // URL фронтенда
     credentials: true,               // Разрешает куки и заголовки авторизации
   }),
   express.json(),
