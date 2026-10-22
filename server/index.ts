@@ -146,7 +146,7 @@ app.use(
 
   }),
 );
-const PORT = env.PORT;
+const PORT = env.PORT || 7000;
 
 // Now that our HTTP server is fully set up, we can listen to it.
 httpServer.listen(PORT, () => {
