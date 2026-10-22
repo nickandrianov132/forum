@@ -10,4 +10,4 @@ COPY . .
 
 EXPOSE 7000
 
-CMD ["node", "ts-node", "index.ts"]
+CMD ["node", "run", "dev"]
