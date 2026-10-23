@@ -91,7 +91,7 @@
   align-items: center;
   padding: 0.625rem 1.25rem;
   border-radius: 0.25rem; 
-  font-size: 0.875rem;
+  font-size: 1rem;
   font-weight: 600;
   color: #94a3b8;
   border-left: 3px solid transparent; /* Заготовка под левую линию */
@@ -346,6 +346,10 @@ input.form-input-clean:-webkit-autofill:hover {
   @variant active {
     @apply scale-98
   }
+}
+
+@utility user-card-container {
+  @apply flex w-fit gap-2 h-15 rounded-2xl overflow-hidden bg-blue-700/30 text-slate-200 text-xs border border-slate-200/20
 }
 
 /* 1. Базовые inline-стили для Lexical */

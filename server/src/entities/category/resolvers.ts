@@ -2,7 +2,7 @@ import type { MyContext } from "../../../index.ts";
 import { CategoryModel } from "../../models/Category.ts";
 import { PostModel } from "../../models/Posts.ts";
 import type { Resolvers } from "../../types/resolvers-types.ts";
-import { authenticated } from "../../utils/authGuard.ts";
+import { hasRole } from "../../utils/authGuard.ts";
 
 const resolvers: Resolvers<MyContext> = {
     Query: {
@@ -18,8 +18,9 @@ const resolvers: Resolvers<MyContext> = {
         }
     },
     Mutation: {
-        // Создание категорий (например, доступно только админу, или пока просто авторизованному)
-        createCategory: authenticated(async (_, { name, slug, description }) => {
+        // Создание категорий (например, доступно только админу, или модератору)
+        createCategory: hasRole(['Admin', 'Moderator']) (
+            async (_, { name, slug, description }) => {
             const newCategory = new CategoryModel({ name, slug, description });
             return await newCategory.save();
         })

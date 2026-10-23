@@ -7,7 +7,7 @@ import { BAN_USER } from "../../graphql/mutations/banUser";
 
 
 const BanUser = () => {
-    const { user } = useAppSelector(state => state.user);
+    const { user } = useAppSelector(store => store.user);
     const [errors, setErrors] = useState<Partial<Record<keyof BanUserFormData, string>>>({});
     const [isSuccess, setIsSuccess] = useState(false);
     const navigate = useNavigate();
