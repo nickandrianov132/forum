@@ -4,6 +4,7 @@ import { useAppSelector } from "../../store/hooks";
 import { unbanUserSchema, type UnbanFormData } from "../../utils/unbanUserSchema";
 import { useMutation } from "@apollo/client/react";
 import { UNBAN_USER } from "../../graphql/mutations/unbanUser";
+import SuccessPopup from "../../components/popups/SuccessPopup";
 
 const UnbanUser = () => {
     const navigate = useNavigate();
@@ -39,13 +40,17 @@ const UnbanUser = () => {
                     ...validatedData
                 }
             })
+            setIsSuccess(true);
         } catch (error: any) {
             console.log(`Server Error: ${error.message}`);
         }
     }
 
     return (
-        <div className="flex flex-col h-full w-full">
+        <div className="flex relative flex-col h-full w-full">
+            {isSuccess && 
+                <SuccessPopup message="User was successfuly unbnned!" buttonName="OK" setIsSuccess={setIsSuccess}/>
+            }
             <form 
                 onSubmit={handlerSubmit}
                 className="login-form"

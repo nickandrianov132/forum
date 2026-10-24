@@ -137,6 +137,12 @@ const resolvers: Resolvers<MyContext> = {
                         extensions: { code: 'BAD_USER_INPUT' }
                     });
                 }
+                if (user.isBanned) {
+                    throw new GraphQLError('This user is already banned!', {
+                        extensions: { code:  'BAD_BAN_REQUEST'}
+                    }
+                    )
+                }
                 user.isBanned = true;
                 user.bannedReason = input.reason || null;
 
@@ -161,7 +167,12 @@ const resolvers: Resolvers<MyContext> = {
                         extensions: { code: 'BAD_USER_INPUT' }
                     });
                 }
-                
+                if (!user.isBanned) {
+                    throw new GraphQLError('This user is not banned', {
+                        extensions: { code:  'BAD_BAN_REQUEST'}
+                    }
+                    )
+                }
                 user.isBanned = false;
                 user.bannedUntil = null;
                 user.bannedReason = null;

@@ -4,6 +4,7 @@ import { useEffect, useState, type SubmitEvent } from "react";
 import { categorySchema, type CategoryFormData } from "../../utils/categorySchema";
 import { useAppSelector } from "../../store/hooks";
 import { useNavigate } from "react-router";
+import SuccessPopup from "../../components/popups/SuccessPopup";
 
 
 
@@ -65,12 +66,14 @@ const CreateCategory = () => {
                         description: validatedData.description
                     },
                 },
+                // обновление кэша для реактивной отрисовки компонента с категориями LeftNavbar т.к. он подписан на обновления запроса GET_CATEGORIES в кэше
                 update(cache, { data }) {
                     if (!data || !data.createCategory) return;
 
                     cache.modify({
                         fields: {
                             categories(existingCategoriesRefs = [], { toReference }) {
+                                // с помощью toReference преобразуем сырой обьект в нормализованый (Reference):
                                 const newCategoryRef = toReference(data.createCategory);
                                 return [...existingCategoriesRefs, newCategoryRef];
                             },
@@ -87,7 +90,10 @@ const CreateCategory = () => {
 
     return (
 
-        <div className="flex flex-col h-full w-full">
+        <div className="flex relative flex-col h-full w-full">
+            {isSuccess &&
+                <SuccessPopup message="New Category successfuly created!" buttonName="OK" setIsSuccess={setIsSuccess} />
+            }
             <form className="login-form" onSubmit={handlerSubmit}>
                 <div className="flex mb-5 items-center">
                     <div className="flex items-center">

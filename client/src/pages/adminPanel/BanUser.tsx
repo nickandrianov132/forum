@@ -4,6 +4,7 @@ import { useNavigate } from "react-router";
 import { banUserSchema, type BanUserFormData } from "../../utils/banUserSchema";
 import { useMutation } from "@apollo/client/react";
 import { BAN_USER } from "../../graphql/mutations/banUser";
+import SuccessPopup from "../../components/popups/SuccessPopup";
 
 
 const BanUser = () => {
@@ -63,7 +64,10 @@ const BanUser = () => {
     }
 
     return (
-        <div className="flex flex-col h-full w-full">
+        <div className="flex relative flex-col h-full w-full">
+            {isSuccess && (
+                <SuccessPopup message="User was banned saccessfuly!" buttonName="OK"  setIsSuccess={setIsSuccess}/>
+            )}
             <form className="login-form" onSubmit={handlerSubmit}>
                 <div className="flex mb-5 items-center">
                     <div className="flex items-center">
@@ -99,7 +103,7 @@ const BanUser = () => {
                 </div>
                 <div className="flex mb-5 items-center">
                     <div className="flex items-center">
-                        <label htmlFor="duration" className="form-label">User Login:</label>
+                        <label htmlFor="duration" className="form-label">Duration in days:</label>
                         <div className="form-input-container">
                             <input
                                 className="form-input-clean"
