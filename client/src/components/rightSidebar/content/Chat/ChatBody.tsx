@@ -1,8 +1,11 @@
-import { useQuery } from "@apollo/client/react";
+import { useMutation, useQuery, useSubscription } from "@apollo/client/react";
 import { GET_MESSAGES } from "../../../../graphql/querry/getMessages";
 import { useEffect, useRef } from "react";
 import { MESSAGE_SUBSCRIPTION } from "../../../../graphql/subscriptions/onMessageAdded";
 import { useAppSelector } from "../../../../store/hooks";
+import { MESSAGE_DELETED_SUBSCRIPTION } from "../../../../graphql/subscriptions/onMessageDeleted";
+import type { GetMessagesQuery, OnMessageDeletedSubscription } from "../../../../gql/graphql";
+import { DELETE_MESSAGE } from "../../../../graphql/mutations/deleteMessage";
 // import type { GetMessagesQuery } from "../../../../gql/graphql";
 
 // type MessageType = GetMessagesQuery["messages"][number];
@@ -10,6 +13,7 @@ import { useAppSelector } from "../../../../store/hooks";
 const ChatBody = () => {
     const { user } = useAppSelector((state) => state.user);
     const {data, loading, subscribeToMore} = useQuery(GET_MESSAGES);
+    const [deleteMessage, {error: deleteError, loading: deleteLoading}] = useMutation(DELETE_MESSAGE);
     const chatContainerRef = useRef<HTMLDivElement | null>(null);
 
     const scrollToBottom = () => {
@@ -26,28 +30,70 @@ const ChatBody = () => {
     },[data?.messages])
 
     useEffect(() => {
-    const unsubscribe = subscribeToMore({
-        document: MESSAGE_SUBSCRIPTION,
-        updateQuery: (prev, { subscriptionData }) => { 
-        if (!subscriptionData.data) return prev;
+        const unsubscribeAdded = subscribeToMore({
+            document: MESSAGE_SUBSCRIPTION,
+            updateQuery: (prev, { subscriptionData }) => { 
+            if (!subscriptionData.data) return prev;
+            
+            const newMessage = subscriptionData.data.messageAdded;
+
+            const currentMessages = (prev.messages || []) as any[];
+
+            if (currentMessages.some(msg => msg.id === newMessage.id)) {
+                return prev;
+            }
+
+            return {
+                ...prev,
+                messages: [...currentMessages, newMessage]
+            } as any;
+            },
+        });
+
         
-        const newMessage = subscriptionData.data.messageAdded;
-
-        const currentMessages = (prev.messages || []) as any[];
-
-        if (currentMessages.some(msg => msg.id === newMessage.id)) {
-            return prev;
+        return () => {
+            unsubscribeAdded();
         }
+    }, [subscribeToMore]);
 
-        return {
-            ...prev,
-            messages: [...currentMessages, newMessage]
-        } as any;
-        },
+// Подписка на удаление сообщения
+    useSubscription<OnMessageDeletedSubscription>(MESSAGE_DELETED_SUBSCRIPTION, {
+    onData: ({ client, data }) => {
+        // Если данных от вебсокета нет или сообщение не определено — ничего не делаем
+        if (!data.data?.messageDeleted) return;
+
+        const deletedMessageId = data.data.messageDeleted.id;
+
+        // Читаем текущее состояние кэша для запроса GET_MESSAGES
+        const existingData = client.readQuery<GetMessagesQuery>({
+        query: GET_MESSAGES,
+        });
+
+        if (existingData && existingData.messages) {
+        // Перезаписываем кэш Apollo напрямую отфильтрованным массивом
+        client.writeQuery<GetMessagesQuery>({
+            query: GET_MESSAGES,
+            data: {
+            ...existingData,
+            messages: existingData.messages.filter(msg => msg?.id !== deletedMessageId),
+            },
+        });
+        }
+    },
     });
 
-    return () => unsubscribe();
-    }, [subscribeToMore]);
+    const handlerDeleteMessage = async (msgId: string) => {
+        try {
+            await deleteMessage({
+                variables: {
+                    id: msgId
+                }
+            })
+            
+        } catch (error: any) {
+            console.log(error.message);
+        }
+    }
 
     if (loading || !data) return <div>Загрузка сообщений...</div>;
 
@@ -63,6 +109,25 @@ const ChatBody = () => {
                         <div key={msg.id} className="flex justify-end items-start gap-1.5">
                             <div>
                                 <div className="flex justify-end items-center gap-2">
+                                    {user.id === msg?.userId &&
+                                        <span
+                                            onClick={() => {handlerDeleteMessage(msg.id)}}
+                                        >
+                                            <svg 
+                                                xmlns="http://w3.org" 
+                                                fill="none" 
+                                                viewBox="0 0 24 24" 
+                                                stroke-width="2" 
+                                                stroke="currentColor" 
+                                                className="w-5 h-5 text-slate-300 hover:text-red-500 transition-colors duration-200 cursor-pointer"
+                                                >
+                                                <circle cx="12" cy="12" r="9" />
+
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M9 15L15 9M9 9l6 6" />
+                                                </svg>
+                                        </span>
+
+                                    }
                                     <span className="font-bold text-xs text-indigo-400">{msg.user.login}</span>
                                 </div>
                                 <p className="text-xs text-slate-200 mt-2! py-1! px-2! bg-slate-800 rounded-md max-w-md">

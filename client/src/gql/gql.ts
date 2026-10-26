@@ -20,6 +20,7 @@ type Documents = {
     "\n    mutation CreateCategory($name: String!, $slug: String!, $description: String) {\n        createCategory(name: $name, slug: $slug, description: $description) {\n            id\n            name\n            slug\n            description\n        }\n    }\n": typeof types.CreateCategoryDocument,
     "\n   mutation CreatePost($categoryId: ID!, $title: String!, $content: String!, $userId: ID!) {\n      createPost(categoryId: $categoryId, title: $title, content: $content, userId: $userId) {\n        id\n        category {\n            id\n            name\n        }\n        title\n        createdAt\n        user{\n            id\n            login\n        }\n      }\n   }\n": typeof types.CreatePostDocument,
     "\n    mutation AddUser($login: String!, $password: String!, $email: String!, $avatar: String) {\n        addUser(login: $login, password: $password, email: $email, avatar: $avatar) {\n            user{\n                id\n                login\n                email\n                avatar\n                createdAt\n            }\n        }\n    }\n": typeof types.AddUserDocument,
+    "\n    mutation DeleteMessage($id: ID!) {\n        deleteMessage(id: $id) {\n            id\n        }\n    }    \n": typeof types.DeleteMessageDocument,
     "\n    mutation DeletePost($id: ID!) {\n        deletePost(id: $id)         \n    }    \n": typeof types.DeletePostDocument,
     "\n    mutation DeletePostByAdmin($id: ID!) {\n        deletePostByAdmin(id: $id)\n    }\n\n": typeof types.DeletePostByAdminDocument,
     "\n  mutation loginUser($login: String!, $password: String!) {\n    loginUser(login: $login, password: $password) {\n      accessToken\n      refreshToken\n      user {\n        id\n        login\n        avatar\n        role\n        isBanned\n      }\n    }\n  }\n": typeof types.LoginUserDocument,
@@ -37,6 +38,7 @@ type Documents = {
     "\n    query GetCategoryBySlug($slug: String!) {\n      categoryBySlug(slug: $slug) {\n        id\n        name\n        description\n      }\n    }  \n": typeof types.GetCategoryBySlugDocument,
     "\n    query GetPostsByCategory($slug: String!, $limit: Int!, $offset: Int!) {\n      postsByCategory(slug: $slug, limit: $limit, offset: $offset) {\n        totalCount\n        posts {\n         id\n         title\n         content\n         createdAt\n         likesCount\n         dislikesCount\n         isLiked\n         isDisliked\n         isOwner\n         user {\n           id\n           login\n         }\n        }\n      }\n    }  \n": typeof types.GetPostsByCategoryDocument,
     "\n    subscription OnMessageAdded {\n        messageAdded {\n            id\n            text\n            userId\n            createdAt\n            user {\n                id\n                login\n                avatar\n            }\n        }\n    }\n": typeof types.OnMessageAddedDocument,
+    "\n    subscription onMessageDeleted { \n        messageDeleted {\n            id\n        }\n    }    \n": typeof types.OnMessageDeletedDocument,
 };
 const documents: Documents = {
     "\n  mutation AddDislike($postId: ID!) {\n    addDislike(postId: $postId) {\n      id\n      likesCount\n      dislikesCount\n      isLiked\n      isDisliked\n    }\n  }\n": types.AddDislikeDocument,
@@ -45,6 +47,7 @@ const documents: Documents = {
     "\n    mutation CreateCategory($name: String!, $slug: String!, $description: String) {\n        createCategory(name: $name, slug: $slug, description: $description) {\n            id\n            name\n            slug\n            description\n        }\n    }\n": types.CreateCategoryDocument,
     "\n   mutation CreatePost($categoryId: ID!, $title: String!, $content: String!, $userId: ID!) {\n      createPost(categoryId: $categoryId, title: $title, content: $content, userId: $userId) {\n        id\n        category {\n            id\n            name\n        }\n        title\n        createdAt\n        user{\n            id\n            login\n        }\n      }\n   }\n": types.CreatePostDocument,
     "\n    mutation AddUser($login: String!, $password: String!, $email: String!, $avatar: String) {\n        addUser(login: $login, password: $password, email: $email, avatar: $avatar) {\n            user{\n                id\n                login\n                email\n                avatar\n                createdAt\n            }\n        }\n    }\n": types.AddUserDocument,
+    "\n    mutation DeleteMessage($id: ID!) {\n        deleteMessage(id: $id) {\n            id\n        }\n    }    \n": types.DeleteMessageDocument,
     "\n    mutation DeletePost($id: ID!) {\n        deletePost(id: $id)         \n    }    \n": types.DeletePostDocument,
     "\n    mutation DeletePostByAdmin($id: ID!) {\n        deletePostByAdmin(id: $id)\n    }\n\n": types.DeletePostByAdminDocument,
     "\n  mutation loginUser($login: String!, $password: String!) {\n    loginUser(login: $login, password: $password) {\n      accessToken\n      refreshToken\n      user {\n        id\n        login\n        avatar\n        role\n        isBanned\n      }\n    }\n  }\n": types.LoginUserDocument,
@@ -62,6 +65,7 @@ const documents: Documents = {
     "\n    query GetCategoryBySlug($slug: String!) {\n      categoryBySlug(slug: $slug) {\n        id\n        name\n        description\n      }\n    }  \n": types.GetCategoryBySlugDocument,
     "\n    query GetPostsByCategory($slug: String!, $limit: Int!, $offset: Int!) {\n      postsByCategory(slug: $slug, limit: $limit, offset: $offset) {\n        totalCount\n        posts {\n         id\n         title\n         content\n         createdAt\n         likesCount\n         dislikesCount\n         isLiked\n         isDisliked\n         isOwner\n         user {\n           id\n           login\n         }\n        }\n      }\n    }  \n": types.GetPostsByCategoryDocument,
     "\n    subscription OnMessageAdded {\n        messageAdded {\n            id\n            text\n            userId\n            createdAt\n            user {\n                id\n                login\n                avatar\n            }\n        }\n    }\n": types.OnMessageAddedDocument,
+    "\n    subscription onMessageDeleted { \n        messageDeleted {\n            id\n        }\n    }    \n": types.OnMessageDeletedDocument,
 };
 
 /**
@@ -102,6 +106,10 @@ export function graphql(source: "\n   mutation CreatePost($categoryId: ID!, $tit
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
 export function graphql(source: "\n    mutation AddUser($login: String!, $password: String!, $email: String!, $avatar: String) {\n        addUser(login: $login, password: $password, email: $email, avatar: $avatar) {\n            user{\n                id\n                login\n                email\n                avatar\n                createdAt\n            }\n        }\n    }\n"): (typeof documents)["\n    mutation AddUser($login: String!, $password: String!, $email: String!, $avatar: String) {\n        addUser(login: $login, password: $password, email: $email, avatar: $avatar) {\n            user{\n                id\n                login\n                email\n                avatar\n                createdAt\n            }\n        }\n    }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n    mutation DeleteMessage($id: ID!) {\n        deleteMessage(id: $id) {\n            id\n        }\n    }    \n"): (typeof documents)["\n    mutation DeleteMessage($id: ID!) {\n        deleteMessage(id: $id) {\n            id\n        }\n    }    \n"];
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
@@ -170,6 +178,10 @@ export function graphql(source: "\n    query GetPostsByCategory($slug: String!, 
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
 export function graphql(source: "\n    subscription OnMessageAdded {\n        messageAdded {\n            id\n            text\n            userId\n            createdAt\n            user {\n                id\n                login\n                avatar\n            }\n        }\n    }\n"): (typeof documents)["\n    subscription OnMessageAdded {\n        messageAdded {\n            id\n            text\n            userId\n            createdAt\n            user {\n                id\n                login\n                avatar\n            }\n        }\n    }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n    subscription onMessageDeleted { \n        messageDeleted {\n            id\n        }\n    }    \n"): (typeof documents)["\n    subscription onMessageDeleted { \n        messageDeleted {\n            id\n        }\n    }    \n"];
 
 export function graphql(source: string) {
   return (documents as any)[source] ?? {};

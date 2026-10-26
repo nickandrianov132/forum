@@ -4,10 +4,14 @@ import type { Resolvers } from "../../types/resolvers-types.ts";
 import type { MyContext } from "../../../index.ts";
 import { MessageModel, type IMessage } from "../../models/Messages.ts";
 import { UserModel } from "../../models/Users.ts";
+import { authenticated } from "../../utils/authGuard.ts";
 
 const MESSAGE_ADDED = "MESSAGE_ADDED";
+const MESSAGE_DELETED = "MESSAGE_DELETED";
+
 type PubSubChannels = {
   MESSAGE_ADDED: { messageAdded: IMessage };
+  MESSAGE_DELETED: { messageDeleted: IMessage };
 };
 
 const pubsub = new PubSub<PubSubChannels>();
@@ -29,15 +33,27 @@ const resolvers: Resolvers<MyContext> = {
       pubsub.publish(MESSAGE_ADDED, { messageAdded: newMessage });
 
       return newMessage;
-    }
+    },
+    deleteMessage: authenticated(async (_, { id }) => {
+      const deleteMessage = await MessageModel.findByIdAndDelete(id);
+      if (deleteMessage) {
+        pubsub.publish(MESSAGE_DELETED, { messageDeleted:  deleteMessage});
+      }
+
+      return deleteMessage;
+    })
   },
 
   Subscription: {
     messageAdded: {
       // Асинхронный итератор слушает триггер и пушит данные на фронтенд
       subscribe: () => pubsub.asyncIterableIterator([MESSAGE_ADDED])
-    }
+    },
+    messageDeleted: {
+      subscribe: () => pubsub.asyncIterableIterator([MESSAGE_DELETED])
+    },
   },
+
 
   // Вложенный резолвер для Message (разрешает поля id и user)
   Message: {

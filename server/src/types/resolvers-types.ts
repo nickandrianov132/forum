@@ -84,6 +84,7 @@ export type Mutation = {
   banUser?: Maybe<Scalars['Boolean']['output']>;
   createCategory: Category;
   createPost: Post;
+  deleteMessage: Message;
   deletePost?: Maybe<Scalars['Boolean']['output']>;
   deletePostByAdmin: Scalars['Boolean']['output'];
   deleteUser?: Maybe<Scalars['Boolean']['output']>;
@@ -131,6 +132,11 @@ export type MutationCreatePostArgs = {
   content: Scalars['String']['input'];
   title: Scalars['String']['input'];
   userId: Scalars['ID']['input'];
+};
+
+
+export type MutationDeleteMessageArgs = {
+  id: Scalars['ID']['input'];
 };
 
 
@@ -262,6 +268,7 @@ export type Subscription = {
   __typename?: 'Subscription';
   _empty?: Maybe<Scalars['String']['output']>;
   messageAdded: Message;
+  messageDeleted: Message;
 };
 
 export type UpdateUserInput = {
@@ -456,6 +463,7 @@ export type MutationResolvers<ContextType = MyContext, ParentType extends Resolv
   banUser?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationBanUserArgs, 'input'>>;
   createCategory?: Resolver<ResolversTypes['Category'], ParentType, ContextType, RequireFields<MutationCreateCategoryArgs, 'name' | 'slug'>>;
   createPost?: Resolver<ResolversTypes['Post'], ParentType, ContextType, RequireFields<MutationCreatePostArgs, 'categoryId' | 'content' | 'title' | 'userId'>>;
+  deleteMessage?: Resolver<ResolversTypes['Message'], ParentType, ContextType, RequireFields<MutationDeleteMessageArgs, 'id'>>;
   deletePost?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationDeletePostArgs, 'id'>>;
   deletePostByAdmin?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationDeletePostByAdminArgs, 'id'>>;
   deleteUser?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationDeleteUserArgs, 'id'>>;
@@ -502,6 +510,7 @@ export type QueryResolvers<ContextType = MyContext, ParentType extends Resolvers
 export type SubscriptionResolvers<ContextType = MyContext, ParentType extends ResolversParentTypes['Subscription'] = ResolversParentTypes['Subscription']> = ResolversObject<{
   _empty?: SubscriptionResolver<Maybe<ResolversTypes['String']>, "_empty", ParentType, ContextType>;
   messageAdded?: SubscriptionResolver<ResolversTypes['Message'], "messageAdded", ParentType, ContextType>;
+  messageDeleted?: SubscriptionResolver<ResolversTypes['Message'], "messageDeleted", ParentType, ContextType>;
 }>;
 
 export type UserResolvers<ContextType = MyContext, ParentType extends ResolversParentTypes['User'] = ResolversParentTypes['User']> = ResolversObject<{
