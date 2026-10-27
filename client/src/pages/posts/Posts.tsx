@@ -3,25 +3,23 @@ import { useMutation, useQuery } from "@apollo/client/react";
 import { ADD_LIKE } from "../../graphql/mutations/addLike";
 import { ADD_DISLIKE } from "../../graphql/mutations/addDislike";
 import { useAppSelector } from "../../store/hooks";
-import { Link, useParams } from "react-router";
+import { Link, useParams, useSearchParams } from "react-router";
 import { FaHeart } from "react-icons/fa";
 import { BiSolidDislike } from "react-icons/bi";
 import { GET_CATEGORY_BY_SLUG, GET_POSTS_BY_CATEGORY } from "../../graphql/querry/getPostsByCategory";
 import { convertDateFn } from "../../utils/functions";
 import { CREATE_NEW_POST } from "../../utils/constants";
 import { DELETE_POST } from "../../graphql/mutations/deletePost";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 const ITEMS_PER_PAGE = 5;
 
 const Posts = () => {
     const { categorySlug } = useParams<{ categorySlug: string }>();
-    const [currentPage, setCurrentPage] = useState(1);
     const targetSlug = categorySlug || "news";   // fallback for slug
+    const [searchParams, setSearchParams] = useSearchParams();
 
-    useEffect(() => {
-        setCurrentPage(1);
-    }, [categorySlug]);
+    const currentPage = Math.max(1, Number(searchParams.get('page')) || 1);
 
     const { loading: catLoading, error: catError, data: catData } = useQuery(GET_CATEGORY_BY_SLUG, {
         variables: { slug: targetSlug },
@@ -60,7 +58,7 @@ const Posts = () => {
 
 
     if (isLoading) return (
-        <>
+        <div className="flex flex-col gap-3 min-h-full p-4">
             <div className="flex h-14 p-4 bg-slate-900/40 border border-white/5 rounded-xl animate-pulse"></div>
             <div className="flex flex-col h-26.75 p-4 bg-slate-900/40 border border-white/5 rounded-xl animate-pulse">
                 <div className="w-full h-1/2  "></div>
@@ -74,7 +72,7 @@ const Posts = () => {
                 <div className="w-full h-1/2  "></div>
                 <div className="w-full h-1/2 pt-2 border-t border-white/5"></div>
             </div>
-        </>
+        </div>
     )
     if (catError) return <p>Error loading category: {catError.message}</p>
     if (postsError) return <p>Error loading posts: {postsError.message}</p>
@@ -282,7 +280,7 @@ return (
             <div className="flex items-center justify-center gap-2 mt-6 text-sm text-slate-200">
                 {/* Button Prev */}
                 <button
-                    onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                    onClick={() => setSearchParams({ page: String(Math.max(currentPage - 1, 1)) })}
                     disabled={currentPage === 1 || isLoading}
                     className="px-3 py-1.5 rounded-lg bg-slate-900/40 border border-white/5 backdrop-blur-xs disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer hover:bg-slate-800/60 hover:border-white/10 transition-all duration-150 active:scale-95"
                 >
@@ -295,7 +293,7 @@ return (
                     return (
                         <button
                             key={page}
-                            onClick={() => setCurrentPage(page)}
+                            onClick={() => setSearchParams({ page: String(page) })}
                             disabled={isLoading}
                             className={`px-3 py-1.5 rounded-lg border backdrop-blur-xs transition-all duration-150 cursor-pointer ${
                                 currentPage === page
@@ -310,7 +308,7 @@ return (
 
                 {/* Button Next */}
                 <button
-                    onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                    onClick={() => setSearchParams({ page: String(Math.min(currentPage + 1, totalPages)) })}
                     disabled={currentPage === totalPages || isLoading}
                     className="px-3 py-1.5 rounded-lg bg-slate-900/40 border border-white/5 backdrop-blur-xs disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer hover:bg-slate-800/60 hover:border-white/10 transition-all duration-150 active:scale-95"
                 >

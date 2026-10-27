@@ -14,7 +14,7 @@ import LexicalHTMLRenderer from "../../components/lexical/LexicalHTMLRenderer.js
 
 
 const PostDetail = () => {
-    const { categorySlug, id } = useParams<{ categorySlug: string, id: string }>();
+    const { id } = useParams<{ categorySlug: string, id: string }>();
     const [isEdit, setIsEdit] = useState(false);
     const [postContent, setPostContent] = useState('') // Сюда Lexical будет писать JSON-строку
     const [postTitle, setPostTitle] = useState('')
@@ -146,7 +146,7 @@ const PostDetail = () => {
         <div className="flex justify-between items-center">
             <button 
                 className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-slate-300 rounded-lg bg-slate-900/40 border border-white/5 hover:bg-slate-900/60 hover:text-white transition-all duration-200 cursor-pointer" 
-                onClick={() => navigate(`/posts/${categorySlug}`)}
+                onClick={() => navigate(-1)}
             >
                 <svg xmlns="http://w3.org" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18" />
