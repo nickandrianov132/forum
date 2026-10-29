@@ -68,6 +68,36 @@ const wsServer = new WebSocketServer({
   path: '/graphql',
 });
 
+// Каждые 12 секунд проверяем, живы ли наши клиенты
+const keepAliveInterval = setInterval(() => {
+  wsServer.clients.forEach((client: any) => {
+    // Если клиент не ответил на предыдущий пинг — закрываем сокет!
+    // Это мгновенно стриггерит onDisconnect и переведет юзера в оффлайн
+    if (client.isAlive === false) {
+      console.log("[WS] Клиент не ответил на пинг. Принудительное закрытие соединения.");
+      return client.terminate();
+    }
+
+    // Помечаем клиента как "уснувшего" и отправляем ему пинг
+    client.isAlive = false;
+    client.ping(); // Встроенный метод библиотеки 'ws'
+  });
+}, 12000);
+
+// Ловим ответы (pong) от клиентов, чтобы подтвердить, что они живы
+wsServer.on("connection", (socket: any) => {
+  socket.isAlive = true;
+  
+  socket.on("pong", () => {
+    socket.isAlive = true;
+  });
+});
+
+// Очищаем интервал при остановке сервера (опционально)
+wsServer.on("close", () => {
+  clearInterval(keepAliveInterval);
+});
+
 
 // Карта для подсчета вкладок: userId -> количество открытых сокетов
 const userSocketCounts = new Map<string, number>();
