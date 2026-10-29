@@ -162,12 +162,13 @@ const serverCleanup = useServer(
 
               if (!userSocketCounts.has(userId)) {
                 try {
-                  const serverPort = env.PORT || 10000; 
-                  const baseUrl = process.env.RENDER_EXTERNAL_URL || env.RENDER_EXTERNAL_URL || `http://localhost:${serverPort}`;
-                  
-                  // Убираем возможный слеш на конце и добавляем эндпоинт graphql
+                  const serverPort = env.PORT || 10000;
+            
+                  // ИСПРАВЛЕНО: Для проде (внутри Render) всегда шлем на localhost и текущий внутренний порт.
+                  // Это самый надежный способ, который полностью исключает падения из-за внешних DNS или роутинга Render!
+                  const baseUrl = process.env.RENDER ? `http://localhost:${serverPort}` : (env.RENDER_EXTERNAL_URL || `http://localhost:${serverPort}`);
                   const graphqlUrl = `${baseUrl.replace(/\/$/, "")}/graphql`;
-
+                  
                   const mutationQuery = {
                     query: `
                       mutation InternalLogOut($id: String) {
@@ -175,21 +176,31 @@ const serverCleanup = useServer(
                       }
                     `,
                     variables: {
-                      id: userId // Передаем ID пользователя, закрывшего вкладку
+                      id: userId
                     }
                   };
+                  console.log(`[WS] Фоновый таймер оффлайна для ${userLogin}. Отправка fetch на: ${graphqlUrl}`);
 
+                  // ИСПРАВЛЕНО: Добавляем отслеживание ошибок fetch, чтобы они выводились в логи Render!
                   await fetch(graphqlUrl, {
                     method: "POST",
                     headers: {
                       "Content-Type": "application/json"
                     },
                     body: JSON.stringify(mutationQuery)
-                  });
+                  })
+                  .then(async (res) => {
+                    if (!res.ok) {
+                      const text = await res.text();
+                      console.error(`[WS] Внутренний fetch упал со статусом ${res.status}: ${text}`);
+                    } else {
+                      console.log(`[WS] -> Авто-вызов Мутации на проде УСПЕШНО выполнен для ${userLogin}.`);
+                    }
+                  })
 
                   // console.log(`[WS] -> Системный вызов мутации logOut для ${userLogin} успешно выполнен.`);
                 } catch (err) {
-                  // console.error("[WS] Ошибка при автоматическом вызове мутации logOut:", err);
+                  console.error("[WS] Ошибка при автоматическом вызове мутации logOut:", err);
                 }
               }
             }, 1200);
