@@ -162,7 +162,11 @@ const serverCleanup = useServer(
 
               if (!userSocketCounts.has(userId)) {
                 try {
-                  const serverPort = env.PORT || 7000; 
+                  const serverPort = env.PORT || 10000; 
+                  const baseUrl = process.env.RENDER_EXTERNAL_URL || env.RENDER_EXTERNAL_URL || `http://localhost:${serverPort}`;
+                  
+                  // Убираем возможный слеш на конце и добавляем эндпоинт graphql
+                  const graphqlUrl = `${baseUrl.replace(/\/$/, "")}/graphql`;
 
                   const mutationQuery = {
                     query: `
@@ -175,7 +179,7 @@ const serverCleanup = useServer(
                     }
                   };
 
-                  await fetch(`http://localhost:${serverPort}/graphql`, {
+                  await fetch(graphqlUrl, {
                     method: "POST",
                     headers: {
                       "Content-Type": "application/json"

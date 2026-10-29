@@ -6,6 +6,7 @@ const envSchema = z.object({
   JWT_REFRESH_SECRET: z.string().min(10, "to short secret"),
   MONGO_URI: z.string().url().default("mongodb://127.0.0.1:27017"),
   PORT: z.coerce.number().default(7000),
+  RENDER_EXTERNAL_URL: z.string().default("")
 });
 
 // Парсим и экспортируем типизированный конфиг
