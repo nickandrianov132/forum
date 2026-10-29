@@ -1,7 +1,7 @@
 import type { MyContext } from "../../../index.ts";
 import { LikeModel } from "../../models/Likes.ts";
 import { PostModel } from "../../models/Posts.ts";
-import { UserModel  } from "../../models/Users.ts";
+import { UserModel, type IUser  } from "../../models/Users.ts";
 import type { Resolvers } from "../../types/resolvers-types.ts";
 import { GraphQLError } from 'graphql';
 import jwt from "jsonwebtoken"
@@ -10,6 +10,15 @@ import { env } from "../../config.ts";
 import bcrypt from 'bcrypt'; 
 import { MessageModel } from "../../models/Messages.ts";
 import { DislikeModel } from "../../models/Dislikes.ts";
+import { PubSub } from "graphql-subscriptions";
+
+
+const USER_STATUS = "USER_STATUS";
+type PubSubChannels = {
+  USER_STATUS: { userStatusChanged: IUser }
+};
+const pubsub = new PubSub<PubSubChannels>();
+
 
 const generateJwt = (login: string, id: string, role: string) => {
   return jwt.sign(
@@ -39,8 +48,16 @@ const resolvers: Resolvers<MyContext> = {
                     extensions: { code: 'UNAUTHENTICATED' },
                     });
                 }
-                // 2. Достся пользователь из базы по id напрямую
-                const currentUser = await UserModel.findById(context.userId);
+                // 2. Достается пользователь из базы по id напрямую
+                // const currentUser = await UserModel.findById(context.userId);
+                const currentUser = await UserModel.findByIdAndUpdate(
+                    context.userId,
+                    { isOnline: true },
+                    { returnDocument: 'after' }
+                );
+                if (currentUser) {
+                    pubsub.publish(USER_STATUS, { userStatusChanged: currentUser });
+                }
                 // 3. Проверка, существует ли он
                 if (!currentUser) {
                     throw new GraphQLError('User not found', {
@@ -52,6 +69,15 @@ const resolvers: Resolvers<MyContext> = {
         },
         user: authenticated( async (_, {id}) => UserModel.findById(id)),
         users: async () => await UserModel.find(),
+        getOnlineUsers: async () => {
+            try {
+                const onlineUsers = await UserModel.find({ isOnline: true });
+                return onlineUsers;
+            } catch (error) {
+                console.error("Error fetching Users online:", error);
+                return [];
+            }
+        }
     },
     Mutation: {
         loginUser: async (_, { login, password }) => {
@@ -59,7 +85,9 @@ const resolvers: Resolvers<MyContext> = {
             if (!user || !(await bcrypt.compare(password, user.password!))) {
                 throw new GraphQLError('Incorrect password or login');
             }
-
+            const updatedUser = await UserModel.findByIdAndUpdate(user.id, { isOnline: true}, { returnDocument: 'after' });
+            if (updatedUser)
+                pubsub.publish(USER_STATUS, { userStatusChanged: updatedUser })
             return {
             accessToken: generateJwt(user.login!, user.id, user.role),
             refreshToken: generateRefreshToken(user.id),
@@ -87,6 +115,42 @@ const resolvers: Resolvers<MyContext> = {
                 });
             }
         },
+        logOut: async (_, {id}, { userId }) => {
+            // Если userId передан в аргументах (от фонового fetch) — берем его. 
+            // Иначе берем из контекста авторизации (когда юзер нажал кнопку на фронте)
+            const targetUserId = id || userId;
+
+            if (!targetUserId) {
+                throw new GraphQLError('Not authenticated', {
+                extensions: { code: 'UNAUTHENTICATED' }
+                });
+            }
+
+            const updatedUser = await UserModel.findByIdAndUpdate(
+                targetUserId, 
+                { isOnline: false }, 
+                { returnDocument: 'after' }
+            );
+
+            if (updatedUser) {
+                // Принудительно приводим к JSON, чтобы Apollo Client 
+                // не спотыкался о скрытые свойства Mongoose
+                pubsub.publish(USER_STATUS, { userStatusChanged: updatedUser.toJSON() });
+            }
+
+            return true;
+            // if (!userId) throw new GraphQLError('Not authenticated', {
+            //         extensions: { code: 'UNAUTHENTICATED' }})
+            
+            // const updatedUser = await UserModel.findByIdAndUpdate(userId, { isOnline: false }, { returnDocument: 'after' });
+
+            // if (updatedUser) {
+            //     pubsub.publish(USER_STATUS, { userStatusChanged: updatedUser });
+            // }
+            // // На будущее если буду использовать куки для refreshToken, здесь также нужно очистить их, например:
+            // // context.res.clearCookie('refreshToken');
+            // return true;
+        },
         addUser: async (_, { login, password, email, avatar }) => {
             // Хэшируем пароль перед сохранением (salt rounds = 10)
             const hashedPassword = await bcrypt.hash(password, 10);
@@ -112,7 +176,7 @@ const resolvers: Resolvers<MyContext> = {
                 input.password = await bcrypt.hash(input.password, 10)
             }
             
-            const user = await UserModel.findByIdAndUpdate(id, input, {new: true})
+            const user = await UserModel.findByIdAndUpdate(id, input, { returnDocument: 'after' })
             return user
         }),
         deleteUser: authenticated(async (_, { id }) => {
@@ -191,6 +255,11 @@ const resolvers: Resolvers<MyContext> = {
         likes: async (parent) => {
             // Находим все объекты лайков по массиву ID из модели User
             return await LikeModel.find({ _id: { $in: parent.likesId } });
+        }
+    },
+    Subscription: {
+        userStatusChanged: {
+            subscribe: () => pubsub.asyncIterableIterator([USER_STATUS]),
         }
     }
 }

@@ -274,7 +274,21 @@ const splitLink = ApolloLink.split(
 
 const client = new ApolloClient({
   link: splitLink,
-  cache: new InMemoryCache(),
+  cache: new InMemoryCache({
+    typePolicies: {
+      Query: {
+        fields: {
+          // Указываем поведение для этого конкретного запроса
+          getOnlineUsers: {
+            // Этим мы говорим - просто бери новые данные и затирай старые
+            merge(existing, incoming) {
+              return incoming;
+            }
+          }
+        }
+      }
+    }
+  }),
 });
 
 function MainApp() {

@@ -7,7 +7,7 @@ type Tab = 'users' | 'ban' | 'unban' | 'category'
 const AdminPanel = () => {
     const [activeTab, setActiveTab] = useState<Tab>('users')
     return (
-        <div className="flex flex-col w-full border border-slate-600/50 rounded-lg py-5 px-4 mt-2 bg-gray-800 h-full">
+        <div className="user-panel-container">
             <nav className="flex gap-2 mb-4">
                 <Link 
                     className={activeTab === 'ban' ? 'admin-panel-tab-active' : 'admin-panel-tab'}

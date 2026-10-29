@@ -20,6 +20,7 @@ type User {
     isBanned: Boolean!
     bannedUntil: DateTime
     bannedReason: String
+    isOnline: Boolean!
 }
 
 input UpdateUserInput {
@@ -35,6 +36,7 @@ input BanUserInput {
     durationInDays: Int
 }
 
+
 type AuthResponse {
   accessToken: String!
   refreshToken: String!
@@ -45,6 +47,7 @@ type Query {
     me: User # Новый роут для userInfo
     users: [User!]!
     user(id: ID!): User
+    getOnlineUsers: [User!]!
 }
 
 type Mutation {
@@ -57,8 +60,10 @@ type Mutation {
     updateUser(id: ID!, input: UpdateUserInput!): User
     banUser( input: BanUserInput!): Boolean
     unbanUser(login: String!): Boolean
+    logOut(id: String): Boolean!
 }
 
 type Subscription { 
     _empty: String 
+    userStatusChanged: User!
 } 

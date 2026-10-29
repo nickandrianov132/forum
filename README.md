@@ -33,16 +33,21 @@ A scalable, production-ready forum engine built inside a fully-typed **TypeScrip
 - Engineered a unified network splitter layer (`ApolloLink.split`) separating standard unary HTTP traffic (Queries/Mutations) from real-time events via **WebSockets (`graphql-ws`)**.
 - **Protocol Guarding:** Implemented a secure authentication firewall within the WebSocket server's `onConnect` hook. If a socket handshake attempts connection with an expired or missing token, the connection is instantly rejected at the network protocol layer before system resources are allocated.
 
-### 5. Declarative Access Control (Higher-Order Resolver Guards)
+### 5. Resilient Real-Time Presence Lifecycle (Debounced WebSocket & Self-Invoking HTTP Mutation)
+- **The Challenge:** Real-time online indicators often break during hard browser reloads (F5) or abrupt browser window terminations, resulting in zombie online sessions or flooded database mutations caused by aggressive WebSocket reconnection spikes.
+- **The Architecture:** Developed a precise state-tracking system using a global memory `WeakMap` mapping native `graphql-ws` socket instances to active database user structures.
+- **The Solution:** Implemented a debounced user disconnection queue guarded by unique single-timer allocations per user ID (`userOfflineTimers`). When a user terminates their last session, a 1.2-second delay is initiated. If no reconnection occurs, the background thread fires a self-invoking HTTP POST mutation (`logOut(userId: $userId)`) directly back into the Apollo Server core. This fully injects a live HTTP execution context, enabling the system to broadcast flawless WebSocket offlining frames populated with proper client-side subscription IDs (`id`) and automatic layout sync.
+
+### 6. Declarative Access Control (Higher-Order Resolver Guards)
 - Designed an elegant functional **Auth Guard** abstraction (`authenticated`) using JavaScript Higher-Order Functions (HOF).
 - Protects private mutations/queries declaratively (`user: authenticated(async (_, {id}) => ...)`) eliminating repetitive validation code.
 - Emits fully-compliant enterprise `GraphQLError` payloads populated with structural extensions (`UNAUTHENTICATED`, HTTP Status 401).
 
-### 6. Cascade Data Deletions & Referential Integrity
+### 7. Cascade Data Deletions & Referential Integrity
 - Because NoSQL MongoDB environments lack native foreign key cascades (`ON DELETE CASCADE`), database consistency logic was securely engineered directly into the resolver tier.
 - Execution blocks within high-impact mutations like `deleteUser` invoke atomic multi-collection triggers (`PostModel.deleteMany`, `LikeModel.deleteMany`) ensuring zero orphaned relational nodes remain.
 
-### 7. Core Rich-Text UI Engineering (Meta's Lexical Editor Plugin)
+### 8. Core Rich-Text UI Engineering (Meta's Lexical Editor Plugin)
 - Developed a highly customized textual formatting layer leveraging **Meta’s Lexical Editor API**.
 - Implemented a production-grade `ToolbarPlugin` that interacts directly with Lexical's internal immutable tree structures (`registerUpdateListener`) and state selection schemas (`$getSelection`, `$isRangeSelection`).
 - Realized fine-grained inline node patching (`$patchStyleText`) for custom font-families and robust typography block transformation (`$setBlocksType` using `$createHeadingNode`) for rich user composition.

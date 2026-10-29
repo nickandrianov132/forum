@@ -75,7 +75,7 @@ const resolvers: Resolvers<MyContext> = {
             return newPost
         }),
         updatePost: authenticated( async (_, {id, ...args}) => {
-            const post = await PostModel.findByIdAndUpdate(id, args, {new: true})
+            const post = await PostModel.findByIdAndUpdate(id, args, { returnDocument: 'after' })
             return post
         }),
         deletePost: authenticated( async (parent, {id}) => {

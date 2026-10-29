@@ -24,16 +24,19 @@ type Documents = {
     "\n    mutation DeletePost($id: ID!) {\n        deletePost(id: $id)         \n    }    \n": typeof types.DeletePostDocument,
     "\n    mutation DeletePostByAdmin($id: ID!) {\n        deletePostByAdmin(id: $id)\n    }\n\n": typeof types.DeletePostByAdminDocument,
     "\n  mutation loginUser($login: String!, $password: String!) {\n    loginUser(login: $login, password: $password) {\n      accessToken\n      refreshToken\n      user {\n        id\n        login\n        avatar\n        role\n        isBanned\n      }\n    }\n  }\n": typeof types.LoginUserDocument,
+    "\n    mutation LogOut {\n        logOut\n    }    \n": typeof types.LogOutDocument,
     "\n    mutation SendMessage($text: String!, $userId: ID!) {\n        sendMessage(text: $text, userId: $userId) {\n            id\n            text\n            userId\n            createdAt\n            user {\n                id\n                login\n                avatar\n            }\n        }\n    }    \n": typeof types.SendMessageDocument,
     "\n    mutation UnbanUser($login: String!) {\n        unbanUser(login: $login)\n    }    \n": typeof types.UnbanUserDocument,
     "\n  mutation UpdatePost($id: ID!, $postTitle: String, $postContent: String) {\n    updatePost(id: $id, title: $postTitle, content: $postContent) {\n      id              # Обязательно для идентификации в кэше\n      title           # Чтобы заголовок обновился в списке\n      content         # Чтобы контент обновился в списке\n      likesCount\n      dislikesCount\n      isLiked\n      isDisliked\n      __typename      # Помогает Apollo понять тип объекта\n      isOwner\n    }\n  }\n": typeof types.UpdatePostDocument,
     "\n    mutation UpdateUser($id: ID!, $input: UpdateUserInput!) {\n        updateUser(id: $id, input: $input) {\n            id\n            login\n            email\n            avatar\n        }\n    }\n": typeof types.UpdateUserDocument,
-    "\n    query GetUsers {\n        users {\n            id\n            login\n            email\n            avatar\n            isBanned\n            role\n        }\n    }    \n": typeof types.GetUsersDocument,
-    "\n    fragment UserHeaderFields on User {\n      id\n      login\n      avatar\n      role\n      isBanned\n    }  \n": typeof types.UserHeaderFieldsFragmentDoc,
+    "\n    query GetUsers {\n        users {\n            id\n            login\n            avatar\n            isBanned\n            role\n        }\n    }    \n": typeof types.GetUsersDocument,
+    "\n    fragment UserHeaderFields on User {\n      id\n      login\n      avatar\n      role\n      isBanned\n      isOnline\n    }  \n": typeof types.UserHeaderFieldsFragmentDoc,
     "\n  query Me {\n    me {\n      ...UserHeaderFields\n    }\n  }\n": typeof types.MeDocument,
     "\n    query GetCategories {\n        categories {\n            id\n            name\n            slug\n            description\n        }\n    }\n": typeof types.GetCategoriesDocument,
     "\n    query GetMessages {\n        messages {\n            id\n            text\n            userId\n            createdAt\n            user {\n                id\n                login\n                avatar\n            }\n        }\n    }    \n": typeof types.GetMessagesDocument,
     "\n    query getOnePost($id: ID!) {\n        post(id: $id) {\n        id\n        title\n        content\n        isLiked\n        isDisliked\n        likesCount\n        dislikesCount\n        isOwner\n        user {\n            id\n            login\n            avatar\n        }\n    }\n}\n": typeof types.GetOnePostDocument,
+    "\n    query GetOnlineUsers {\n        getOnlineUsers {\n           id\n           login\n           avatar\n           isOnline\n           role\n        }\n    }    \n": typeof types.GetOnlineUsersDocument,
+    "\n    subscription UserStatusChanged {\n        userStatusChanged {\n           id\n           login\n           avatar\n           isOnline\n           role\n        }\n    }    \n": typeof types.UserStatusChangedDocument,
     "\n    query getPosts($limit: Int!, $offset: Int!) {\n        posts(limit: $limit, offset: $offset) {\n            totalCount\n            posts {\n                id\n                title\n                content\n                isDisliked\n                isLiked\n                likesCount\n                dislikesCount\n                isOwner\n                user {\n                    id\n                    login\n                }\n            }\n        }\n    }\n": typeof types.GetPostsDocument,
     "\n    query GetCategoryBySlug($slug: String!) {\n      categoryBySlug(slug: $slug) {\n        id\n        name\n        description\n      }\n    }  \n": typeof types.GetCategoryBySlugDocument,
     "\n    query GetPostsByCategory($slug: String!, $limit: Int!, $offset: Int!) {\n      postsByCategory(slug: $slug, limit: $limit, offset: $offset) {\n        totalCount\n        posts {\n         id\n         title\n         content\n         createdAt\n         likesCount\n         dislikesCount\n         isLiked\n         isDisliked\n         isOwner\n         user {\n           id\n           login\n         }\n        }\n      }\n    }  \n": typeof types.GetPostsByCategoryDocument,
@@ -51,16 +54,19 @@ const documents: Documents = {
     "\n    mutation DeletePost($id: ID!) {\n        deletePost(id: $id)         \n    }    \n": types.DeletePostDocument,
     "\n    mutation DeletePostByAdmin($id: ID!) {\n        deletePostByAdmin(id: $id)\n    }\n\n": types.DeletePostByAdminDocument,
     "\n  mutation loginUser($login: String!, $password: String!) {\n    loginUser(login: $login, password: $password) {\n      accessToken\n      refreshToken\n      user {\n        id\n        login\n        avatar\n        role\n        isBanned\n      }\n    }\n  }\n": types.LoginUserDocument,
+    "\n    mutation LogOut {\n        logOut\n    }    \n": types.LogOutDocument,
     "\n    mutation SendMessage($text: String!, $userId: ID!) {\n        sendMessage(text: $text, userId: $userId) {\n            id\n            text\n            userId\n            createdAt\n            user {\n                id\n                login\n                avatar\n            }\n        }\n    }    \n": types.SendMessageDocument,
     "\n    mutation UnbanUser($login: String!) {\n        unbanUser(login: $login)\n    }    \n": types.UnbanUserDocument,
     "\n  mutation UpdatePost($id: ID!, $postTitle: String, $postContent: String) {\n    updatePost(id: $id, title: $postTitle, content: $postContent) {\n      id              # Обязательно для идентификации в кэше\n      title           # Чтобы заголовок обновился в списке\n      content         # Чтобы контент обновился в списке\n      likesCount\n      dislikesCount\n      isLiked\n      isDisliked\n      __typename      # Помогает Apollo понять тип объекта\n      isOwner\n    }\n  }\n": types.UpdatePostDocument,
     "\n    mutation UpdateUser($id: ID!, $input: UpdateUserInput!) {\n        updateUser(id: $id, input: $input) {\n            id\n            login\n            email\n            avatar\n        }\n    }\n": types.UpdateUserDocument,
-    "\n    query GetUsers {\n        users {\n            id\n            login\n            email\n            avatar\n            isBanned\n            role\n        }\n    }    \n": types.GetUsersDocument,
-    "\n    fragment UserHeaderFields on User {\n      id\n      login\n      avatar\n      role\n      isBanned\n    }  \n": types.UserHeaderFieldsFragmentDoc,
+    "\n    query GetUsers {\n        users {\n            id\n            login\n            avatar\n            isBanned\n            role\n        }\n    }    \n": types.GetUsersDocument,
+    "\n    fragment UserHeaderFields on User {\n      id\n      login\n      avatar\n      role\n      isBanned\n      isOnline\n    }  \n": types.UserHeaderFieldsFragmentDoc,
     "\n  query Me {\n    me {\n      ...UserHeaderFields\n    }\n  }\n": types.MeDocument,
     "\n    query GetCategories {\n        categories {\n            id\n            name\n            slug\n            description\n        }\n    }\n": types.GetCategoriesDocument,
     "\n    query GetMessages {\n        messages {\n            id\n            text\n            userId\n            createdAt\n            user {\n                id\n                login\n                avatar\n            }\n        }\n    }    \n": types.GetMessagesDocument,
     "\n    query getOnePost($id: ID!) {\n        post(id: $id) {\n        id\n        title\n        content\n        isLiked\n        isDisliked\n        likesCount\n        dislikesCount\n        isOwner\n        user {\n            id\n            login\n            avatar\n        }\n    }\n}\n": types.GetOnePostDocument,
+    "\n    query GetOnlineUsers {\n        getOnlineUsers {\n           id\n           login\n           avatar\n           isOnline\n           role\n        }\n    }    \n": types.GetOnlineUsersDocument,
+    "\n    subscription UserStatusChanged {\n        userStatusChanged {\n           id\n           login\n           avatar\n           isOnline\n           role\n        }\n    }    \n": types.UserStatusChangedDocument,
     "\n    query getPosts($limit: Int!, $offset: Int!) {\n        posts(limit: $limit, offset: $offset) {\n            totalCount\n            posts {\n                id\n                title\n                content\n                isDisliked\n                isLiked\n                likesCount\n                dislikesCount\n                isOwner\n                user {\n                    id\n                    login\n                }\n            }\n        }\n    }\n": types.GetPostsDocument,
     "\n    query GetCategoryBySlug($slug: String!) {\n      categoryBySlug(slug: $slug) {\n        id\n        name\n        description\n      }\n    }  \n": types.GetCategoryBySlugDocument,
     "\n    query GetPostsByCategory($slug: String!, $limit: Int!, $offset: Int!) {\n      postsByCategory(slug: $slug, limit: $limit, offset: $offset) {\n        totalCount\n        posts {\n         id\n         title\n         content\n         createdAt\n         likesCount\n         dislikesCount\n         isLiked\n         isDisliked\n         isOwner\n         user {\n           id\n           login\n         }\n        }\n      }\n    }  \n": types.GetPostsByCategoryDocument,
@@ -125,6 +131,10 @@ export function graphql(source: "\n  mutation loginUser($login: String!, $passwo
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
+export function graphql(source: "\n    mutation LogOut {\n        logOut\n    }    \n"): (typeof documents)["\n    mutation LogOut {\n        logOut\n    }    \n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
 export function graphql(source: "\n    mutation SendMessage($text: String!, $userId: ID!) {\n        sendMessage(text: $text, userId: $userId) {\n            id\n            text\n            userId\n            createdAt\n            user {\n                id\n                login\n                avatar\n            }\n        }\n    }    \n"): (typeof documents)["\n    mutation SendMessage($text: String!, $userId: ID!) {\n        sendMessage(text: $text, userId: $userId) {\n            id\n            text\n            userId\n            createdAt\n            user {\n                id\n                login\n                avatar\n            }\n        }\n    }    \n"];
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
@@ -141,11 +151,11 @@ export function graphql(source: "\n    mutation UpdateUser($id: ID!, $input: Upd
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
-export function graphql(source: "\n    query GetUsers {\n        users {\n            id\n            login\n            email\n            avatar\n            isBanned\n            role\n        }\n    }    \n"): (typeof documents)["\n    query GetUsers {\n        users {\n            id\n            login\n            email\n            avatar\n            isBanned\n            role\n        }\n    }    \n"];
+export function graphql(source: "\n    query GetUsers {\n        users {\n            id\n            login\n            avatar\n            isBanned\n            role\n        }\n    }    \n"): (typeof documents)["\n    query GetUsers {\n        users {\n            id\n            login\n            avatar\n            isBanned\n            role\n        }\n    }    \n"];
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
-export function graphql(source: "\n    fragment UserHeaderFields on User {\n      id\n      login\n      avatar\n      role\n      isBanned\n    }  \n"): (typeof documents)["\n    fragment UserHeaderFields on User {\n      id\n      login\n      avatar\n      role\n      isBanned\n    }  \n"];
+export function graphql(source: "\n    fragment UserHeaderFields on User {\n      id\n      login\n      avatar\n      role\n      isBanned\n      isOnline\n    }  \n"): (typeof documents)["\n    fragment UserHeaderFields on User {\n      id\n      login\n      avatar\n      role\n      isBanned\n      isOnline\n    }  \n"];
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
@@ -162,6 +172,14 @@ export function graphql(source: "\n    query GetMessages {\n        messages {\n
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
 export function graphql(source: "\n    query getOnePost($id: ID!) {\n        post(id: $id) {\n        id\n        title\n        content\n        isLiked\n        isDisliked\n        likesCount\n        dislikesCount\n        isOwner\n        user {\n            id\n            login\n            avatar\n        }\n    }\n}\n"): (typeof documents)["\n    query getOnePost($id: ID!) {\n        post(id: $id) {\n        id\n        title\n        content\n        isLiked\n        isDisliked\n        likesCount\n        dislikesCount\n        isOwner\n        user {\n            id\n            login\n            avatar\n        }\n    }\n}\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n    query GetOnlineUsers {\n        getOnlineUsers {\n           id\n           login\n           avatar\n           isOnline\n           role\n        }\n    }    \n"): (typeof documents)["\n    query GetOnlineUsers {\n        getOnlineUsers {\n           id\n           login\n           avatar\n           isOnline\n           role\n        }\n    }    \n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n    subscription UserStatusChanged {\n        userStatusChanged {\n           id\n           login\n           avatar\n           isOnline\n           role\n        }\n    }    \n"): (typeof documents)["\n    subscription UserStatusChanged {\n        userStatusChanged {\n           id\n           login\n           avatar\n           isOnline\n           role\n        }\n    }    \n"];
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */

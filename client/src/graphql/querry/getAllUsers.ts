@@ -6,10 +6,10 @@ export const GET_ALL_USERS = graphql(`
         users {
             id
             login
-            email
             avatar
             isBanned
             role
         }
     }    
 `)
+

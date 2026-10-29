@@ -117,13 +117,13 @@ const ChatBody = () => {
                                                 xmlns="http://w3.org" 
                                                 fill="none" 
                                                 viewBox="0 0 24 24" 
-                                                stroke-width="2" 
+                                                strokeWidth="2" 
                                                 stroke="currentColor" 
                                                 className="w-5 h-5 text-slate-300 hover:text-red-500 transition-colors duration-200 cursor-pointer"
                                                 >
                                                 <circle cx="12" cy="12" r="9" />
 
-                                                <path stroke-linecap="round" stroke-linejoin="round" d="M9 15L15 9M9 9l6 6" />
+                                                <path strokeLinecap="round" strokeLinejoin="round" d="M9 15L15 9M9 9l6 6" />
                                                 </svg>
                                         </span>
 

@@ -12,6 +12,7 @@ const userSchema = new Schema({
         enum: ['User', 'Moderator', 'Admin'],
         default: 'User'
     },
+    isOnline: { type: Boolean, default: false },
     isBanned: { type: Boolean, default: false },
     bannedUntil: { type: Date, default: null },
     bannedReason: { type: String, default: null },

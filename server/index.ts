@@ -19,12 +19,30 @@ import { getUserFromHeader, verifyToken } from "./src/utils/auth.ts";
 import type { ILoaders } from "./src/loaders/mainLoader.ts";
 import { createLoaders } from "./src/loaders/mainLoader.ts";
 import { env } from "./src/config.ts";
+import { UserModel, type IUser } from "./src/models/Users.ts";
+import { PubSub } from "graphql-subscriptions";
+import { EventEmitter } from "node:events";
+export const globalEvents = new EventEmitter();
+
+// ГЛОБАЛЬНЫЙ МОСТ: Каждый раз, когда в эмиттер летит событие,
+// мы пересылаем его в pubsub из стабильного глобального контекста сервера
+globalEvents.on("STATUS_CHANGED", (payload) => {
+  pubsub.publish("USER_STATUS", payload);
+});
 
 ///// Migrations imports & run:
 // import { assignAdminRoles } from "./src/scripts/assign-roles-migration.ts";
 // import { migrateOldUsers } from "./src/scripts/migrate-users.ts";
 // assignAdminRoles();
 // migrateOldUsers();
+
+type PubSubChannels = {
+  USER_STATUS: { userStatusChanged: IUser }
+};
+const pubsub = new PubSub<PubSubChannels>();
+
+
+
 
 const app = express();
 app.use(cors({
@@ -50,43 +68,140 @@ const wsServer = new WebSocketServer({
   path: '/graphql',
 });
 
+
+// Карта для подсчета вкладок: userId -> количество открытых сокетов
+const userSocketCounts = new Map<string, number>();
+
+// Хранилище активных таймеров оффлайна: userId -> NodeJS.Timeout
+const userOfflineTimers = new Map<string, NodeJS.Timeout>();
+
+interface ISessionData {
+  userId: string;
+  login: string;
+}
+const socketSessionMap = new WeakMap<object, ISessionData>();
+
 const serverCleanup = useServer(
-  { 
+  {
     schema,
     onConnect: async (ctx) => {
       const connectionParams = ctx.connectionParams as { authorization?: string };
       const authHeader = connectionParams?.authorization;
-
-      // Если клиент ПЫТАЛСЯ авторизоваться (прислал заголовок)
+      
       if (authHeader) {
-        const user = getUserFromHeader(authHeader);
+        const tokenUser = getUserFromHeader(authHeader) as any;
+        if (!tokenUser || !tokenUser.id) return false;
         
-        // ЕслиuserId нет (токен протух), возвращаем false. 
-        // Это закроет соединение со стороны сервера.
-        if (!user) {
-          // console.log("WS Connection rejected: Token expired");
-          return false; 
+        const userId = String(tokenUser.id);
+        const dbUser = await UserModel.findById(userId);
+        
+        if (dbUser) {
+          socketSessionMap.set(ctx, {
+            userId: userId,
+            login: dbUser.login || "Пользователь"
+          });
+
+          // Отменяем таймер оффлайна, если пользователь вернулся (F5)
+          if (userOfflineTimers.has(userId)) {
+            clearTimeout(userOfflineTimers.get(userId)!);
+            userOfflineTimers.delete(userId);
+            console.log(`[WS] Пользователь ${dbUser.login} успел переподключиться. Таймер оффлайна отменен.`);
+          }
+
+          const currentCount = userSocketCounts.get(userId) || 0;
+          userSocketCounts.set(userId, currentCount + 1);
+
+          if (currentCount === 0 || !dbUser.isOnline) {
+            dbUser.isOnline = true;
+            await dbUser.save();
+            
+            const userPayload = {
+              id: String(dbUser._id),
+              login: dbUser.login,
+              isOnline: true,
+              role: dbUser.role,
+              avatar: (dbUser as any).avatar || "",
+              __typename: "User"
+            };
+            pubsub.publish("USER_STATUS", { userStatusChanged: userPayload as any });
+          }
         }
       }
-      return true; // Разрешаем анонимное или успешное подключение
+      return true;
     },
     context: async (ctx) => {
-      // let userId: string | null = null;
       const connectionParams = ctx.connectionParams as { authorization?: string };
       const authHeader = connectionParams?.authorization;
-
-      const user = getUserFromHeader(authHeader);
-
-
-      return { 
+      const user = authHeader ? getUserFromHeader(authHeader) : null;
+      return {
         userId: user?.id || null,
-        role: user?.role || null, 
-        loaders: createLoaders(user?.id || undefined) 
+        role: user?.role || null,
+        loaders: createLoaders(user?.id || undefined)
       };
     },
+    onDisconnect: async (ctx) => {
+      const session = socketSessionMap.get(ctx);
+      
+      if (session) {
+        const userId = session.userId;
+        const userLogin = session.login;
+        
+        socketSessionMap.delete(ctx);
+
+        const currentCount = userSocketCounts.get(userId) || 0;
+        const newCount = currentCount - 1;
+
+        if (newCount <= 0) {
+          userSocketCounts.delete(userId);
+          
+          if (!userOfflineTimers.has(userId)) {
+            // console.log(`[WS] Соединение ${userLogin} закрыто. Запуск таймаута на оффлайн...`);
+            
+            const timer = setTimeout(async () => {
+              userOfflineTimers.delete(userId);
+
+              if (!userSocketCounts.has(userId)) {
+                try {
+                  const serverPort = env.PORT || 7000; 
+
+                  const mutationQuery = {
+                    query: `
+                      mutation InternalLogOut($id: String) {
+                        logOut(id: $id)
+                      }
+                    `,
+                    variables: {
+                      id: userId // Передаем ID пользователя, закрывшего вкладку
+                    }
+                  };
+
+                  await fetch(`http://localhost:${serverPort}/graphql`, {
+                    method: "POST",
+                    headers: {
+                      "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify(mutationQuery)
+                  });
+
+                  // console.log(`[WS] -> Системный вызов мутации logOut для ${userLogin} успешно выполнен.`);
+                } catch (err) {
+                  // console.error("[WS] Ошибка при автоматическом вызове мутации logOut:", err);
+                }
+              }
+            }, 1200);
+
+            userOfflineTimers.set(userId, timer);
+          }
+        } else {
+          userSocketCounts.set(userId, newCount);
+          // console.log(`[WS] У пользователя ${userLogin} осталось открытых соединений: ${newCount}`);
+        }
+      }
+    }
   },
   wsServer
 );
+
 
 const server = new ApolloServer({
   schema,
@@ -123,6 +238,7 @@ const server = new ApolloServer({
         return {
           async drainServer() {
             await serverCleanup.dispose();
+
           },
         };
       },
