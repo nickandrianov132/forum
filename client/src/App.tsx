@@ -329,7 +329,7 @@ function App() {
       // Подставляем URL вашего бэкенда (на локалке localhost, на проде — ваша ссылка Render)
       const isProd = import.meta.env.VITE_NODE_ENV === 'production';
       const BACKEND_URL = isProd ? apiHTTP : 'http://localhost:7000';
-
+      console.log('Backend URL:', BACKEND_URL);
       fetch(`${BACKEND_URL}/api/presence/ping`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
