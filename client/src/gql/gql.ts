@@ -25,6 +25,7 @@ type Documents = {
     "\n    mutation DeletePostByAdmin($id: ID!) {\n        deletePostByAdmin(id: $id)\n    }\n\n": typeof types.DeletePostByAdminDocument,
     "\n  mutation loginUser($login: String!, $password: String!) {\n    loginUser(login: $login, password: $password) {\n      accessToken\n      refreshToken\n      user {\n        id\n        login\n        avatar\n        role\n        isBanned\n      }\n    }\n  }\n": typeof types.LoginUserDocument,
     "\n    mutation LogOut {\n        logOut\n    }    \n": typeof types.LogOutDocument,
+    "\n    mutation PingOnline {\n        pingOnline\n    }    \n": typeof types.PingOnlineDocument,
     "\n    mutation SendMessage($text: String!, $userId: ID!) {\n        sendMessage(text: $text, userId: $userId) {\n            id\n            text\n            userId\n            createdAt\n            user {\n                id\n                login\n                avatar\n            }\n        }\n    }    \n": typeof types.SendMessageDocument,
     "\n    mutation UnbanUser($login: String!) {\n        unbanUser(login: $login)\n    }    \n": typeof types.UnbanUserDocument,
     "\n  mutation UpdatePost($id: ID!, $postTitle: String, $postContent: String) {\n    updatePost(id: $id, title: $postTitle, content: $postContent) {\n      id              # Обязательно для идентификации в кэше\n      title           # Чтобы заголовок обновился в списке\n      content         # Чтобы контент обновился в списке\n      likesCount\n      dislikesCount\n      isLiked\n      isDisliked\n      __typename      # Помогает Apollo понять тип объекта\n      isOwner\n    }\n  }\n": typeof types.UpdatePostDocument,
@@ -55,6 +56,7 @@ const documents: Documents = {
     "\n    mutation DeletePostByAdmin($id: ID!) {\n        deletePostByAdmin(id: $id)\n    }\n\n": types.DeletePostByAdminDocument,
     "\n  mutation loginUser($login: String!, $password: String!) {\n    loginUser(login: $login, password: $password) {\n      accessToken\n      refreshToken\n      user {\n        id\n        login\n        avatar\n        role\n        isBanned\n      }\n    }\n  }\n": types.LoginUserDocument,
     "\n    mutation LogOut {\n        logOut\n    }    \n": types.LogOutDocument,
+    "\n    mutation PingOnline {\n        pingOnline\n    }    \n": types.PingOnlineDocument,
     "\n    mutation SendMessage($text: String!, $userId: ID!) {\n        sendMessage(text: $text, userId: $userId) {\n            id\n            text\n            userId\n            createdAt\n            user {\n                id\n                login\n                avatar\n            }\n        }\n    }    \n": types.SendMessageDocument,
     "\n    mutation UnbanUser($login: String!) {\n        unbanUser(login: $login)\n    }    \n": types.UnbanUserDocument,
     "\n  mutation UpdatePost($id: ID!, $postTitle: String, $postContent: String) {\n    updatePost(id: $id, title: $postTitle, content: $postContent) {\n      id              # Обязательно для идентификации в кэше\n      title           # Чтобы заголовок обновился в списке\n      content         # Чтобы контент обновился в списке\n      likesCount\n      dislikesCount\n      isLiked\n      isDisliked\n      __typename      # Помогает Apollo понять тип объекта\n      isOwner\n    }\n  }\n": types.UpdatePostDocument,
@@ -132,6 +134,10 @@ export function graphql(source: "\n  mutation loginUser($login: String!, $passwo
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
 export function graphql(source: "\n    mutation LogOut {\n        logOut\n    }    \n"): (typeof documents)["\n    mutation LogOut {\n        logOut\n    }    \n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n    mutation PingOnline {\n        pingOnline\n    }    \n"): (typeof documents)["\n    mutation PingOnline {\n        pingOnline\n    }    \n"];
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */

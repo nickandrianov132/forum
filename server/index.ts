@@ -22,25 +22,68 @@ import { env } from "./src/config.ts";
 import { UserModel, type IUser } from "./src/models/Users.ts";
 import { PubSub } from "graphql-subscriptions";
 import { EventEmitter } from "node:events";
+import { pubsub } from "./src/utils/userPubSub.ts";
+
 export const globalEvents = new EventEmitter();
-
-// ГЛОБАЛЬНЫЙ МОСТ: Каждый раз, когда в эмиттер летит событие,
-// мы пересылаем его в pubsub из стабильного глобального контекста сервера
-globalEvents.on("STATUS_CHANGED", (payload) => {
-  pubsub.publish("USER_STATUS", payload);
-});
-
 ///// Migrations imports & run:
 // import { assignAdminRoles } from "./src/scripts/assign-roles-migration.ts";
 // import { migrateOldUsers } from "./src/scripts/migrate-users.ts";
 // assignAdminRoles();
 // migrateOldUsers();
 
-type PubSubChannels = {
-  USER_STATUS: { userStatusChanged: IUser }
-};
-const pubsub = new PubSub<PubSubChannels>();
+// ГЛОБАЛЬНЫЙ МОСТ: Каждый раз, когда в эмиттер летит событие,
+// мы пересылаем его в pubsub из стабильного глобального контекста сервера
+// globalEvents.on("STATUS_CHANGED", (payload) => {
+//   pubsub.publish("USER_STATUS", payload);
+// });
 
+export async function setGlobalUserOffline(userId: string, userLogin: string) {
+  try {
+    const dbUser = await UserModel.findById(userId);
+    if (dbUser && dbUser.isOnline) {
+      dbUser.isOnline = false;
+      await dbUser.save();
+
+      const userPayload = {
+        id: String(dbUser._id),
+        login: dbUser.login,
+        isOnline: false,
+        role: dbUser.role,
+        avatar: (dbUser as any).avatar || "",
+        __typename: "User"
+      };
+
+      // Шлем событие через единый PubSub — теперь его услышат ВСЕ клиенты
+      pubsub.publish("USER_STATUS", { userStatusChanged: userPayload as any});
+      console.log(`[Status System] -> Пользователь ${userLogin} успешно переведен в ОФФЛАЙН.`);
+    }
+  } catch (err) {
+    console.error(`[Status System] Ошибка перевода в оффлайн для ${userLogin}:`, err);
+  }
+}
+
+setInterval(async () => {
+  // Страховочный таймаут: 3 минуты бездействия
+  const offlineThreshold = new Date(Date.now() - 3 * 60 * 1000); 
+
+  try {
+    const expiredUsers = await UserModel.find({
+      isOnline: true,
+      lastSeen: { $lt: offlineThreshold }
+    });
+
+    for (const user of expiredUsers) {
+      // Очищаем счетчики сокетов для этого пользователя на всякий случай
+      userSocketCounts.delete(String(user._id));
+      
+      // Переводим в оффлайн через общую функцию
+      await setGlobalUserOffline(String(user._id), user.login || "Пользователь");
+      console.log(`[Страховка] Мобилка ${user.login} уснула. Погасили статус по таймауту.`);
+    }
+  } catch (err) {
+    console.error("[Страховка Error] Ошибка проверки:", err);
+  }
+}, 120000); // Проверка запускается раз в 2 минуты
 
 
 
@@ -58,7 +101,6 @@ export interface MyContext {
   loaders: ILoaders; // теперь TS знает про userLoader, likeLoader и т.д.
 }
 
-
 // Creating the WebSocket server
 const wsServer = new WebSocketServer({
   // This is the `httpServer` we created in a previous step.
@@ -67,37 +109,6 @@ const wsServer = new WebSocketServer({
   // serves expressMiddleware at a different path
   path: '/graphql',
 });
-
-// Каждые 12 секунд проверяем, живы ли наши клиенты
-const keepAliveInterval = setInterval(() => {
-  wsServer.clients.forEach((client: any) => {
-    // Если клиент не ответил на предыдущий пинг — закрываем сокет!
-    // Это мгновенно стриггерит onDisconnect и переведет юзера в оффлайн
-    if (client.isAlive === false) {
-      console.log("[WS] Клиент не ответил на пинг. Принудительное закрытие соединения.");
-      return client.terminate();
-    }
-
-    // Помечаем клиента как "уснувшего" и отправляем ему пинг
-    client.isAlive = false;
-    client.ping(); // Встроенный метод библиотеки 'ws'
-  });
-}, 5000);
-
-// Ловим ответы (pong) от клиентов, чтобы подтвердить, что они живы
-wsServer.on("connection", (socket: any) => {
-  socket.isAlive = true;
-  
-  socket.on("pong", () => {
-    socket.isAlive = true;
-  });
-});
-
-// Очищаем интервал при остановке сервера (опционально)
-wsServer.on("close", () => {
-  clearInterval(keepAliveInterval);
-});
-
 
 // Карта для подсчета вкладок: userId -> количество открытых сокетов
 const userSocketCounts = new Map<string, number>();
@@ -110,6 +121,7 @@ interface ISessionData {
   login: string;
 }
 const socketSessionMap = new WeakMap<object, ISessionData>();
+
 
 const serverCleanup = useServer(
   {
@@ -169,7 +181,7 @@ const serverCleanup = useServer(
         loaders: createLoaders(user?.id || undefined)
       };
     },
-    onDisconnect: async (ctx) => {
+    onDisconnect: (ctx) => { // Обратите внимание: убрали async с самого хука
       const session = socketSessionMap.get(ctx);
       
       if (session) {
@@ -185,66 +197,26 @@ const serverCleanup = useServer(
           userSocketCounts.delete(userId);
           
           if (!userOfflineTimers.has(userId)) {
-            // console.log(`[WS] Соединение ${userLogin} закрыто. Запуск таймаута на оффлайн...`);
+            console.log(`[WS] Последняя вкладка ${userLogin} закрыта. Запуск быстрого таймера...`);
             
-            const timer = setTimeout(async () => {
+            const timer = setTimeout(() => {
               userOfflineTimers.delete(userId);
 
               if (!userSocketCounts.has(userId)) {
-                try {
-                  const serverPort = env.PORT || 10000;
-            
-                  // ИСПРАВЛЕНО: Для проде (внутри Render) всегда шлем на localhost и текущий внутренний порт.
-                  // Это самый надежный способ, который полностью исключает падения из-за внешних DNS или роутинга Render!
-                  const baseUrl = process.env.RENDER ? `http://localhost:${serverPort}` : (env.RENDER_EXTERNAL_URL || `http://localhost:${serverPort}`);
-                  const graphqlUrl = `${baseUrl.replace(/\/$/, "")}/graphql`;
-                  
-                  const mutationQuery = {
-                    query: `
-                      mutation InternalLogOut($id: String) {
-                        logOut(id: $id)
-                      }
-                    `,
-                    variables: {
-                      id: userId
-                    }
-                  };
-                  console.log(`[WS] Фоновый таймер оффлайна для ${userLogin}. Отправка fetch на: ${graphqlUrl}`);
-
-                  // ИСПРАВЛЕНО: Добавляем отслеживание ошибок fetch, чтобы они выводились в логи Render!
-                  await fetch(graphqlUrl, {
-                    method: "POST",
-                    headers: {
-                      "Content-Type": "application/json"
-                    },
-                    body: JSON.stringify(mutationQuery)
-                  })
-                  .then(async (res) => {
-                    if (!res.ok) {
-                      const text = await res.text();
-                      console.error(`[WS] Внутренний fetch упал со статусом ${res.status}: ${text}`);
-                    } else {
-                      console.log(`[WS] -> Авто-вызов Мутации на проде УСПЕШНО выполнен для ${userLogin}.`);
-                    }
-                  })
-
-                  // console.log(`[WS] -> Системный вызов мутации logOut для ${userLogin} успешно выполнен.`);
-                } catch (err) {
-                  console.error("[WS] Ошибка при автоматическом вызове мутации logOut:", err);
-                }
+                // Запускаем асинхронную функцию изолированно, не блокируя сокет-сервер
+                setGlobalUserOffline(userId, userLogin).catch(err => console.error(err));
               }
-            }, 1200);
+            }, 1500); // 1.5 секунды задержки для F5 / переключения вкладок
 
             userOfflineTimers.set(userId, timer);
           }
         } else {
           userSocketCounts.set(userId, newCount);
-          // console.log(`[WS] У пользователя ${userLogin} осталось открытых соединений: ${newCount}`);
         }
       }
     }
   },
-  wsServer
+  wsServer,
 );
 
 
@@ -319,13 +291,6 @@ app.use(
   }),
 );
 const PORT = env.PORT || 7000;
-
-// Now that our HTTP server is fully set up, we can listen to it.
-httpServer.listen(PORT, () => {
-  console.log(`Server is now running on http://localhost:${PORT}/graphql`);
-});
-
-
 // const uri = "mongodb+srv://nick132:1322009Nick$@cluster0.dq4k6vy.mongodb.net/?appName=Cluster0"
 // const uri = 'mongodb://127.0.0.1:27017'
 
@@ -333,6 +298,12 @@ httpServer.listen(PORT, () => {
 // then(res => console.log("Connected to MongoDB_forum")).
 // catch(error => console.log(error))
 // const uri = process.env.MONGO_URI || 'mongodb://127.0.0.1:27017';
+// Now that our HTTP server is fully set up, we can listen to it.
+httpServer.listen(PORT, () => {
+  console.log(`Server is now running on http://localhost:${PORT}/graphql`);
+});
+
+
 
 async function connectDB() {
   try {
@@ -344,3 +315,7 @@ async function connectDB() {
 }
 
 connectDB();
+
+
+
+

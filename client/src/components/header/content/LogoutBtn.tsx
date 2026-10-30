@@ -3,6 +3,7 @@ import { useAppDispatch } from '../../../store/hooks';
 import { logout } from '../../../store/slices/authSlice';
 import { LOGOUT_USER } from '../../../graphql/mutations/logoutUser';
 
+
 const LogoutBtn = () => {
     const dispatch = useAppDispatch();
     const [logOutMutation, {error, loading}] = useMutation(LOGOUT_USER);

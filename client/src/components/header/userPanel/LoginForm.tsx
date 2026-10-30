@@ -6,6 +6,8 @@ import { setCredentials } from '../../../store/slices/authSlice';
 import { LOGIN_USER } from '../../../graphql/mutations/loginUser';
 import Spinner from '../../Spinner';
 
+
+
 interface LoginFormProps {
   onClose: () => void;
 }
@@ -30,10 +32,10 @@ const LoginForm = ({onClose}: LoginFormProps) => {
       localStorage.setItem('refreshToken', refreshToken);
 
       // 2. В Redux идёт только Access Token и весь объект пользователя
-    dispatch(setCredentials({ accessToken, refreshToken, user }));
-    onClose();  
-    console.log('Saccessfully loged-in.');
-    console.log(accessToken);
+      dispatch(setCredentials({ accessToken, refreshToken, user }));
+      onClose();  
+      console.log('Saccessfully loged-in.');
+      console.log(accessToken);
     },
     onError: (err) => console.error("Log-in error:", err.message)
   });

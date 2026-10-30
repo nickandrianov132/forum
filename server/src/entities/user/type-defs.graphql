@@ -21,6 +21,7 @@ type User {
     bannedUntil: DateTime
     bannedReason: String
     isOnline: Boolean!
+    lastSeen: DateTime 
 }
 
 input UpdateUserInput {
@@ -61,6 +62,7 @@ type Mutation {
     banUser( input: BanUserInput!): Boolean
     unbanUser(login: String!): Boolean
     logOut(id: String): Boolean!
+    pingOnline: Boolean!
 }
 
 type Subscription { 

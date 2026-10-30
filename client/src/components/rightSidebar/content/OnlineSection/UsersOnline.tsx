@@ -1,77 +1,51 @@
 import { useQuery } from "@apollo/client/react";
 import { GET_USERS_ONLINE, USER_STATUS_SUBSCRIPTION } from "../../../../graphql/querry/getOnlineUsers";
 import { useEffect } from "react";
+import { useOnlineHeartbeat } from "../../../../hooks/useOnlineHeartbeat";
 
 
 const UsersOnline = () => {
     const {data, loading, error, subscribeToMore} = useQuery(GET_USERS_ONLINE);
-
+    useOnlineHeartbeat();
   console.log(data);
-// 2. Подключаем подписку при монтировании компонента
-//   useEffect(() => {
-//     const unsubscribe = subscribeToMore({
-//       document: USER_STATUS_SUBSCRIPTION,
-//       // updateQuery срабатывает каждый раз, когда бэкэнд шлет событие
-//       updateQuery: (prev, { subscriptionData }) => {
-//         if (!subscriptionData.data) return prev;
+
+    useEffect(() => {
+    const unsubscribe = subscribeToMore({
+        document: USER_STATUS_SUBSCRIPTION,
+        updateQuery: (prev, { subscriptionData }) => {
+        console.log("Данные из сокета прилетели в Apollo:", subscriptionData);
         
-//         const updatedUser = subscriptionData.data.userStatusChanged;
+        if (!subscriptionData.data?.userStatusChanged) return prev;
 
-//         // Пересобираем список пользователей с учетом изменившегося статуса
-//         const updatedList = (prev.getOnlineUsers || []).map((user: any) => {
-//           if (user.id === updatedUser.id) {
-//             return { ...user, isOnline: updatedUser.isOnline };
-//           }
-//           return user;
-//         });
+        const changedUser = subscriptionData.data.userStatusChanged;
+        
+        // Принудительно приводим ID к строке для надежности сравнения
+        const targetId = String(changedUser.id || (changedUser as any)._id || "");
 
-//         return {
-//           ...prev,
-//           getOnlineUsers: updatedList,
-//         } as any;
-//       },
-//     });
+        // 1. Фильтруем список, убирая пользователя (независимо от того, зашел он или вышел)
+        const filteredUsers = (prev.getOnlineUsers || []).filter((u: any) => {
+            const currentId = String(u?.id || u?._id || "");
+            return currentId !== targetId;
+        });
 
-//     // Отписываемся при уничтожении компонента
-//     return () => unsubscribe();
-//   }, [subscribeToMore]);
-useEffect(() => {
-  const unsubscribe = subscribeToMore({
-    document: USER_STATUS_SUBSCRIPTION,
-    updateQuery: (prev, { subscriptionData }) => {
-      console.log("Данные из сокета прилетели в Apollo:", subscriptionData);
-      
-      if (!subscriptionData.data?.userStatusChanged) return prev;
+        // 2. Если он онлайн — добавляем обновленный объект, иначе оставляем чистый отфильтрованный массив
+        const updatedList = changedUser.isOnline 
+            ? [...filteredUsers, changedUser] 
+            : filteredUsers;
 
-      const changedUser = subscriptionData.data.userStatusChanged;
-      
-      // Принудительно приводим ID к строке для надежности сравнения
-      const targetId = String(changedUser.id || (changedUser as any)._id || "");
+        console.log("Новый сформированный массив для UI:", updatedList);
 
-      // 1. Фильтруем список, убирая пользователя (независимо от того, зашел он или вышел)
-      const filteredUsers = (prev.getOnlineUsers || []).filter((u: any) => {
-        const currentId = String(u?.id || u?._id || "");
-        return currentId !== targetId;
-      });
+        // 3. КРИТИЧЕСКИЙ ШАГ: Возвращаем НОВЫЙ объект через деструктуризацию,
+        // чтобы React зафиксировал изменение ссылки и принудительно обновил интерфейс
+        return {
+            ...prev,
+            getOnlineUsers: [...updatedList], // Явное копирование массива
+        } as any;
+        },
+    });
 
-      // 2. Если он онлайн — добавляем обновленный объект, иначе оставляем чистый отфильтрованный массив
-      const updatedList = changedUser.isOnline 
-        ? [...filteredUsers, changedUser] 
-        : filteredUsers;
-
-      console.log("Новый сформированный массив для UI:", updatedList);
-
-      // 3. КРИТИЧЕСКИЙ ШАГ: Возвращаем НОВЫЙ объект через деструктуризацию,
-      // чтобы React зафиксировал изменение ссылки и принудительно обновил интерфейс
-      return {
-        ...prev,
-        getOnlineUsers: [...updatedList], // Явное копирование массива
-      } as any;
-    },
-  });
-
-  return () => unsubscribe();
-}, [subscribeToMore]);
+    return () => unsubscribe();
+    }, [subscribeToMore]);
     // useEffect(() => {
     //     const unsubscribe = subscribeToMore({
     //     document: USER_STATUS_SUBSCRIPTION,

@@ -7,11 +7,8 @@ import MUForum from './MUForum.tsx';
 import { logout, setCredentials } from './store/slices/authSlice.ts';
 import { store } from './store/store.ts';
 import { useAuthInit } from './hooks/useAuthInit.ts';
-import { useEffect } from 'react';
-import { useSelector } from 'react-redux';
 
 
-const apiHTTP = import.meta.env.VITE_HTTP || 'http://localhost:7000/graphql';
 const apiEnv = import.meta.env.VITE_GRAPHQL_URI; 
 const HTTP_URI = apiEnv || 'http://localhost:7000/graphql';
 const WS_URI = apiEnv 
@@ -188,8 +185,9 @@ const authLink = new ApolloLink((operation, forward) => {
   return forward(operation);
 });
 
+
   // 4. WebSocket Link
-  const wsLink = new GraphQLWsLink(createClient({
+ export const wsLink = new GraphQLWsLink(createClient({
     url: WS_URI,
     connectionParams: () => {
       const token = localStorage.getItem('token');
@@ -200,12 +198,12 @@ const authLink = new ApolloLink((operation, forward) => {
     // Добавляем таймаут ожидания пинга от сервера.
     // Если сервер шлет пинг раз в 12 секунд, значение в 10-15 секунд на клиенте
     // заставит Apollo Client держать сокет "разогретым" и автоматически отвечать на pong.
-    keepAlive: 7000,
+    keepAlive: 10000,
     // Позволяет сокету пытаться переподключиться при закрытии соединения
     shouldRetry: () => true, 
 
     // Бесконечное число попыток переподключения при случайном обрыве связи (F5, лифт, метро)
-    retryAttempts: Infinity,
+    retryAttempts: 10,
       
     on: {
         // 1. Метод синхронный, event имеет тип unknown — как и требует graphql-ws
@@ -292,7 +290,7 @@ const client = new ApolloClient({
           // Указываем поведение для этого конкретного запроса
           getOnlineUsers: {
             // Этим мы говорим - просто бери новые данные и затирай старые
-            merge(existing, incoming) {
+              merge(existing, incoming) {
               return incoming;
             }
           }
@@ -325,239 +323,3 @@ function App() {
 }
 
 export default App;
-
-
-
-// let isRefreshing = false;
-// let pendingRequests: any[] = [];
-
-// const resolvePendingRequests = (token: string | null) => {
-//   pendingRequests.forEach((callback) => callback(token));
-//   pendingRequests = [];
-// };
-
-// // Используем обычный ApolloLink вместо ErrorLink для полного контроля
-// const refreshLink = new ApolloLink((operation, forward) => {
-//   return new Observable((observer) => {
-//     let sub: any;
-//     let retrySub: any;
-
-//     const handleRefresh = () => {
-//       isRefreshing = true;
-
-//       // 1. Берем РЕФРЕШ токен из хранилища
-//       const currentRefreshToken = localStorage.getItem('refreshToken');
-
-//       // Если его нет — сразу на выход
-//       if (!currentRefreshToken) {
-//         isRefreshing = false;
-//         store.dispatch(logout());
-//         client.clearStore();
-//         observer.error(new Error('No refresh token found'));
-//         return;
-//       }
-
-//       // 2. Делаем запрос к GraphQL мутации
-//       fetch('http://localhost:7000/graphql', { 
-//         method: 'POST', 
-//         headers: { 'Content-Type': 'application/json' },
-//         body: JSON.stringify({
-//           query: `
-//             mutation Refresh($token: String!) {
-//               refreshToken(token: $token) {
-//                 accessToken
-//                 refreshToken
-//                 user {
-//                   id
-//                   login
-//                   avatar
-//                 }
-//               }
-//             }
-//           `,
-//           variables: { token: currentRefreshToken }
-//         })
-//       })
-//       .then(async (res) => {
-//         const result = await res.json();
-//         console.log(result);
-//         // Проверяем ошибки GraphQL или отсутствие данных
-//         if (result.errors || !result.data?.refreshToken) {
-//           throw new Error('Refresh failed');
-//         }
-
-//         const { accessToken, refreshToken, user } = result.data.refreshToken;
-      
-//         // 3. Сохраняем НОВУЮ ПАРУ токенов
-//         localStorage.setItem('token', accessToken);
-//         localStorage.setItem('refreshToken', refreshToken);
-        
-//         store.dispatch(setCredentials({ accessToken, refreshToken, user })); // если используешь Redux для токена
-
-//         resolvePendingRequests(accessToken);
-//         isRefreshing = false;
-
-//         // Повторяем упавший запрос с новым ACCESS токеном
-//         operation.setContext(({ headers = {} }) => ({
-//           headers: { ...headers, authorization: `Bearer ${accessToken}` },
-//         }));
-
-//         retrySub = forward(operation).subscribe(observer);
-//       })
-//       .catch((err) => {
-//         isRefreshing = false;
-//         resolvePendingRequests(null);
-        
-//         // Полная очистка при провале рефреша
-//         localStorage.removeItem('token');
-//         localStorage.removeItem('refreshToken');
-//         store.dispatch(logout());
-//         client.clearStore();
-//         observer.error(err);
-//       });
-//     };
-
-//     // Остальная логика sub = forward(operation).subscribe(...) остается БЕЗ ИЗМЕНЕНИЙ
-//     sub = forward(operation).subscribe({
-//       next: (result) => {
-//         const isUnauthenticated = result.errors?.some(
-//           (err) => err.extensions?.code === 'UNAUTHENTICATED' || err.message === 'Unauthorized'
-//         );
-
-//         if (isUnauthenticated) {
-//           if (isRefreshing) {
-//             pendingRequests.push((token: string | null) => {
-//               if (token) {
-//                 operation.setContext(({ headers = {} }) => ({
-//                   headers: { ...headers, authorization: `Bearer ${token}` },
-//                 }));
-//                 retrySub = forward(operation).subscribe(observer);
-//               } else {
-//                 observer.error(new Error('Refresh failed'));
-//               }
-//             });
-//           } else {
-//             handleRefresh();
-//           }
-//         } else {
-//           observer.next(result);
-//         }
-//       },
-//       error: (networkError) => {
-//         if (networkError.statusCode === 401 || networkError.message?.includes('401')) {
-//            handleRefresh();
-//         } else {
-//            observer.error(networkError);
-//         }
-//       },
-//       complete: () => {
-//         if (!isRefreshing) observer.complete();
-//       },
-//     });
-
-//     return () => {
-//       if (sub) sub.unsubscribe();
-//       if (retrySub) retrySub.unsubscribe();
-//     };
-//   });
-// });
-
-// // 3. Аналог prepareHeaders: Добавление токена
-// const authLink = new ApolloLink((operation, forward) => {
-//   const token = localStorage.getItem('token');
-//   // В ApolloLink мы меняем контекст через setContext у самой операции
-//   operation.setContext(({ headers = {} }) => ({
-//     headers: {
-//       ...headers,
-//       authorization: token ? `Bearer ${token}` : "",
-//     }
-//   }));
-
-//   return forward(operation);
-// });
-
-// // 4. WebSocket Link
-// const wsLink = new GraphQLWsLink(createClient({
-//   url: 'ws://localhost:7000/graphql',
-//   connectionParams: () => {
-//     const token = localStorage.getItem('token');
-//     return {
-//       authorization: token ? `Bearer ${token}` : "",
-//     };
-//   },
-// }));
-
-// // 5. Собираем HTTP цепочку: Error -> Auth -> Http
-// const combinedHttpLink = ApolloLink.from([
-//   // errorLink, // ПЕРВЫМ (он перехватывает ответ от сервера)
-//   refreshLink,
-//   authLink,  // ВТОРЫМ (он добавляет заголовки к запросу)
-//   httpLink   // ПОСЛЕДНИМ (он отправляет запрос)
-// ]);
-
-// // 6. Split Link (разводящий)
-// const splitLink = ApolloLink.split(
-//   ({ query }) => {
-//     const definition = getMainDefinition(query);
-//     return (
-//       definition.kind === 'OperationDefinition' &&
-//       definition.operation === 'subscription'
-//     );
-//   },
-//   wsLink,
-//   combinedHttpLink,
-// );
-
-// const client = new ApolloClient({
-//   link: splitLink,
-//   cache: new InMemoryCache(),
-// });
-
-// function App() {
-//   return (
-//     <ApolloProvider client={client}>
-//       <MUForum/>
-//     </ApolloProvider>
-//   );
-// }
-
-// export default App;
-
-
-// 2. Аналог baseQueryWithReauth: Перехватчик ошибок
-// const errorLink = new ErrorLink(({ error }) => {
-//   // 1. Проверяем, является ли это ошибкой GraphQL (наш UNAUTHENTICATED)
-//   if (CombinedGraphQLErrors.is(error)) {
-//     // В новом API массив ошибок лежит в error.errors
-//     error.errors.forEach((err) => {
-//       console.log("Найдена ошибка GraphQL:", err.extensions?.code);
-
-//       if (err.extensions?.code === 'UNAUTHENTICATED' || err.message === 'Unauthorized') {
-//         console.log("!!! СЕССИЯ ИСТЕКЛА: ВЫПОЛНЯЮ LOGOUT !!!");
-        
-//         // Очищаем Redux
-//         store.dispatch(logout());
-//         client.clearStore()
-//         // Очищаем кэш Apollo (обязательно для перерендера)
-//         // Мы не можем вызвать client здесь напрямую, но можем через глобальный инстанс
-//         // или просто дождаться обновления стейта Redux
-//       }
-//     });
-//   } 
-//   // 2. Если это сетевая ошибка (например, сервер упал или 401 на уровне HTTP)
-//   else {
-//     console.error(`[Network error]: ${error}`);
-//     // Если в тексте сетевой ошибки есть 401 - тоже выходим
-//     if (error.toString().includes('401')) {
-//         store.dispatch(logout());
-//         client.clearStore()
-//     }
-//   }
-// });
-// let isRefreshing = false;
-// let pendingRequests: any[] = [];
-
-// const resolvePendingRequests = (token: string | null) => {
-//   pendingRequests.forEach((callback) => callback(token));
-//   pendingRequests = [];
-// };

@@ -13,6 +13,7 @@ const userSchema = new Schema({
         default: 'User'
     },
     isOnline: { type: Boolean, default: false },
+    lastSeen: { type: Date, default: () => new Date()},
     isBanned: { type: Boolean, default: false },
     bannedUntil: { type: Date, default: null },
     bannedReason: { type: String, default: null },

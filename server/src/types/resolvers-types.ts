@@ -90,6 +90,7 @@ export type Mutation = {
   deleteUser?: Maybe<Scalars['Boolean']['output']>;
   logOut: Scalars['Boolean']['output'];
   loginUser: AuthResponse;
+  pingOnline: Scalars['Boolean']['output'];
   refreshToken: AuthResponse;
   sendMessage: Message;
   unbanUser?: Maybe<Scalars['Boolean']['output']>;
@@ -297,6 +298,7 @@ export type User = {
   id: Scalars['ID']['output'];
   isBanned: Scalars['Boolean']['output'];
   isOnline: Scalars['Boolean']['output'];
+  lastSeen?: Maybe<Scalars['DateTime']['output']>;
   likes?: Maybe<Array<Like>>;
   login: Scalars['String']['output'];
   messages?: Maybe<Array<Maybe<Message>>>;
@@ -478,6 +480,7 @@ export type MutationResolvers<ContextType = MyContext, ParentType extends Resolv
   deleteUser?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationDeleteUserArgs, 'id'>>;
   logOut?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, Partial<MutationLogOutArgs>>;
   loginUser?: Resolver<ResolversTypes['AuthResponse'], ParentType, ContextType, RequireFields<MutationLoginUserArgs, 'login' | 'password'>>;
+  pingOnline?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   refreshToken?: Resolver<ResolversTypes['AuthResponse'], ParentType, ContextType, RequireFields<MutationRefreshTokenArgs, 'token'>>;
   sendMessage?: Resolver<ResolversTypes['Message'], ParentType, ContextType, RequireFields<MutationSendMessageArgs, 'text' | 'userId'>>;
   unbanUser?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationUnbanUserArgs, 'login'>>;
@@ -535,6 +538,7 @@ export type UserResolvers<ContextType = MyContext, ParentType extends ResolversP
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   isBanned?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   isOnline?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  lastSeen?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   likes?: Resolver<Maybe<Array<ResolversTypes['Like']>>, ParentType, ContextType>;
   login?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   messages?: Resolver<Maybe<Array<Maybe<ResolversTypes['Message']>>>, ParentType, ContextType>;

@@ -10,14 +10,14 @@ import { env } from "../../config.ts";
 import bcrypt from 'bcrypt'; 
 import { MessageModel } from "../../models/Messages.ts";
 import { DislikeModel } from "../../models/Dislikes.ts";
-import { PubSub } from "graphql-subscriptions";
+// import { PubSub } from "graphql-subscriptions";
 
-
-const USER_STATUS = "USER_STATUS";
-type PubSubChannels = {
-  USER_STATUS: { userStatusChanged: IUser }
-};
-const pubsub = new PubSub<PubSubChannels>();
+import { pubsub, USER_STATUS } from "../../utils/userPubSub.ts";
+// const USER_STATUS = "USER_STATUS";
+// type PubSubChannels = {
+//   USER_STATUS: { userStatusChanged: IUser }
+// };
+// const pubsub = new PubSub<PubSubChannels>();
 
 
 const generateJwt = (login: string, id: string, role: string) => {
@@ -113,6 +113,34 @@ const resolvers: Resolvers<MyContext> = {
                 throw new GraphQLError('Session expired. Please log in again', {
                     extensions: { code: 'UNAUTHENTICATED' }
                 });
+            }
+        },
+        pingOnline: async (_, __, { userId }) => {
+            if (!userId) return false; 
+
+            try {
+                const now = new Date();
+                
+                const user = await UserModel.findById(userId);
+                if (!user) return false;
+
+                const wasOnline = user.isOnline;
+                
+                user.lastSeen = now;
+                user.isOnline = true;
+                await user.save();
+
+                // отправляем бродкаст в PubSub, чтобы у остальных он появился в онлайн
+                if (!wasOnline) {
+                pubsub.publish(USER_STATUS, { 
+                    userStatusChanged: user.toJSON() as any 
+                });
+                }
+
+                return true;
+            } catch (err) {
+                console.error("[Heartbeat] Processing ping Error:", err);
+                return false;
             }
         },
         logOut: async (_, {id}, { userId }) => {
