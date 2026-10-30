@@ -116,8 +116,6 @@ const resolvers: Resolvers<MyContext> = {
             }
         },
         logOut: async (_, {id}, { userId }) => {
-            // Если userId передан в аргументах (от фонового fetch) — берем его. 
-            // Иначе берем из контекста авторизации (когда юзер нажал кнопку на фронте)
             const targetUserId = id || userId;
 
             if (!targetUserId) {
@@ -126,19 +124,48 @@ const resolvers: Resolvers<MyContext> = {
                 });
             }
 
+            // Обновляем пользователя в базе данных
             const updatedUser = await UserModel.findByIdAndUpdate(
                 targetUserId, 
                 { isOnline: false }, 
-                { returnDocument: 'after' }
+                { returnDocument: 'after' } // Возвращает уже обновленный документ
             );
 
+            // ИСПРАВЛЕНО: Шлем броадкаст ВСЕГДА. Даже если в БД статус уже был false, 
+            // мы принудительно очищаем UI у всех клиентов, избегая зависания кружочков.
             if (updatedUser) {
-                // Принудительно приводим к JSON, чтобы Apollo Client 
-                // не спотыкался о скрытые свойства Mongoose
-                pubsub.publish(USER_STATUS, { userStatusChanged: updatedUser.toJSON() });
+                pubsub.publish(USER_STATUS, { userStatusChanged: updatedUser.toJSON() as any });
+            } else {
+                // Страховка: если документ не обновился, собираем payload вручную и всё равно шлем оффлайн
+                const fallbackUser = {...Object(updatedUser) as IUser, id: String(targetUserId), isOnline: false, __typename: "User" };
+                pubsub.publish(USER_STATUS, { userStatusChanged: fallbackUser });
             }
 
             return true;
+            
+            // // Если userId передан в аргументах (от фонового fetch) — берем его. 
+            // // Иначе берем из контекста авторизации (когда юзер нажал кнопку на фронте)
+            // const targetUserId = id || userId;
+
+            // if (!targetUserId) {
+            //     throw new GraphQLError('Not authenticated', {
+            //     extensions: { code: 'UNAUTHENTICATED' }
+            //     });
+            // }
+
+            // const updatedUser = await UserModel.findByIdAndUpdate(
+            //     targetUserId, 
+            //     { isOnline: false }, 
+            //     { returnDocument: 'after' }
+            // );
+
+            // if (updatedUser) {
+            //     // Принудительно приводим к JSON, чтобы Apollo Client 
+            //     // не спотыкался о скрытые свойства Mongoose
+            //     pubsub.publish(USER_STATUS, { userStatusChanged: updatedUser.toJSON() });
+            // }
+
+            // return true;
             // if (!userId) throw new GraphQLError('Not authenticated', {
             //         extensions: { code: 'UNAUTHENTICATED' }})
             
