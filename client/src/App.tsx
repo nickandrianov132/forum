@@ -8,7 +8,10 @@ import { logout, setCredentials } from './store/slices/authSlice.ts';
 import { store } from './store/store.ts';
 import { useAuthInit } from './hooks/useAuthInit.ts';
 import { useEffect } from 'react';
+import { useSelector } from 'react-redux';
 
+
+const apiHTTP = import.meta.env.VITE_HTTP || 'http://localhost:7000/graphql';
 const apiEnv = import.meta.env.VITE_GRAPHQL_URI; 
 const HTTP_URI = apiEnv || 'http://localhost:7000/graphql';
 const WS_URI = apiEnv 
@@ -205,22 +208,6 @@ const authLink = new ApolloLink((operation, forward) => {
     retryAttempts: Infinity,
       
     on: {
-        message: (message: any) => {
-          try {
-            // Если это наш кастомный пинг для проверки встроенных браузеров
-            if (message && message.type === "custom-ping") {
-              // Ищем активный сокет внутри линка Apollo и шлем текстовый ответ обратно
-              const rawSocket = (wsLink as any).client?.id ? (wsLink as any).client : null;
-              
-              // Быстрый и надежный способ отправить ответ напрямую через WebSocket
-              if (message.target && typeof message.target.send === 'function') {
-                message.target.send(JSON.stringify({ type: "custom-pong" }));
-              }
-            }
-          } catch (err) {
-            console.error("Ошибка обработки кастомного пинга:", err);
-          }
-        },
         // 1. Метод синхронный, event имеет тип unknown — как и требует graphql-ws
         closed: (event: unknown) => {
           
@@ -329,32 +316,37 @@ function MainApp() {
 }
 
 function App() {
+ // Достаем текущего авторизованного пользователя из Redux (или localStorage)
+  // Измените этот селектор под вашу архитектуру RTK
+  const user = useSelector((state: any) => state.user); 
+  const userId = user?.id;
+
   useEffect(() => {
-    const handleVisibilityChange = () => {
-      // Когда пользователь возвращается во вкладку In-App браузера Telegram
-      if (document.visibilityState === 'visible') {
-        console.log('[WS] Вкладка развернута (Telegram). Проверка и перезапуск сокета...');
-        
-        try {
-          // Дотягиваемся до встроенного инстанса клиента внутри самого линка Apollo
-          const client = (wsLink as any).client;
-          
-          if (client && typeof client.restart === 'function') {
-            client.restart();
-            console.log('[WS] Соединение успешно перезапущено принудительно.');
-          }
-        } catch (error) {
-          console.error('[WS] Не удалось принудительно перезапустить сокет:', error);
-        }
-      }
+    if (!userId) return;
+
+    // Функция отправки HTTP-пинга на сервер
+    const sendPresencePing = () => {
+      // Подставляем URL вашего бэкенда (на локалке localhost, на проде — ваша ссылка Render)
+      const isProd = import.meta.env.VITE_NODE_ENV === 'production';
+      const BACKEND_URL = isProd ? apiHTTP : 'http://localhost:7000';
+
+      fetch(`${BACKEND_URL}/api/presence/ping`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId })
+      }).catch(() => {
+        // Игнорируем сетевые ошибки, если интернет временно пропал в лифте
+      });
     };
 
-    // Слушаем системное событие сворачивания/разворачивания вкладки браузера
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-    
-    // Обязательно очищаем слушатель, чтобы не было утечек памяти
-    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
-  }, []);
+    // Отправляем первый пинг сразу при загрузке
+    sendPresencePing();
+
+    // Запускаем циклический интервал отправки каждые 4 секунды
+    const intervalId = setInterval(sendPresencePing, 4000);
+
+    return () => clearInterval(intervalId);
+  }, [userId]);
 
   return (
     <ApolloProvider client={client}>
