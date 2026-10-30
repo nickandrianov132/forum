@@ -205,6 +205,22 @@ const authLink = new ApolloLink((operation, forward) => {
     retryAttempts: Infinity,
       
     on: {
+        message: (message: any) => {
+          try {
+            // Если это наш кастомный пинг для проверки встроенных браузеров
+            if (message && message.type === "custom-ping") {
+              // Ищем активный сокет внутри линка Apollo и шлем текстовый ответ обратно
+              const rawSocket = (wsLink as any).client?.id ? (wsLink as any).client : null;
+              
+              // Быстрый и надежный способ отправить ответ напрямую через WebSocket
+              if (message.target && typeof message.target.send === 'function') {
+                message.target.send(JSON.stringify({ type: "custom-pong" }));
+              }
+            }
+          } catch (err) {
+            console.error("Ошибка обработки кастомного пинга:", err);
+          }
+        },
         // 1. Метод синхронный, event имеет тип unknown — как и требует graphql-ws
         closed: (event: unknown) => {
           

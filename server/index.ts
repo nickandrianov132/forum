@@ -68,35 +68,75 @@ const wsServer = new WebSocketServer({
   path: '/graphql',
 });
 
-// Каждые 12 секунд проверяем, живы ли наши клиенты
+// Кастомный текстовый Heartbeat для мобильных браузеров и Telegram
 const keepAliveInterval = setInterval(() => {
   wsServer.clients.forEach((client: any) => {
-    // Если клиент не ответил на предыдущий пинг — закрываем сокет!
-    // Это мгновенно стриггерит onDisconnect и переведет юзера в оффлайн
-    if (client.isAlive === false) {
-      console.log("[WS] Клиент не ответил на пинг. Принудительное закрытие соединения.");
-      return client.terminate();
+    // Если клиент не прислал текстовый 'pong' за последние 7 секунд
+    if (client.customIsAlive === false) {
+      console.log("[WS] Мобильное устройство (Telegram) заморожено. Принудительное отключение.");
+      return client.terminate(); // Это гарантированно вызовет onDisconnect и fetch-мутацию!
     }
 
-    // Помечаем клиента как "уснувшего" и отправляем ему пинг
-    client.isAlive = false;
-    client.ping(); // Встроенный метод библиотеки 'ws'
+    // Сбрасываем флаг активности и отправляем текстовый пинг
+    client.customIsAlive = false;
+    
+    // Проверяем, что сокет открыт, и шлем обычную текстовую строку
+    if (client.readyState === 1) {
+      client.send(JSON.stringify({ type: "custom-ping" }));
+    }
   });
-}, 5000);
+}, 7000); // Проверка каждые 7 секунд
 
-// Ловим ответы (pong) от клиентов, чтобы подтвердить, что они живы
+// Перехватываем текстовый ответ от фронтенда
 wsServer.on("connection", (socket: any) => {
-  socket.isAlive = true;
+  socket.customIsAlive = true;
   
-  socket.on("pong", () => {
-    socket.isAlive = true;
+  socket.on("message", (data: any) => {
+    try {
+      const message = JSON.parse(data.toString());
+      // Если фронтенд прислал наш кастомный текстовый ответ
+      if (message.type === "custom-pong") {
+        socket.customIsAlive = true;
+      }
+    } catch (e) {
+      // Игнорируем ошибки парсинга стандартных GraphQL пакетов
+    }
   });
 });
 
-// Очищаем интервал при остановке сервера (опционально)
 wsServer.on("close", () => {
   clearInterval(keepAliveInterval);
 });
+
+// // Каждые 12 секунд проверяем, живы ли наши клиенты
+// const keepAliveInterval = setInterval(() => {
+//   wsServer.clients.forEach((client: any) => {
+//     // Если клиент не ответил на предыдущий пинг — закрываем сокет!
+//     // Это мгновенно стриггерит onDisconnect и переведет юзера в оффлайн
+//     if (client.isAlive === false) {
+//       console.log("[WS] Клиент не ответил на пинг. Принудительное закрытие соединения.");
+//       return client.terminate();
+//     }
+
+//     // Помечаем клиента как "уснувшего" и отправляем ему пинг
+//     client.isAlive = false;
+//     client.ping(); // Встроенный метод библиотеки 'ws'
+//   });
+// }, 5000);
+
+// // Ловим ответы (pong) от клиентов, чтобы подтвердить, что они живы
+// wsServer.on("connection", (socket: any) => {
+//   socket.isAlive = true;
+  
+//   socket.on("pong", () => {
+//     socket.isAlive = true;
+//   });
+// });
+
+// // Очищаем интервал при остановке сервера (опционально)
+// wsServer.on("close", () => {
+//   clearInterval(keepAliveInterval);
+// });
 
 
 // Карта для подсчета вкладок: userId -> количество открытых сокетов
