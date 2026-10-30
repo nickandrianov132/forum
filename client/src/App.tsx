@@ -316,37 +316,6 @@ function MainApp() {
 }
 
 function App() {
- // Достаем текущего авторизованного пользователя из Redux (или localStorage)
-  // Измените этот селектор под вашу архитектуру RTK
-  const user = useSelector((state: any) => state.user); 
-  const userId = user?.id;
-
-  useEffect(() => {
-    if (!userId) return;
-
-    // Функция отправки HTTP-пинга на сервер
-    const sendPresencePing = () => {
-      // Подставляем URL вашего бэкенда (на локалке localhost, на проде — ваша ссылка Render)
-      const isProd = import.meta.env.VITE_NODE_ENV === 'production';
-      const BACKEND_URL = isProd ? apiHTTP : 'http://localhost:7000';
-      console.log('Backend URL:', BACKEND_URL);
-      fetch(`${BACKEND_URL}/api/presence/ping`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId })
-      }).catch(() => {
-        // Игнорируем сетевые ошибки, если интернет временно пропал в лифте
-      });
-    };
-
-    // Отправляем первый пинг сразу при загрузке
-    sendPresencePing();
-
-    // Запускаем циклический интервал отправки каждые 4 секунды
-    const intervalId = setInterval(sendPresencePing, 4000);
-
-    return () => clearInterval(intervalId);
-  }, [userId]);
 
   return (
     <ApolloProvider client={client}>

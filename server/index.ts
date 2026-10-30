@@ -68,95 +68,36 @@ const wsServer = new WebSocketServer({
   path: '/graphql',
 });
 
-// // Каждые 12 секунд проверяем, живы ли наши клиенты
-// const keepAliveInterval = setInterval(() => {
-//   wsServer.clients.forEach((client: any) => {
-//     // Если клиент не ответил на предыдущий пинг — закрываем сокет!
-//     // Это мгновенно стриггерит onDisconnect и переведет юзера в оффлайн
-//     if (client.isAlive === false) {
-//       console.log("[WS] Клиент не ответил на пинг. Принудительное закрытие соединения.");
-//       return client.terminate();
-//     }
+// Каждые 12 секунд проверяем, живы ли наши клиенты
+const keepAliveInterval = setInterval(() => {
+  wsServer.clients.forEach((client: any) => {
+    // Если клиент не ответил на предыдущий пинг — закрываем сокет!
+    // Это мгновенно стриггерит onDisconnect и переведет юзера в оффлайн
+    if (client.isAlive === false) {
+      console.log("[WS] Клиент не ответил на пинг. Принудительное закрытие соединения.");
+      return client.terminate();
+    }
 
-//     // Помечаем клиента как "уснувшего" и отправляем ему пинг
-//     client.isAlive = false;
-//     client.ping(); // Встроенный метод библиотеки 'ws'
-//   });
-// }, 5000);
+    // Помечаем клиента как "уснувшего" и отправляем ему пинг
+    client.isAlive = false;
+    client.ping(); // Встроенный метод библиотеки 'ws'
+  });
+}, 5000);
 
-// // Ловим ответы (pong) от клиентов, чтобы подтвердить, что они живы
-// wsServer.on("connection", (socket: any) => {
-//   socket.isAlive = true;
+// Ловим ответы (pong) от клиентов, чтобы подтвердить, что они живы
+wsServer.on("connection", (socket: any) => {
+  socket.isAlive = true;
   
-//   socket.on("pong", () => {
-//     socket.isAlive = true;
-//   });
-// });
-
-// // Очищаем интервал при остановке сервера (опционально)
-// wsServer.on("close", () => {
-//   clearInterval(keepAliveInterval);
-// });
-
-
-// Карта для отслеживания времени последнего HTTP-пига от мобильных устройств
-// userId -> timestamp (дата в миллисекундах)
-const userLastSeen = new Map<string, number>();
-
-// Специальный роут для мобильных браузеров и Telegram
-app.post("/api/presence/ping", express.json(), (req, res) => {
-  const { userId } = req.body;
-  if (userId) {
-    // Запоминаем текущее время активности пользователя
-    userLastSeen.set(String(userId), Date.now());
-  }
-  res.sendStatus(200);
+  socket.on("pong", () => {
+    socket.isAlive = true;
+  });
 });
 
-// Глобальный фоновый таймер сервера (проверяет HTTP-активность раз в 6 секунд)
-setInterval(async () => {
-  const now = Date.now();
+// Очищаем интервал при остановке сервера (опционально)
+wsServer.on("close", () => {
+  clearInterval(keepAliveInterval);
+});
 
-  for (const [userId, lastSeen] of userLastSeen.entries()) {
-    // Если от мобильного клиента не было вестей больше 10 секунд
-    if (now - lastSeen > 10000) {
-      // Удаляем из карты активности, чтобы не проверять циклически
-      userLastSeen.delete(userId);
-
-      // Проверяем: если у него и обычных сокетов на сервере сейчас 0
-      if (!userSocketCounts.has(userId) || userSocketCounts.get(userId)! <= 0) {
-        try {
-          const serverPort = process.env.PORT || env.PORT || 10000;
-          
-          // Вызываем нашу рабочую мутацию logOut по HTTP, которая гарантированно 
-          // переведет пользователя в оффлайн в базе и разошлет идеальный GraphQL-фрейм в UI
-          const baseUrl = process.env.RENDER ? `http://localhost:${serverPort}` : (env.RENDER_EXTERNAL_URL || `http://localhost:${serverPort}`);
-          const graphqlUrl = `${baseUrl.replace(/\/$/, "")}/graphql`;
-
-          const mutationQuery = {
-            query: `
-              mutation InternalLogOut($id: String) {
-                logOut(id: $id)
-              }
-            `,
-            variables: { id: userId }
-          };
-
-          fetch(graphqlUrl, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(mutationQuery)
-          })
-          .then(() => console.log(`[HTTP Ping] Пользователь с ID ${userId} признан неактивным в Telegram и переведен в оффлайн.`))
-          .catch((err) => console.error("[HTTP Ping] Ошибка авто-разлогина:", err));
-
-        } catch (e) {
-          console.error(e);
-        }
-      }
-    }
-  }
-}, 6000);
 
 // Карта для подсчета вкладок: userId -> количество открытых сокетов
 const userSocketCounts = new Map<string, number>();
