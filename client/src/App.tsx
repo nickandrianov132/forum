@@ -7,6 +7,7 @@ import MUForum from './MUForum.tsx';
 import { logout, setCredentials } from './store/slices/authSlice.ts';
 import { store } from './store/store.ts';
 import { useAuthInit } from './hooks/useAuthInit.ts';
+import { useEffect } from 'react';
 
 const apiEnv = import.meta.env.VITE_GRAPHQL_URI; 
 const HTTP_URI = apiEnv || 'http://localhost:7000/graphql';
@@ -184,80 +185,80 @@ const authLink = new ApolloLink((operation, forward) => {
   return forward(operation);
 });
 
-// 4. WebSocket Link
-const wsLink = new GraphQLWsLink(createClient({
-  url: WS_URI,
-  connectionParams: () => {
-    const token = localStorage.getItem('token');
-    return {
-      authorization: token ? `Bearer ${token}` : "",
-    };
-  },
-  // Добавляем таймаут ожидания пинга от сервера.
-  // Если сервер шлет пинг раз в 12 секунд, значение в 10-15 секунд на клиенте
-  // заставит Apollo Client держать сокет "разогретым" и автоматически отвечать на pong.
-  keepAlive: 20000,
-  // Позволяет сокету пытаться переподключиться при закрытии соединения
-  shouldRetry: () => true, 
+  // 4. WebSocket Link
+  const wsLink = new GraphQLWsLink(createClient({
+    url: WS_URI,
+    connectionParams: () => {
+      const token = localStorage.getItem('token');
+      return {
+        authorization: token ? `Bearer ${token}` : "",
+      };
+    },
+    // Добавляем таймаут ожидания пинга от сервера.
+    // Если сервер шлет пинг раз в 12 секунд, значение в 10-15 секунд на клиенте
+    // заставит Apollo Client держать сокет "разогретым" и автоматически отвечать на pong.
+    keepAlive: 7000,
+    // Позволяет сокету пытаться переподключиться при закрытии соединения
+    shouldRetry: () => true, 
 
-  // Бесконечное число попыток переподключения при случайном обрыве связи (F5, лифт, метро)
-  retryAttempts: Infinity,
-    
-  on: {
-      // 1. Метод синхронный, event имеет тип unknown — как и требует graphql-ws
-      closed: (event: unknown) => {
-        
-        // 2. Проверка на объект с числовым полем code
-        if (
-          event && 
-          typeof event === 'object' && 
-          'code' in event && 
-          event.code === 4403
-        ) {
-          console.log('WS Connection closed due to 4403. Attempting to refresh token...');
+    // Бесконечное число попыток переподключения при случайном обрыве связи (F5, лифт, метро)
+    retryAttempts: Infinity,
+      
+    on: {
+        // 1. Метод синхронный, event имеет тип unknown — как и требует graphql-ws
+        closed: (event: unknown) => {
+          
+          // 2. Проверка на объект с числовым полем code
+          if (
+            event && 
+            typeof event === 'object' && 
+            'code' in event && 
+            event.code === 4403
+          ) {
+            console.log('WS Connection closed due to 4403. Attempting to refresh token...');
 
-          const currentRefreshToken = localStorage.getItem('refreshToken');
-          if (!currentRefreshToken) return;
+            const currentRefreshToken = localStorage.getItem('refreshToken');
+            if (!currentRefreshToken) return;
 
-          // 3.  асинхронная логика упакована внутрь самовызывающейся функции IIFE
-          (async () => {
-            try {
-              const res = await fetch(HTTP_URI, { 
-                method: 'POST', 
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                  query: `
-                    mutation Refresh($token: String!) {
-                      refreshToken(token: $token) {
-                        accessToken
-                        refreshToken
-                        user { id login avatar role isBanned }
+            // 3.  асинхронная логика упакована внутрь самовызывающейся функции IIFE
+            (async () => {
+              try {
+                const res = await fetch(HTTP_URI, { 
+                  method: 'POST', 
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({
+                    query: `
+                      mutation Refresh($token: String!) {
+                        refreshToken(token: $token) {
+                          accessToken
+                          refreshToken
+                          user { id login avatar role isBanned }
+                        }
                       }
-                    }
-                  `,
-                  variables: { token: currentRefreshToken }
-                })
-              });
+                    `,
+                    variables: { token: currentRefreshToken }
+                  })
+                });
 
-              const result = await res.json();
-              
-              if (result.data?.refreshToken) {
-                const { accessToken, refreshToken, user } = result.data.refreshToken;
+                const result = await res.json();
                 
-                localStorage.setItem('token', accessToken);
-                localStorage.setItem('refreshToken', refreshToken);
-                store.dispatch(setCredentials({ accessToken, refreshToken, user }));
-                
-                console.log('Token successfully refreshed for WS. Reconnecting...');
+                if (result.data?.refreshToken) {
+                  const { accessToken, refreshToken, user } = result.data.refreshToken;
+                  
+                  localStorage.setItem('token', accessToken);
+                  localStorage.setItem('refreshToken', refreshToken);
+                  store.dispatch(setCredentials({ accessToken, refreshToken, user }));
+                  
+                  console.log('Token successfully refreshed for WS. Reconnecting...');
+                }
+              } catch (err) {
+                console.error('Failed to refresh token during WS connection closure:', err);
               }
-            } catch (err) {
-              console.error('Failed to refresh token during WS connection closure:', err);
-            }
-          })();
+            })();
+          }
         }
       }
-    }
-}));
+  }));
 
 // 5.  HTTP цепочка в правильном порядке
 const combinedHttpLink = ApolloLink.from([
@@ -312,6 +313,33 @@ function MainApp() {
 }
 
 function App() {
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      // Когда пользователь возвращается во вкладку In-App браузера Telegram
+      if (document.visibilityState === 'visible') {
+        console.log('[WS] Вкладка развернута (Telegram). Проверка и перезапуск сокета...');
+        
+        try {
+          // Дотягиваемся до встроенного инстанса клиента внутри самого линка Apollo
+          const client = (wsLink as any).client;
+          
+          if (client && typeof client.restart === 'function') {
+            client.restart();
+            console.log('[WS] Соединение успешно перезапущено принудительно.');
+          }
+        } catch (error) {
+          console.error('[WS] Не удалось принудительно перезапустить сокет:', error);
+        }
+      }
+    };
+
+    // Слушаем системное событие сворачивания/разворачивания вкладки браузера
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    
+    // Обязательно очищаем слушатель, чтобы не было утечек памяти
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+  }, []);
+
   return (
     <ApolloProvider client={client}>
       <MainApp />

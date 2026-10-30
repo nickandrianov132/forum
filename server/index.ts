@@ -82,7 +82,7 @@ const keepAliveInterval = setInterval(() => {
     client.isAlive = false;
     client.ping(); // Встроенный метод библиотеки 'ws'
   });
-}, 12000);
+}, 5000);
 
 // Ловим ответы (pong) от клиентов, чтобы подтвердить, что они живы
 wsServer.on("connection", (socket: any) => {
