@@ -84,6 +84,49 @@ export const globalEvents = new EventEmitter();
 
 
 
+async function checkAndCleanOfflineUsers() {
+  try {
+    // 1. Быстро выгребаем из оперативной памяти Redis ВСЕ ключи онлайн-пользователей
+    const keys = await redis.keys('user:*:status');
+    
+    // Находим в MongoDB всех пользователей, которые сейчас числятся в сети
+    const onlineInDb = await UserModel.find({ isOnline: true }, '_id login role avatar');
+
+    for (const dbUser of onlineInDb) {
+      const userId = String(dbUser._id);
+      const expectedRedisKey = `user:${userId}:status`;
+
+      // 2. ГЛАВНАЯ ПРОВЕРКА: Если пользователь в MongoDB числится ОНЛАЙН, 
+      // но его ключа в Redis УЖЕ НЕТ (время жизни 45 секунд вышло)
+      if (!keys.includes(expectedRedisKey)) {
+        console.log(`[Background Cleaner] -> Пользователь ${dbUser.login} пропал из Redis (телефон выключен/вкладка закрыта). Гасим статус...`);
+
+        // Переводим в оффлайн в MongoDB
+        dbUser.isOnline = false;
+        await dbUser.save();
+
+        // Мгновенно рассылаем всем сокетам статус оффлайна
+        pubsub.publish('USER_STATUS', {
+          userStatusChanged: {
+            id: userId,
+            isOnline: false,
+            login: dbUser.login,
+            role: dbUser.role,
+            avatar: (dbUser as any).avatar || ""
+          } as any
+        });
+      }
+    }
+  } catch (err) {
+    console.error("Ошибка фоновой очистки статусов:", err);
+  }
+}
+
+// Запускаем проверку строго раз в 30 секунд
+// Она будет работать как швейцарские часы и на вашем ПК, и на бесплатном тарифе Render!
+setInterval(checkAndCleanOfflineUsers, 30000);
+
+
 const app = express();
 app.use(cors({
   origin: true, // Временно разрешаем абсолютно любой домен для стопроцентного теста
