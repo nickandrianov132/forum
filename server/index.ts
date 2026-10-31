@@ -226,7 +226,11 @@ const serverCleanup = useServer(
       
       if (authHeader) {
         const tokenUser = getUserFromHeader(authHeader) as any;
-        if (!tokenUser || !tokenUser.id) return false;
+        // if (!tokenUser || !tokenUser.id) return false;
+        if (!tokenUser || !tokenUser.id) {
+          console.log("[WS System] -> Токен протух или невалиден при коннекте. Пускаем сессию как гостя, ждем HTTP-рефреша токенов...");
+          return true; 
+        }
         
         const userId = String(tokenUser.id);
         const dbUser = await UserModel.findById(userId);

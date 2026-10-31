@@ -2,6 +2,7 @@ import { useMutation } from '@apollo/client/react';
 import { useAppDispatch } from '../../../store/hooks';
 import { logout } from '../../../store/slices/authSlice';
 import { LOGOUT_USER } from '../../../graphql/mutations/logoutUser';
+import { client } from '../../../App';
 
 
 const LogoutBtn = () => {
@@ -14,6 +15,7 @@ const LogoutBtn = () => {
             await logOutMutation();
 
             dispatch(logout());
+            client.clearStore();
         } catch (error: any) {
             console.error("Logout User error:", error.message );
         }

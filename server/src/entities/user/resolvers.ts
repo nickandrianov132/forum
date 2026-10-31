@@ -118,37 +118,37 @@ const resolvers: Resolvers<MyContext> = {
         },
         pingOnline: async (_, __, { userId }) => {
         if (!userId) return false;
-
         try {
             const redisKey = `user:${userId}:status`;
             
-            // 1. Проверяем, есть ли сейчас пользователь в Redis
-            const isOnlineInRedis = await redis.exists(redisKey);
+            // Вместо exists проверяем оставшееся время жизни ключа в секундах
+            const timeLeft = await redis.ttl(redisKey); 
+            
+            // Если timeLeft <= 0 (ключа нет) ИЛИ timeLeft близко к нулю (менее 5 секунд, то есть он завис в памяти Render)
+            const isSystemOffline = timeLeft <= 5;
 
-            // 2. В любом случае продлеваем жизнь в оперативной памяти Redis на 45 секунд
+            // В любом случае жестко обновляем оперативную память Redis на 45 секунд
             await redis.set(redisKey, 'ONLINE', 'EX', 45);
 
-            // 3. А ВОТ ТУТ ИСПРАВЛЕНИЕ: если ключа в Redis НЕ БЫЛО (пользователь спал, уходил в оффлайн по таймауту, но вкладка проснулась)
-            if (!isOnlineInRedis) {
+            if (isSystemOffline) {
             const user = await UserModel.findById(userId);
             if (user) {
-                // Быстро синхронизируем статус в MongoDB (только один раз при "воскрешении")
                 user.lastSeen = new Date();
                 user.isOnline = true;
                 await user.save();
 
-                // МГНОВЕННО кричим в GraphQL сокеты всем остальным: "Он вернулся! Включите зеленый индикатор!"
+                // Форсированно пушим во все сокеты: "Пользователь точно онлайн!"
                 pubsub.publish("USER_STATUS", {
                 userStatusChanged: {
                     id: userId,
                     isOnline: true,
                     login: user.login,
-                    avatar: (user as any).avatar || null,
+                    avatar: (user as any).avatar || "",
                     role: user.role
                 } as any
                 });
                 
-                console.log(`[Status System] -> Пользователь ${user.login} ВОСКРЕС из бездействия (Фронтенд прислал активный HTTP-пульс).`);
+                console.log(`[Status System] -> Системное воскрешение для ${user.login}. (TTL в Redis был равен ${timeLeft}с)`);
             }
             }
 
@@ -157,6 +157,44 @@ const resolvers: Resolvers<MyContext> = {
             console.error("[Heartbeat Error]:", err);
             return false;
         }
+        // try {
+        //     const redisKey = `user:${userId}:status`;
+            
+        //     // 1. Проверяем, есть ли сейчас пользователь в Redis
+        //     const isOnlineInRedis = await redis.exists(redisKey);
+
+        //     // 2. В любом случае продлеваем жизнь в оперативной памяти Redis на 45 секунд
+        //     await redis.set(redisKey, 'ONLINE', 'EX', 45);
+
+        //     // 3. А ВОТ ТУТ ИСПРАВЛЕНИЕ: если ключа в Redis НЕ БЫЛО (пользователь спал, уходил в оффлайн по таймауту, но вкладка проснулась)
+        //     if (!isOnlineInRedis) {
+        //     const user = await UserModel.findById(userId);
+        //     if (user) {
+        //         // Быстро синхронизируем статус в MongoDB (только один раз при "воскрешении")
+        //         user.lastSeen = new Date();
+        //         user.isOnline = true;
+        //         await user.save();
+
+        //         // МГНОВЕННО кричим в GraphQL сокеты всем остальным: "Он вернулся! Включите зеленый индикатор!"
+        //         pubsub.publish("USER_STATUS", {
+        //         userStatusChanged: {
+        //             id: userId,
+        //             isOnline: true,
+        //             login: user.login,
+        //             avatar: (user as any).avatar || null,
+        //             role: user.role
+        //         } as any
+        //         });
+                
+        //         console.log(`[Status System] -> Пользователь ${user.login} ВОСКРЕС из бездействия (Фронтенд прислал активный HTTP-пульс).`);
+        //     }
+        //     }
+
+        //     return true;
+        // } catch (err) {
+        //     console.error("[Heartbeat Error]:", err);
+        //     return false;
+        // }
         },
         // pingOnline: async (_, __, { userId }) => {
         //     if (!userId) return false; 

@@ -292,7 +292,7 @@ const splitLink = ApolloLink.split(
   combinedHttpLink,
 );
 
-const client = new ApolloClient({
+export const client = new ApolloClient({
   link: splitLink,
   cache: new InMemoryCache({
     typePolicies: {
@@ -364,7 +364,7 @@ function MainApp() {
       window.removeEventListener('keypress', handleActivity);
     };
   }, [sendPing, isAuthLoading]);
-  
+
   if (isAuthLoading) {
     return (
       <div className='flex items-center justify-center h-full'>
