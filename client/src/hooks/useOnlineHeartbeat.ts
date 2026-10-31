@@ -16,12 +16,12 @@ export const useOnlineHeartbeat = () => {
         // 1. Первый пинг при загрузке приложения для обновления lastSeen
         pingOnline().catch((err) => console.error('[Heartbeat] First ping failure:', err));
 
-        // 2. Редкий фоновый пульс — раз в 1.5 минуты
+        // 2. фоновый пульс — раз в 20 sec
         const intervalId = setInterval(() => {
         if (document.visibilityState === 'visible') {
             pingOnline().catch((err) => console.error('[Heartbeat] Sending ping failure:', err));
         }
-        }, 90000); 
+        }, 20000); 
 
         // Чистим за собой ресурсы
         return () => {

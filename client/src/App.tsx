@@ -2,11 +2,14 @@ import { ApolloClient, InMemoryCache, HttpLink, ApolloLink, Observable } from '@
 import { GraphQLWsLink } from '@apollo/client/link/subscriptions';
 import { createClient } from 'graphql-ws';
 import { getMainDefinition } from '@apollo/client/utilities';
-import { ApolloProvider } from '@apollo/client/react';
+import { ApolloProvider, useMutation } from '@apollo/client/react';
 import MUForum from './MUForum.tsx';
 import { logout, setCredentials } from './store/slices/authSlice.ts';
 import { store } from './store/store.ts';
 import { useAuthInit } from './hooks/useAuthInit.ts';
+import { useOnlineHeartbeat } from './hooks/useOnlineHeartbeat.ts';
+import { PING_ONLINE_MUTATION } from './graphql/mutations/pingOnline.ts';
+import { useEffect, useRef } from 'react';
 
 
 const apiEnv = import.meta.env.VITE_GRAPHQL_URI; 
@@ -261,12 +264,20 @@ const authLink = new ApolloLink((operation, forward) => {
       }
   }));
 
-// 5.  HTTP цепочка в правильном порядке
+// // 5.  HTTP цепочка в правильном порядке
+// const combinedHttpLink = ApolloLink.from([
+//   authLink,    // 1. Сначала навешиваем заголовки
+//   refreshLink, // 2. Перехватываем ошибки и при необходимости обновляем токены
+//   httpLink     // 3. Отправляем данные по сети
+// ]);
+
+///  сменил порядок: проверить!
 const combinedHttpLink = ApolloLink.from([
-  authLink,    // 1. Сначала навешиваем заголовки
-  refreshLink, // 2. Перехватываем ошибки и при необходимости обновляем токены
-  httpLink     // 3. Отправляем данные по сети
+  refreshLink,   // 1. Первым принимает ответ сервера и ловит ошибки авторизации
+  authLink,      // 2. Вторым берет СВЕЖИЙ токен из localStorage и крепит к заголовкам
+  httpLink       // 3. Отправляет готовый запрос в сеть
 ]);
+
 
 // 6. Split Link (Разделение HTTP и WS)
 const splitLink = ApolloLink.split(
@@ -302,7 +313,58 @@ const client = new ApolloClient({
 
 function MainApp() {
   const { isAuthLoading } = useAuthInit();
+  // 1. Переносим хук мутации сюда — теперь он строго ПОД ApolloProvider!
+  const [sendPing] = useMutation(PING_ONLINE_MUTATION);
+  // Создаем "память" для таймстампа последнего успешного пинга
+  const lastPingTimeRef = useRef<number>(0);
 
+  useEffect(() => {
+    if (isAuthLoading) return;
+
+    // Безопасная функция отправки пинга с ограничением частоты (Throttle)
+    const executePingWithThrottle = async (isForced = false) => {
+      const now = Date.now();
+      const timeSinceLastPing = now - lastPingTimeRef.current;
+
+      // Шлем запрос ТОЛЬКО если прошло больше 20 секунд с последнего пинга
+      // ИЛИ если это принудительный пинг (например, при самом первом входе)
+      if (isForced || timeSinceLastPing >= 20000) {
+        try {
+          lastPingTimeRef.current = now; // Сразу обновляем время, чтобы заблокировать спам
+          await sendPing();
+          console.log("[Ping System] -> Пульс успешно отправлен на бэкенд.");
+        } catch (error) {
+          console.log("[Ping Error] Ошибка отправки пульса:", error);
+        }
+      }
+    };
+
+    // 1. Первый пинг при загрузке приложения (принудительный)
+    executePingWithThrottle(true);
+
+    // 2. Фоновый интервал: держит онлайн каждые 20 секунд, если пользователь отошел, но вкладка открыта
+    const interval = setInterval(() => {
+      executePingWithThrottle();
+    }, 20000);
+
+    // 3. Обработчик активности: сработает при клике/нажатии, 
+    // но функция executePingWithThrottle пропустит его на сервер, только если пришло время!
+    const handleActivity = () => {
+      executePingWithThrottle();
+    };
+
+    window.addEventListener('focus', handleActivity);
+    window.addEventListener('click', handleActivity);
+    window.addEventListener('keypress', handleActivity);
+
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener('focus', handleActivity);
+      window.removeEventListener('click', handleActivity);
+      window.removeEventListener('keypress', handleActivity);
+    };
+  }, [sendPing, isAuthLoading]);
+  
   if (isAuthLoading) {
     return (
       <div className='flex items-center justify-center h-full'>

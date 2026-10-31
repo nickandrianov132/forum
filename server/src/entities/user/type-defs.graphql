@@ -37,6 +37,13 @@ input BanUserInput {
     durationInDays: Int
 }
 
+type UserStatusPayload {
+  id: ID!
+  isOnline: Boolean!
+  login: String
+  avatar: String   # Без восклицательного знака! Теперь тут официально может быть null или ""
+  role: Role!
+}
 
 type AuthResponse {
   accessToken: String!

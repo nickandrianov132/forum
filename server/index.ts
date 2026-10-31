@@ -23,6 +23,7 @@ import { UserModel, type IUser } from "./src/models/Users.ts";
 import { PubSub } from "graphql-subscriptions";
 import { EventEmitter } from "node:events";
 import { pubsub } from "./src/utils/userPubSub.ts";
+import { redis } from './src/utils/redis.ts';
 
 export const globalEvents = new EventEmitter();
 ///// Migrations imports & run:
@@ -37,53 +38,49 @@ export const globalEvents = new EventEmitter();
 //   pubsub.publish("USER_STATUS", payload);
 // });
 
-export async function setGlobalUserOffline(userId: string, userLogin: string) {
-  try {
-    const dbUser = await UserModel.findById(userId);
-    if (dbUser && dbUser.isOnline) {
-      dbUser.isOnline = false;
-      await dbUser.save();
+// export async function setGlobalUserOffline(userId: string, userLogin: string) {
+//   try {
+//     const dbUser = await UserModel.findById(userId);
+//     if (dbUser && dbUser.isOnline) {
+//       dbUser.isOnline = false;
+//       await dbUser.save();
 
-      const userPayload = {
-        id: String(dbUser._id),
-        login: dbUser.login,
-        isOnline: false,
-        role: dbUser.role,
-        avatar: (dbUser as any).avatar || "",
-        __typename: "User"
-      };
+//       const userPayload = {
+//         id: String(dbUser._id),
+//         login: dbUser.login,
+//         isOnline: false,
+//         role: dbUser.role,
+//         avatar: (dbUser as any).avatar || "",
+//         __typename: "User"
+//       };
+//       // Шлем событие через единый PubSub — теперь его услышат ВСЕ клиенты
+//       pubsub.publish("USER_STATUS", { userStatusChanged: userPayload as any});
+//       console.log(`[Status System] -> Пользователь ${userLogin} успешно переведен в ОФФЛАЙН.`);
+//     }
+//   } catch (err) {
+//     console.error(`[Status System] Ошибка перевода в оффлайн для ${userLogin}:`, err);
+//   }
+// }
+// setInterval(async () => {
+//   // Страховочный таймаут: 3 минуты бездействия
+//   const offlineThreshold = new Date(Date.now() - 3 * 60 * 1000); 
+//   try {
+//     const expiredUsers = await UserModel.find({
+//       isOnline: true,
+//       lastSeen: { $lt: offlineThreshold }
+//     });
 
-      // Шлем событие через единый PubSub — теперь его услышат ВСЕ клиенты
-      pubsub.publish("USER_STATUS", { userStatusChanged: userPayload as any});
-      console.log(`[Status System] -> Пользователь ${userLogin} успешно переведен в ОФФЛАЙН.`);
-    }
-  } catch (err) {
-    console.error(`[Status System] Ошибка перевода в оффлайн для ${userLogin}:`, err);
-  }
-}
-
-setInterval(async () => {
-  // Страховочный таймаут: 3 минуты бездействия
-  const offlineThreshold = new Date(Date.now() - 3 * 60 * 1000); 
-
-  try {
-    const expiredUsers = await UserModel.find({
-      isOnline: true,
-      lastSeen: { $lt: offlineThreshold }
-    });
-
-    for (const user of expiredUsers) {
-      // Очищаем счетчики сокетов для этого пользователя на всякий случай
-      userSocketCounts.delete(String(user._id));
-      
-      // Переводим в оффлайн через общую функцию
-      await setGlobalUserOffline(String(user._id), user.login || "Пользователь");
-      console.log(`[Страховка] Мобилка ${user.login} уснула. Погасили статус по таймауту.`);
-    }
-  } catch (err) {
-    console.error("[Страховка Error] Ошибка проверки:", err);
-  }
-}, 120000); // Проверка запускается раз в 2 минуты
+//     for (const user of expiredUsers) {
+//       // Очищаем счетчики сокетов для этого пользователя на всякий случай
+//       userSocketCounts.delete(String(user._id));
+//       // Переводим в оффлайн через общую функцию
+//       await setGlobalUserOffline(String(user._id), user.login || "Пользователь");
+//       console.log(`[Страховка] Мобилка ${user.login} уснула. Погасили статус по таймауту.`);
+//     }
+//   } catch (err) {
+//     console.error("[Страховка Error] Ошибка проверки:", err);
+//   }
+// }, 120000); // Проверка запускается раз в 2 минуты
 
 
 
@@ -123,6 +120,103 @@ interface ISessionData {
 const socketSessionMap = new WeakMap<object, ISessionData>();
 
 
+// const serverCleanup = useServer(
+//   {
+//     schema,
+//     onConnect: async (ctx) => {
+//       const connectionParams = ctx.connectionParams as { authorization?: string };
+//       const authHeader = connectionParams?.authorization;
+      
+//       if (authHeader) {
+//         const tokenUser = getUserFromHeader(authHeader) as any;
+//         if (!tokenUser || !tokenUser.id) return false;
+        
+//         const userId = String(tokenUser.id);
+//         const dbUser = await UserModel.findById(userId);
+        
+//         if (dbUser) {
+//           socketSessionMap.set(ctx, {
+//             userId: userId,
+//             login: dbUser.login || "Пользователь"
+//           });
+
+//           // Отменяем таймер оффлайна, если пользователь вернулся (F5)
+//           if (userOfflineTimers.has(userId)) {
+//             clearTimeout(userOfflineTimers.get(userId)!);
+//             userOfflineTimers.delete(userId);
+//             console.log(`[WS] Пользователь ${dbUser.login} успел переподключиться. Таймер оффлайна отменен.`);
+//           }
+
+//           const currentCount = userSocketCounts.get(userId) || 0;
+//           userSocketCounts.set(userId, currentCount + 1);
+
+//           if (currentCount === 0 || !dbUser.isOnline) {
+//             dbUser.isOnline = true;
+//             await dbUser.save();
+            
+//             const userPayload = {
+//               id: String(dbUser._id),
+//               login: dbUser.login,
+//               isOnline: true,
+//               role: dbUser.role,
+//               avatar: (dbUser as any).avatar || "",
+//               __typename: "User"
+//             };
+//             pubsub.publish("USER_STATUS", { userStatusChanged: userPayload as any });
+//           }
+//         }
+//       }
+//       return true;
+//     },
+//     context: async (ctx) => {
+//       const connectionParams = ctx.connectionParams as { authorization?: string };
+//       const authHeader = connectionParams?.authorization;
+//       const user = authHeader ? getUserFromHeader(authHeader) : null;
+//       return {
+//         userId: user?.id || null,
+//         role: user?.role || null,
+//         loaders: createLoaders(user?.id || undefined)
+//       };
+//     },
+//     onDisconnect: (ctx) => { // Обратите внимание: убрали async с самого хука
+//       const session = socketSessionMap.get(ctx);
+      
+//       if (session) {
+//         const userId = session.userId;
+//         const userLogin = session.login;
+        
+//         socketSessionMap.delete(ctx);
+
+//         const currentCount = userSocketCounts.get(userId) || 0;
+//         const newCount = currentCount - 1;
+
+//         if (newCount <= 0) {
+//           userSocketCounts.delete(userId);
+          
+//           if (!userOfflineTimers.has(userId)) {
+//             console.log(`[WS] Последняя вкладка ${userLogin} закрыта. Запуск быстрого таймера...`);
+            
+//             const timer = setTimeout(() => {
+//               userOfflineTimers.delete(userId);
+
+//               if (!userSocketCounts.has(userId)) {
+//                 // Запускаем асинхронную функцию изолированно, не блокируя сокет-сервер
+//                 setGlobalUserOffline(userId, userLogin).catch(err => console.error(err));
+//               }
+//             }, 1500); // 1.5 секунды задержки для F5 / переключения вкладок
+
+//             userOfflineTimers.set(userId, timer);
+//           }
+//         } else {
+//           userSocketCounts.set(userId, newCount);
+//         }
+//       }
+//     }
+//   },
+//   wsServer,
+// );
+
+
 const serverCleanup = useServer(
   {
     schema,
@@ -138,22 +232,19 @@ const serverCleanup = useServer(
         const dbUser = await UserModel.findById(userId);
         
         if (dbUser) {
+          // Сохраняем сессию сокета, чтобы знать, кто отключился в onDisconnect
           socketSessionMap.set(ctx, {
             userId: userId,
             login: dbUser.login || "Пользователь"
           });
 
-          // Отменяем таймер оффлайна, если пользователь вернулся (F5)
-          if (userOfflineTimers.has(userId)) {
-            clearTimeout(userOfflineTimers.get(userId)!);
-            userOfflineTimers.delete(userId);
-            console.log(`[WS] Пользователь ${dbUser.login} успел переподключиться. Таймер оффлайна отменен.`);
-          }
+          const redisKey = `user:${userId}:status`;
 
-          const currentCount = userSocketCounts.get(userId) || 0;
-          userSocketCounts.set(userId, currentCount + 1);
+          // 1. Ставим флаг онлайна в Redis на 45 секунд
+          await redis.set(redisKey, 'ONLINE', 'EX', 45);
 
-          if (currentCount === 0 || !dbUser.isOnline) {
+          // 2. Если в MongoDB пользователь числился оффлайн — включаем его
+          if (!dbUser.isOnline) {
             dbUser.isOnline = true;
             await dbUser.save();
             
@@ -165,7 +256,9 @@ const serverCleanup = useServer(
               avatar: (dbUser as any).avatar || "",
               __typename: "User"
             };
+            // Оповещаем другие клиенты о входе в сеть
             pubsub.publish("USER_STATUS", { userStatusChanged: userPayload as any });
+            console.log(`[WS System] -> Пользователь ${dbUser.login} подключился.`);
           }
         }
       }
@@ -181,44 +274,92 @@ const serverCleanup = useServer(
         loaders: createLoaders(user?.id || undefined)
       };
     },
-    onDisconnect: (ctx) => { // Обратите внимание: убрали async с самого хука
+    onDisconnect: async (ctx) => { // Снова делаем функцию async для работы с Redis
       const session = socketSessionMap.get(ctx);
       
-      if (session) {
+    if (session) {
         const userId = session.userId;
         const userLogin = session.login;
-        
+
+        const dbUser = await UserModel.findById(userId);
+
         socketSessionMap.delete(ctx);
+        console.log(`[WS System] -> Вкладка закрыта для ${userLogin}. Принудительно тушим статус...`);
 
-        const currentCount = userSocketCounts.get(userId) || 0;
-        const newCount = currentCount - 1;
-
-        if (newCount <= 0) {
-          userSocketCounts.delete(userId);
+        try {
+          const redisKey = `user:${userId}:status`;
           
-          if (!userOfflineTimers.has(userId)) {
-            console.log(`[WS] Последняя вкладка ${userLogin} закрыта. Запуск быстрого таймера...`);
-            
-            const timer = setTimeout(() => {
-              userOfflineTimers.delete(userId);
+          // 1. Стираем ключ в Redis, чтобы очистить оперативную память
+          await redis.del(redisKey); 
 
-              if (!userSocketCounts.has(userId)) {
-                // Запускаем асинхронную функцию изолированно, не блокируя сокет-сервер
-                setGlobalUserOffline(userId, userLogin).catch(err => console.error(err));
-              }
-            }, 1500); // 1.5 секунды задержки для F5 / переключения вкладок
+          // 2. НАПРЯМУЮ шлем пакет оффлайна в GraphQL сокеты ВСЕМ остальным пользователям!
+          // Теперь нам не нужно ждать, пока сработает фоновый триггер в redis.ts
+          pubsub.publish('USER_STATUS', {
+            userStatusChanged: {
+              id: userId,
+              isOnline: false,
+              role: dbUser?.role,
+              login: userLogin,
+              avatar: (dbUser as any).avatar || "",
+              __typename: "User"
+            } as any
+          });
 
-            userOfflineTimers.set(userId, timer);
-          }
-        } else {
-          userSocketCounts.set(userId, newCount);
+          // 3. Фиксируем оффлайн в MongoDB
+          await UserModel.findByIdAndUpdate(userId, { isOnline: false, lastSeen: new Date() });
+          
+          console.log(`[WS System] -> Статус оффлайн для ${userLogin} успешно разослан всем клиентам.`);
+
+        } catch (err) {
+          console.error(`[WS Disconnect Error] Ошибка при закрытии сокета для ${userLogin}:`, err);
         }
       }
+      // if (session) {
+      //   const userId = session.userId;
+      //   const userLogin = session.login;
+        
+      //   socketSessionMap.delete(ctx);
+      //   console.log(`[WS System] -> Вкладка закрыта для ${userLogin}. Принудительно удаляем сессию из Redis...`);
+
+      //   try {
+      //     const redisKey = `user:${userId}:status`;
+          
+      //     // Вместо того чтобы ждать 45 секунд, мы просто удаляем ключ из Redis прямо сейчас!
+      //     // Это мгновенно вызовет событие "expired" внутри нашего файла redis.ts,
+      //     // и все остальные пользователи сразу увидят статус ОФФЛАЙН, а MongoDB обновится.
+      //     await redis.del(redisKey); 
+      //     console.log(`[WS System] -> удалось удалить ключ в Redis для ${userLogin}.`);
+      //   } catch (err) {
+      //     console.error(`[WS Disconnect Error] Не удалось удалить ключ в Redis для ${userLogin}:`, err);
+      //   }
+      // }
+
+      // if (session) {
+      //   const userId = session.userId;
+      //   const userLogin = session.login;
+        
+      //   socketSessionMap.delete(ctx);
+      //   console.log(`[WS System] -> Соединение закрыто для ${userLogin}. Проверяем состояние...`);
+
+      //   // Вместо кастомных счетчиков вкладок, мы даем пользователю 5 секунд на перезагрузку страницы (F5).
+      //   // Мы просто уменьшаем TTL ключа в Redis до 5 секунд.
+      //   // Если за 5 секунд он не откроет новую вкладку/не обновит страницу — Redis сам его удалит и погасит статус!
+      //   try {
+      //     const redisKey = `user:${userId}:status`;
+      //     const exists = await redis.exists(redisKey);
+          
+      //     if (exists) {
+      //       // Даем 5 секунд «форы» на случай перезагрузки страницы (F5)
+      //       await redis.expire(redisKey, 5); 
+      //     }
+      //   } catch (err) {
+      //     console.error(`[WS Disconnect Error] Не удалось обновить TTL в Redis для ${userLogin}:`, err);
+      //   }
+      // }
     }
   },
   wsServer,
 );
-
 
 const server = new ApolloServer({
   schema,

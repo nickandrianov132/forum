@@ -298,6 +298,15 @@ export type User = {
   role: Role;
 };
 
+export type UserStatusPayload = {
+  __typename?: 'UserStatusPayload';
+  avatar?: Maybe<Scalars['String']['output']>;
+  id: Scalars['ID']['output'];
+  isOnline: Scalars['Boolean']['output'];
+  login?: Maybe<Scalars['String']['output']>;
+  role: Role;
+};
+
 export type AddDislikeMutationVariables = Exact<{
   postId: Scalars['ID']['input'];
 }>;

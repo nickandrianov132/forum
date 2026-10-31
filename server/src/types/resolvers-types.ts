@@ -306,6 +306,15 @@ export type User = {
   role: Role;
 };
 
+export type UserStatusPayload = {
+  __typename?: 'UserStatusPayload';
+  avatar?: Maybe<Scalars['String']['output']>;
+  id: Scalars['ID']['output'];
+  isOnline: Scalars['Boolean']['output'];
+  login?: Maybe<Scalars['String']['output']>;
+  role: Role;
+};
+
 export type WithIndex<TObject> = TObject & Record<string, any>;
 export type ResolversObject<TObject> = WithIndex<TObject>;
 
@@ -399,6 +408,7 @@ export type ResolversTypes = ResolversObject<{
   Subscription: ResolverTypeWrapper<Record<PropertyKey, never>>;
   UpdateUserInput: UpdateUserInput;
   User: ResolverTypeWrapper<IUser>;
+  UserStatusPayload: ResolverTypeWrapper<UserStatusPayload>;
 }>;
 
 /** Mapping between all available schema types and the resolvers parents */
@@ -421,6 +431,7 @@ export type ResolversParentTypes = ResolversObject<{
   Subscription: Record<PropertyKey, never>;
   UpdateUserInput: UpdateUserInput;
   User: IUser;
+  UserStatusPayload: UserStatusPayload;
 }>;
 
 export type AuthResponseResolvers<ContextType = MyContext, ParentType extends ResolversParentTypes['AuthResponse'] = ResolversParentTypes['AuthResponse']> = ResolversObject<{
@@ -546,6 +557,14 @@ export type UserResolvers<ContextType = MyContext, ParentType extends ResolversP
   role?: Resolver<ResolversTypes['Role'], ParentType, ContextType>;
 }>;
 
+export type UserStatusPayloadResolvers<ContextType = MyContext, ParentType extends ResolversParentTypes['UserStatusPayload'] = ResolversParentTypes['UserStatusPayload']> = ResolversObject<{
+  avatar?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  isOnline?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  login?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  role?: Resolver<ResolversTypes['Role'], ParentType, ContextType>;
+}>;
+
 export type Resolvers<ContextType = MyContext> = ResolversObject<{
   AuthResponse?: AuthResponseResolvers<ContextType>;
   Category?: CategoryResolvers<ContextType>;
@@ -559,5 +578,6 @@ export type Resolvers<ContextType = MyContext> = ResolversObject<{
   Query?: QueryResolvers<ContextType>;
   Subscription?: SubscriptionResolvers<ContextType>;
   User?: UserResolvers<ContextType>;
+  UserStatusPayload?: UserStatusPayloadResolvers<ContextType>;
 }>;
 
