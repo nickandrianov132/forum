@@ -26,11 +26,23 @@ import {
     resolvers as messageResolvers,
     typeDefs as messageTypeDefs,
 } from "./entities/message/index.ts";
+import {
+    resolvers as commentResolver,
+    typeDefs as commentTypeDefs,
+} from "./entities/comment/index.ts";
+import {
+    resolvers as commentLikeResolver,
+    typeDefs as commentLikeTypeDefs,
+} from "./entities/comment/index.ts";
+import {
+    resolvers as commentDislikeResolver,
+    typeDefs as commentDislikeTypeDefs,
+} from "./entities/comment/index.ts";
 
 
 const schema = makeExecutableSchema({
-    typeDefs: [userTypeDefs, postTypeDefs, likeTypeDefs, dislikeTypeDefs, categoryTypeDefs, messageTypeDefs],
-    resolvers: [ { DateTime: GraphQLDateTime}, userResolvers, postResolvers, likeResolvers, dislikeResolvers, categoryResolvers, messageResolvers],
+    typeDefs: [userTypeDefs, postTypeDefs, likeTypeDefs, dislikeTypeDefs, categoryTypeDefs, messageTypeDefs, commentTypeDefs, commentLikeTypeDefs, commentDislikeTypeDefs],
+    resolvers: [ { DateTime: GraphQLDateTime}, userResolvers, postResolvers, likeResolvers, dislikeResolvers, categoryResolvers, messageResolvers, commentResolver, commentLikeResolver, commentDislikeResolver],
 });
 
 export default schema;

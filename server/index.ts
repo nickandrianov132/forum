@@ -122,8 +122,6 @@ async function checkAndCleanOfflineUsers() {
   }
 }
 
-// Запускаем проверку строго раз в 30 секунд
-// Она будет работать как швейцарские часы и на вашем ПК, и на бесплатном тарифе Render!
 setInterval(checkAndCleanOfflineUsers, 30000);
 
 

@@ -1,0 +1,12 @@
+type CommentDislike {
+  id: ID!
+  user: User!
+  comment: Comment!
+  userId: ID!
+  commentId: ID!
+  createdAt: DateTime! # Используем ваш скаляр DateTime
+}
+
+extend type Mutation {
+  addCommentDislike(commentId: ID!): Comment!
+}

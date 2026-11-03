@@ -4,56 +4,59 @@ import { LikeModel } from '../models/Likes.ts';
 import { DislikeModel } from '../models/Dislikes.ts';
 import mongoose from 'mongoose';
 import { CategoryModel } from '../models/Category.ts';
+import { CommentDislikeModel } from '../models/CommentDislikes.ts';
+import { CommentLikeModel } from '../models/CommentLikes.ts';
 
 export type ILoaders = ReturnType<typeof createLoaders>;
 
 export const createLoaders = (currentUserId?: string) => ({
-  // Loader КАТЕГОРИЙ для решения проблемы N+1
-  categoryLoader: new DataLoader(async (ids: readonly string[]) => {
-    try {
-      // Ищем все категории из папки id одной пачкой
-      const categories = await CategoryModel.find({ _id: { $in: ids } });
-      const categoryMap = new Map(categories.map(cat => [cat.id.toString(), cat]));
-      
-      // Возвращаем строго в том порядке, в котором пришли IDs
-      return ids.map(id => categoryMap.get(id.toString()) || null);
-    } catch (err) {
-      return ids.map(() => new Error("Internal Database Error (CategoryLoader)"));
-    }
-  }),
-  userLoader: new DataLoader(async (ids: readonly string[]) => {
-  try {
-    // 1. Получаем документы из базы
-    const users = await UserModel.find({ _id: { $in: ids } });
-
-    // 2. Создаем карту (Map) для быстрого поиска O(1)
-    const userMap = new Map(users.map(u => [u.id.toString(), u]));
-
-    // 3. Сопоставляем входящие ID с результатами
-    return ids.map(id => {
-      const user = userMap.get(id.toString());
-      if (!user) {
-        return null; 
+    // Loader КАТЕГОРИЙ для решения проблемы N+1
+    categoryLoader: new DataLoader(async (ids: readonly string[]) => {
+      try {
+        // Ищем все категории из папки id одной пачкой
+        const categories = await CategoryModel.find({ _id: { $in: ids } });
+        const categoryMap = new Map(categories.map(cat => [cat.id.toString(), cat]));
+        
+        // Возвращаем строго в том порядке, в котором пришли IDs
+        return ids.map(id => categoryMap.get(id.toString()) || null);
+      } catch (err) {
+        return ids.map(() => new Error("Internal Database Error (CategoryLoader)"));
       }
-      return user;
-    });
-  } catch (err) {
-    // Если упала сама база, возвращаем объект ошибки для каждого ID в пачке
-    return ids.map(() => new Error("Internal Database Error"));
-  }
-  }),
-  // Проверка лайков: сразу для всех постов в запросе
-  likeLoader: new DataLoader(async (postIds: readonly string[]) => {
-    if (!currentUserId) return postIds.map(() => false);
-    const likes = await LikeModel.find({ 
-      postId: { $in: postIds as string[] }, // Явно указываем массив строк
-      userId: currentUserId 
-    });
-    const likedPostIds = new Set(
-        likes.map(l => l.postId?.toString()).filter(Boolean) // короткий способ убрать undefined или любые falsy значения (в моем случае если у лайка нет постId то ? вернет undefined соответствунно toString() не вызывается и в массив летит undefined, затем .filter c с предикатом Booldean очистит массив от всех undefined)
-    );
-    return postIds.map(id => likedPostIds.has(id.toString()));
-  }),
+    }),
+    userLoader: new DataLoader(async (ids: readonly string[]) => {
+    try {
+      // 1. Получаем документы из базы
+      const users = await UserModel.find({ _id: { $in: ids } });
+
+      // 2. Создаем карту (Map) для быстрого поиска O(1)
+      const userMap = new Map(users.map(u => [u.id.toString(), u]));
+
+      // 3. Сопоставляем входящие ID с результатами
+      return ids.map(id => {
+        const user = userMap.get(id.toString());
+        if (!user) {
+          return null; 
+        }
+        return user;
+      });
+    } catch (err) {
+      console.error("ОШИБКА В USER_LOADER:", err);
+      // Если упала сама база, возвращаем объект ошибки для каждого ID в пачке
+      return ids.map(() => new Error("Internal Database Error"));
+    }
+    }),
+    // Проверка лайков: сразу для всех постов в запросе
+    likeLoader: new DataLoader(async (postIds: readonly string[]) => {
+      if (!currentUserId) return postIds.map(() => false);
+      const likes = await LikeModel.find({ 
+        postId: { $in: postIds as string[] }, // Явно указываем массив строк
+        userId: currentUserId 
+      });
+      const likedPostIds = new Set(
+          likes.map(l => l.postId?.toString()).filter(Boolean) // короткий способ убрать undefined или любые falsy значения (в моем случае если у лайка нет постId то ? вернет undefined соответствунно toString() не вызывается и в массив летит undefined, затем .filter c с предикатом Booldean очистит массив от всех undefined)
+      );
+      return postIds.map(id => likedPostIds.has(id.toString()));
+    }),
     dislikeLoader: new DataLoader(async (postIds: readonly string[]) => {
     if (!currentUserId) return postIds.map(() => false);
 
@@ -69,49 +72,49 @@ export const createLoaders = (currentUserId?: string) => ({
     return postIds.map(id => dislikedPostIds.has(id.toString()));
     }),
 
- // Loader для количества дизлайков
-  dislikeCountLoader: new DataLoader(async (postIds: readonly string[]) => {
-    // 1. Фильтруем только валидные ID, чтобы избежать ошибки "Argument passed in must be a string of 12 bytes...
-  const validObjectIds = postIds
-    .filter(id => mongoose.Types.ObjectId.isValid(id))
-    .map(id => new mongoose.Types.ObjectId(id))
+    // Loader для количества дизлайков
+    dislikeCountLoader: new DataLoader(async (postIds: readonly string[]) => {
+      // 1. Фильтруем только валидные ID, чтобы избежать ошибки "Argument passed in must be a string of 12 bytes...
+    const validObjectIds = postIds
+      .filter(id => mongoose.Types.ObjectId.isValid(id))
+      .map(id => new mongoose.Types.ObjectId(id))
+      // 2. Если валидных ID вообще нет, сразу возвращаем массив нулей
+      if (validObjectIds.length === 0) {
+        return postIds.map(() => 0);
+      }
+      const counts = await DislikeModel.aggregate([
+        { $match: { postId: { $in: validObjectIds} } },
+        { $group: { _id: "$postId", count: { $sum: 1} } }
+      ]);
+        // 3. Используем Map для сопоставления результатов
+      const countMap = new Map(counts.map(c => [c._id.toString(), c.count]));
+        // 4. Возвращаем количество для каждого исходного ID (для невалидных вернется 0)
+      return postIds.map(id => countMap.get(id.toString()) || 0);
+    }),
+
+    // Loader для количества лайков (агрегация)
+    likeCountLoader: new DataLoader(async (postIds: readonly string[]) => {
+    // 1. Фильтруем только валидные ID, чтобы избежать ошибки "Argument passed in must be a string of 12 bytes..."
+    const validObjectIds = postIds
+      .filter(id => mongoose.Types.ObjectId.isValid(id))
+      .map(id => new mongoose.Types.ObjectId(id));
+
     // 2. Если валидных ID вообще нет, сразу возвращаем массив нулей
     if (validObjectIds.length === 0) {
       return postIds.map(() => 0);
     }
-    const counts = await DislikeModel.aggregate([
-      { $match: { postId: { $in: validObjectIds} } },
-      { $group: { _id: "$postId", count: { $sum: 1} } }
+    const counts = await LikeModel.aggregate([
+      { $match: { postId: { $in: validObjectIds } } },
+      { $group: { _id: "$postId", count: { $sum: 1 } } }
     ]);
-      // 3. Используем Map для сопоставления результатов
+    // 3. Используем Map для сопоставления результатов
     const countMap = new Map(counts.map(c => [c._id.toString(), c.count]));
-      // 4. Возвращаем количество для каждого исходного ID (для невалидных вернется 0)
+    // 4. Возвращаем количество для каждого исходного ID (для невалидных вернется 0)
     return postIds.map(id => countMap.get(id.toString()) || 0);
-  }),
-
-  // Loader для количества лайков (агрегация)
-  likeCountLoader: new DataLoader(async (postIds: readonly string[]) => {
-  // 1. Фильтруем только валидные ID, чтобы избежать ошибки "Argument passed in must be a string of 12 bytes..."
-  const validObjectIds = postIds
-    .filter(id => mongoose.Types.ObjectId.isValid(id))
-    .map(id => new mongoose.Types.ObjectId(id));
-
-  // 2. Если валидных ID вообще нет, сразу возвращаем массив нулей
-  if (validObjectIds.length === 0) {
-    return postIds.map(() => 0);
-  }
-  const counts = await LikeModel.aggregate([
-    { $match: { postId: { $in: validObjectIds } } },
-    { $group: { _id: "$postId", count: { $sum: 1 } } }
-  ]);
-  // 3. Используем Map для сопоставления результатов
-  const countMap = new Map(counts.map(c => [c._id.toString(), c.count]));
-  // 4. Возвращаем количество для каждого исходного ID (для невалидных вернется 0)
-  return postIds.map(id => countMap.get(id.toString()) || 0);
-  }),
+    }),
 
 
-// Группировка всех объектов лайков для списка постов
+    // Группировка всех объектов лайков для списка постов
     allLikesLoader: new DataLoader(async (postIds: readonly string[]) => {
         const likes = await LikeModel.find({ postId: { $in: postIds as string[] } });
         // Группируем лайки по postId
@@ -123,7 +126,7 @@ export const createLoaders = (currentUserId?: string) => ({
         });
         return postIds.map(id => map[id] || []);
     }),
-// Группировка всех объектов лайков для списка постов
+    // Группировка всех объектов лайков для списка постов
     allDislikesLoader: new DataLoader(async (postIds: readonly string[]) => {
         const dislikes = await DislikeModel.find({ postId: { $in: postIds as string[] } });
         // Группируем лайки по postId
@@ -134,5 +137,47 @@ export const createLoaders = (currentUserId?: string) => ({
             map[pId].push(dislike);
         });
         return postIds.map(id => map[id] || []);
+    }),
+    // 1. Лоадер для ЛАЙКОВ комментариев (считает общее количество и проверяет, лайкнул ли текущий юзер)
+    commentLikeLoader: new DataLoader(async (commentIds: readonly string[]) => {
+      // Ищем все лайки для переданного массива ID комментариев
+      const likes = await CommentLikeModel.find({
+        commentId: { $in: commentIds as string[] }
+      });
+
+      return commentIds.map(commentId => {
+        // Фильтруем лайки конкретно для этого комментария
+        const commentLikes = likes.filter(l => l.commentId.toString() === commentId.toString());
+        
+        // Проверяем, есть ли среди них лайк от текущего пользователя
+        const isLiked = currentUserId 
+          ? commentLikes.some(l => l.userId.toString() === currentUserId.toString())
+          : false;
+
+        return {
+          count: commentLikes.length,
+          isLiked
+        };
+      });
+    }),
+
+    // 2. Лоадер для ДИЗЛАЙКОВ комментариев (аналогично считает количество и проверяет статус)
+    commentDislikeLoader: new DataLoader(async (commentIds: readonly string[]) => {
+      const dislikes = await CommentDislikeModel.find({
+        commentId: { $in: commentIds as string[] }
+      });
+
+      return commentIds.map(commentId => {
+        const commentDislikes = dislikes.filter(d => d.commentId.toString() === commentId.toString());
+        
+        const isDisliked = currentUserId 
+          ? commentDislikes.some(d => d.userId.toString() === currentUserId.toString())
+          : false;
+
+        return {
+          count: commentDislikes.length,
+          isDisliked
+        };
+      });
     }),
 });

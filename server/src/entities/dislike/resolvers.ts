@@ -9,19 +9,24 @@ import { LikeModel } from "../../models/Likes.ts";
 const resolvers: Resolvers<MyContext> = {
     Query: {},
     Dislike: {
-        user: async (parent) => {
-            const user = await UserModel.findById(parent.userId)
-                if (!user) {
-                throw new Error("User not found");
-                }
-            return user
+        // user: async (parent) => {
+        //     const user = await UserModel.findById(parent.userId)
+        //         if (!user) {
+        //         throw new Error("User not found");
+        //         }
+        //     return user
+        // },
+        user: async (parent, _, { loaders }) => {
+        if (!parent.userId) return null;
+        // Принудительно приводим к any, если сгенерированные типы строго конфликтуют с Mongoose документом
+        return await loaders.userLoader.load(parent.userId.toString()) as any;
         },
         post: async (parent) => {
-            const user = await PostModel.findById(parent.postId)
-                if (!user) {
-                throw new Error("User not found");
+            const post = await PostModel.findById(parent.postId)
+                if (!post) {
+                    throw new Error("Post not found");
                 }
-            return user
+            return post
         }
     },
     Mutation: {

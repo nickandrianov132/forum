@@ -11,6 +11,7 @@ import { UPDATE_POST } from "../../graphql/mutations/updatePost.js";
 
 import Editor from "../../components/lexical/Editor.js"; // Тот самый типизированный Editor
 import LexicalHTMLRenderer from "../../components/lexical/LexicalHTMLRenderer.js"; // Для отображения контента
+import CommentsSection from "./CommentsSection.js";
 
 
 const PostDetail = () => {
@@ -28,7 +29,7 @@ const PostDetail = () => {
         skip: !id, // Пропускаем запрос, если id по какой-то причине пуст
     });
     const [updatePost] = useMutation(UPDATE_POST);
-    console.log(accessToken);
+    // console.log(accessToken);
 
     useEffect(() => {
         if (data?.post) {
@@ -144,7 +145,8 @@ const PostDetail = () => {
     <div className="post-detail">
         {/* button <- Back  */}
         <div className="flex justify-between items-center">
-            <button 
+            <button
+                type="button" 
                 className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-slate-300 rounded-lg bg-slate-900/40 border border-white/5 hover:bg-slate-900/60 hover:text-white transition-all duration-200 cursor-pointer" 
                 onClick={() => navigate(-1)}
             >
@@ -297,6 +299,7 @@ const PostDetail = () => {
                             </div>
                             
                             <span className="text-[11px] text-slate-500">
+                                
                                 MU Void Community Forum
                             </span>
                         </div>
@@ -306,6 +309,9 @@ const PostDetail = () => {
             </div>
 
         </div>
+        {id &&
+            <CommentsSection postId={id} />
+        }
     </div>
     );
 }

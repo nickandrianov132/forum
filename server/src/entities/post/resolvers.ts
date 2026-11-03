@@ -79,10 +79,10 @@ const resolvers: Resolvers<MyContext> = {
             return post
         }),
         deletePost: authenticated( async (parent, {id}) => {
-            console.log(parent);
-            const result = await PostModel.findByIdAndDelete(id)
-            const posts = await PostModel.find()
-            pubsub.publish("POSTS_RENEW", { postsSub: posts})
+            // console.log(parent);
+            const result = await PostModel.findByIdAndDelete(id);
+            const posts = await PostModel.find();
+            pubsub.publish("POSTS_RENEW", { postsSub: posts});
             return !!result
         }),
         deletePostByAdmin: hasRole(['Admin', 'Moderator'])(

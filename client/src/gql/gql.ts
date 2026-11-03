@@ -14,12 +14,15 @@ import type { TypedDocumentNode as DocumentNode } from '@graphql-typed-document-
  * Learn more about it here: https://the-guild.dev/graphql/codegen/plugins/presets/preset-client#reducing-bundle-size
  */
 type Documents = {
+    "\n  fragment CommentFields on Comment {\n    id\n    content\n    createdAt\n    likesCount\n    dislikesCount\n    isLiked\n    isDisliked\n    isOwner\n    user {\n      id\n      login\n      avatar\n      role\n    }\n  }\n": typeof types.CommentFieldsFragmentDoc,
+    "\n    mutation CreateComment($postId: ID!, $content: String!) {\n        createComment(postId: $postId, content: $content) {\n            ...CommentFields\n        }\n    } \n": typeof types.CreateCommentDocument,
     "\n  mutation AddDislike($postId: ID!) {\n    addDislike(postId: $postId) {\n      id\n      likesCount\n      dislikesCount\n      isLiked\n      isDisliked\n    }\n  }\n": typeof types.AddDislikeDocument,
     "\n  mutation AddLike($postId: ID!) {\n    addLike(postId: $postId) {\n      id\n      likesCount\n      dislikesCount\n      isLiked\n      isDisliked\n    }\n  }\n": typeof types.AddLikeDocument,
     "\n    mutation BanUser($input: BanUserInput!) {\n        banUser( input: $input )\n    }   \n": typeof types.BanUserDocument,
     "\n    mutation CreateCategory($name: String!, $slug: String!, $description: String) {\n        createCategory(name: $name, slug: $slug, description: $description) {\n            id\n            name\n            slug\n            description\n        }\n    }\n": typeof types.CreateCategoryDocument,
     "\n   mutation CreatePost($categoryId: ID!, $title: String!, $content: String!, $userId: ID!) {\n      createPost(categoryId: $categoryId, title: $title, content: $content, userId: $userId) {\n        id\n        category {\n            id\n            name\n        }\n        title\n        createdAt\n        user{\n            id\n            login\n        }\n      }\n   }\n": typeof types.CreatePostDocument,
     "\n    mutation AddUser($login: String!, $password: String!, $email: String!, $avatar: String) {\n        addUser(login: $login, password: $password, email: $email, avatar: $avatar) {\n            user{\n                id\n                login\n                email\n                avatar\n                createdAt\n            }\n        }\n    }\n": typeof types.AddUserDocument,
+    "\n    mutation DeleteComment($id: ID!) {\n        deleteComment(id: $id) \n    }\n": typeof types.DeleteCommentDocument,
     "\n    mutation DeleteMessage($id: ID!) {\n        deleteMessage(id: $id) {\n            id\n        }\n    }    \n": typeof types.DeleteMessageDocument,
     "\n    mutation DeletePost($id: ID!) {\n        deletePost(id: $id)         \n    }    \n": typeof types.DeletePostDocument,
     "\n    mutation DeletePostByAdmin($id: ID!) {\n        deletePostByAdmin(id: $id)\n    }\n\n": typeof types.DeletePostByAdminDocument,
@@ -28,12 +31,14 @@ type Documents = {
     "\n    mutation PingOnline {\n        pingOnline\n    }    \n": typeof types.PingOnlineDocument,
     "\n    mutation SendMessage($text: String!, $userId: ID!) {\n        sendMessage(text: $text, userId: $userId) {\n            id\n            text\n            userId\n            createdAt\n            user {\n                id\n                login\n                avatar\n            }\n        }\n    }    \n": typeof types.SendMessageDocument,
     "\n    mutation UnbanUser($login: String!) {\n        unbanUser(login: $login)\n    }    \n": typeof types.UnbanUserDocument,
+    "\n    mutation UpdateComment($id: ID!, $content: String!) {\n        updateComment(id: $id, content: $content) {\n            id\n            content\n            ...CommentFields\n        }\n    }    \n": typeof types.UpdateCommentDocument,
     "\n  mutation UpdatePost($id: ID!, $postTitle: String, $postContent: String) {\n    updatePost(id: $id, title: $postTitle, content: $postContent) {\n      id              # Обязательно для идентификации в кэше\n      title           # Чтобы заголовок обновился в списке\n      content         # Чтобы контент обновился в списке\n      likesCount\n      dislikesCount\n      isLiked\n      isDisliked\n      __typename      # Помогает Apollo понять тип объекта\n      isOwner\n    }\n  }\n": typeof types.UpdatePostDocument,
     "\n    mutation UpdateUser($id: ID!, $input: UpdateUserInput!) {\n        updateUser(id: $id, input: $input) {\n            id\n            login\n            email\n            avatar\n        }\n    }\n": typeof types.UpdateUserDocument,
     "\n    query GetUsers {\n        users {\n            id\n            login\n            avatar\n            isBanned\n            role\n        }\n    }    \n": typeof types.GetUsersDocument,
     "\n    fragment UserHeaderFields on User {\n      id\n      login\n      avatar\n      role\n      isBanned\n      isOnline\n    }  \n": typeof types.UserHeaderFieldsFragmentDoc,
     "\n  query Me {\n    me {\n      ...UserHeaderFields\n    }\n  }\n": typeof types.MeDocument,
     "\n    query GetCategories {\n        categories {\n            id\n            name\n            slug\n            description\n        }\n    }\n": typeof types.GetCategoriesDocument,
+    "\n    query GetCommentsByPost($postId: ID!, $limit: Int!, $offset: Int!) {\n        commentsByPost(postId: $postId, limit: $limit, offset: $offset) {\n            totalCount\n            comments {\n                id\n                content\n                createdAt\n                likesCount\n                dislikesCount\n                isLiked\n                isDisliked\n                isOwner\n                user {\n                   id\n                   login\n                   avatar\n                   role\n                }\n            }\n        }\n    }    \n": typeof types.GetCommentsByPostDocument,
     "\n    query GetMessages {\n        messages {\n            id\n            text\n            userId\n            createdAt\n            user {\n                id\n                login\n                avatar\n            }\n        }\n    }    \n": typeof types.GetMessagesDocument,
     "\n    query getOnePost($id: ID!) {\n        post(id: $id) {\n        id\n        title\n        content\n        isLiked\n        isDisliked\n        likesCount\n        dislikesCount\n        isOwner\n        user {\n            id\n            login\n            avatar\n        }\n    }\n}\n": typeof types.GetOnePostDocument,
     "\n    query GetOnlineUsers {\n        getOnlineUsers {\n           id\n           login\n           avatar\n           isOnline\n           role\n        }\n    }    \n": typeof types.GetOnlineUsersDocument,
@@ -45,12 +50,15 @@ type Documents = {
     "\n    subscription onMessageDeleted { \n        messageDeleted {\n            id\n        }\n    }    \n": typeof types.OnMessageDeletedDocument,
 };
 const documents: Documents = {
+    "\n  fragment CommentFields on Comment {\n    id\n    content\n    createdAt\n    likesCount\n    dislikesCount\n    isLiked\n    isDisliked\n    isOwner\n    user {\n      id\n      login\n      avatar\n      role\n    }\n  }\n": types.CommentFieldsFragmentDoc,
+    "\n    mutation CreateComment($postId: ID!, $content: String!) {\n        createComment(postId: $postId, content: $content) {\n            ...CommentFields\n        }\n    } \n": types.CreateCommentDocument,
     "\n  mutation AddDislike($postId: ID!) {\n    addDislike(postId: $postId) {\n      id\n      likesCount\n      dislikesCount\n      isLiked\n      isDisliked\n    }\n  }\n": types.AddDislikeDocument,
     "\n  mutation AddLike($postId: ID!) {\n    addLike(postId: $postId) {\n      id\n      likesCount\n      dislikesCount\n      isLiked\n      isDisliked\n    }\n  }\n": types.AddLikeDocument,
     "\n    mutation BanUser($input: BanUserInput!) {\n        banUser( input: $input )\n    }   \n": types.BanUserDocument,
     "\n    mutation CreateCategory($name: String!, $slug: String!, $description: String) {\n        createCategory(name: $name, slug: $slug, description: $description) {\n            id\n            name\n            slug\n            description\n        }\n    }\n": types.CreateCategoryDocument,
     "\n   mutation CreatePost($categoryId: ID!, $title: String!, $content: String!, $userId: ID!) {\n      createPost(categoryId: $categoryId, title: $title, content: $content, userId: $userId) {\n        id\n        category {\n            id\n            name\n        }\n        title\n        createdAt\n        user{\n            id\n            login\n        }\n      }\n   }\n": types.CreatePostDocument,
     "\n    mutation AddUser($login: String!, $password: String!, $email: String!, $avatar: String) {\n        addUser(login: $login, password: $password, email: $email, avatar: $avatar) {\n            user{\n                id\n                login\n                email\n                avatar\n                createdAt\n            }\n        }\n    }\n": types.AddUserDocument,
+    "\n    mutation DeleteComment($id: ID!) {\n        deleteComment(id: $id) \n    }\n": types.DeleteCommentDocument,
     "\n    mutation DeleteMessage($id: ID!) {\n        deleteMessage(id: $id) {\n            id\n        }\n    }    \n": types.DeleteMessageDocument,
     "\n    mutation DeletePost($id: ID!) {\n        deletePost(id: $id)         \n    }    \n": types.DeletePostDocument,
     "\n    mutation DeletePostByAdmin($id: ID!) {\n        deletePostByAdmin(id: $id)\n    }\n\n": types.DeletePostByAdminDocument,
@@ -59,12 +67,14 @@ const documents: Documents = {
     "\n    mutation PingOnline {\n        pingOnline\n    }    \n": types.PingOnlineDocument,
     "\n    mutation SendMessage($text: String!, $userId: ID!) {\n        sendMessage(text: $text, userId: $userId) {\n            id\n            text\n            userId\n            createdAt\n            user {\n                id\n                login\n                avatar\n            }\n        }\n    }    \n": types.SendMessageDocument,
     "\n    mutation UnbanUser($login: String!) {\n        unbanUser(login: $login)\n    }    \n": types.UnbanUserDocument,
+    "\n    mutation UpdateComment($id: ID!, $content: String!) {\n        updateComment(id: $id, content: $content) {\n            id\n            content\n            ...CommentFields\n        }\n    }    \n": types.UpdateCommentDocument,
     "\n  mutation UpdatePost($id: ID!, $postTitle: String, $postContent: String) {\n    updatePost(id: $id, title: $postTitle, content: $postContent) {\n      id              # Обязательно для идентификации в кэше\n      title           # Чтобы заголовок обновился в списке\n      content         # Чтобы контент обновился в списке\n      likesCount\n      dislikesCount\n      isLiked\n      isDisliked\n      __typename      # Помогает Apollo понять тип объекта\n      isOwner\n    }\n  }\n": types.UpdatePostDocument,
     "\n    mutation UpdateUser($id: ID!, $input: UpdateUserInput!) {\n        updateUser(id: $id, input: $input) {\n            id\n            login\n            email\n            avatar\n        }\n    }\n": types.UpdateUserDocument,
     "\n    query GetUsers {\n        users {\n            id\n            login\n            avatar\n            isBanned\n            role\n        }\n    }    \n": types.GetUsersDocument,
     "\n    fragment UserHeaderFields on User {\n      id\n      login\n      avatar\n      role\n      isBanned\n      isOnline\n    }  \n": types.UserHeaderFieldsFragmentDoc,
     "\n  query Me {\n    me {\n      ...UserHeaderFields\n    }\n  }\n": types.MeDocument,
     "\n    query GetCategories {\n        categories {\n            id\n            name\n            slug\n            description\n        }\n    }\n": types.GetCategoriesDocument,
+    "\n    query GetCommentsByPost($postId: ID!, $limit: Int!, $offset: Int!) {\n        commentsByPost(postId: $postId, limit: $limit, offset: $offset) {\n            totalCount\n            comments {\n                id\n                content\n                createdAt\n                likesCount\n                dislikesCount\n                isLiked\n                isDisliked\n                isOwner\n                user {\n                   id\n                   login\n                   avatar\n                   role\n                }\n            }\n        }\n    }    \n": types.GetCommentsByPostDocument,
     "\n    query GetMessages {\n        messages {\n            id\n            text\n            userId\n            createdAt\n            user {\n                id\n                login\n                avatar\n            }\n        }\n    }    \n": types.GetMessagesDocument,
     "\n    query getOnePost($id: ID!) {\n        post(id: $id) {\n        id\n        title\n        content\n        isLiked\n        isDisliked\n        likesCount\n        dislikesCount\n        isOwner\n        user {\n            id\n            login\n            avatar\n        }\n    }\n}\n": types.GetOnePostDocument,
     "\n    query GetOnlineUsers {\n        getOnlineUsers {\n           id\n           login\n           avatar\n           isOnline\n           role\n        }\n    }    \n": types.GetOnlineUsersDocument,
@@ -93,6 +103,14 @@ export function graphql(source: string): unknown;
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
+export function graphql(source: "\n  fragment CommentFields on Comment {\n    id\n    content\n    createdAt\n    likesCount\n    dislikesCount\n    isLiked\n    isDisliked\n    isOwner\n    user {\n      id\n      login\n      avatar\n      role\n    }\n  }\n"): (typeof documents)["\n  fragment CommentFields on Comment {\n    id\n    content\n    createdAt\n    likesCount\n    dislikesCount\n    isLiked\n    isDisliked\n    isOwner\n    user {\n      id\n      login\n      avatar\n      role\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n    mutation CreateComment($postId: ID!, $content: String!) {\n        createComment(postId: $postId, content: $content) {\n            ...CommentFields\n        }\n    } \n"): (typeof documents)["\n    mutation CreateComment($postId: ID!, $content: String!) {\n        createComment(postId: $postId, content: $content) {\n            ...CommentFields\n        }\n    } \n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
 export function graphql(source: "\n  mutation AddDislike($postId: ID!) {\n    addDislike(postId: $postId) {\n      id\n      likesCount\n      dislikesCount\n      isLiked\n      isDisliked\n    }\n  }\n"): (typeof documents)["\n  mutation AddDislike($postId: ID!) {\n    addDislike(postId: $postId) {\n      id\n      likesCount\n      dislikesCount\n      isLiked\n      isDisliked\n    }\n  }\n"];
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
@@ -114,6 +132,10 @@ export function graphql(source: "\n   mutation CreatePost($categoryId: ID!, $tit
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
 export function graphql(source: "\n    mutation AddUser($login: String!, $password: String!, $email: String!, $avatar: String) {\n        addUser(login: $login, password: $password, email: $email, avatar: $avatar) {\n            user{\n                id\n                login\n                email\n                avatar\n                createdAt\n            }\n        }\n    }\n"): (typeof documents)["\n    mutation AddUser($login: String!, $password: String!, $email: String!, $avatar: String) {\n        addUser(login: $login, password: $password, email: $email, avatar: $avatar) {\n            user{\n                id\n                login\n                email\n                avatar\n                createdAt\n            }\n        }\n    }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n    mutation DeleteComment($id: ID!) {\n        deleteComment(id: $id) \n    }\n"): (typeof documents)["\n    mutation DeleteComment($id: ID!) {\n        deleteComment(id: $id) \n    }\n"];
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
@@ -149,6 +171,10 @@ export function graphql(source: "\n    mutation UnbanUser($login: String!) {\n  
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
+export function graphql(source: "\n    mutation UpdateComment($id: ID!, $content: String!) {\n        updateComment(id: $id, content: $content) {\n            id\n            content\n            ...CommentFields\n        }\n    }    \n"): (typeof documents)["\n    mutation UpdateComment($id: ID!, $content: String!) {\n        updateComment(id: $id, content: $content) {\n            id\n            content\n            ...CommentFields\n        }\n    }    \n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
 export function graphql(source: "\n  mutation UpdatePost($id: ID!, $postTitle: String, $postContent: String) {\n    updatePost(id: $id, title: $postTitle, content: $postContent) {\n      id              # Обязательно для идентификации в кэше\n      title           # Чтобы заголовок обновился в списке\n      content         # Чтобы контент обновился в списке\n      likesCount\n      dislikesCount\n      isLiked\n      isDisliked\n      __typename      # Помогает Apollo понять тип объекта\n      isOwner\n    }\n  }\n"): (typeof documents)["\n  mutation UpdatePost($id: ID!, $postTitle: String, $postContent: String) {\n    updatePost(id: $id, title: $postTitle, content: $postContent) {\n      id              # Обязательно для идентификации в кэше\n      title           # Чтобы заголовок обновился в списке\n      content         # Чтобы контент обновился в списке\n      likesCount\n      dislikesCount\n      isLiked\n      isDisliked\n      __typename      # Помогает Apollo понять тип объекта\n      isOwner\n    }\n  }\n"];
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
@@ -170,6 +196,10 @@ export function graphql(source: "\n  query Me {\n    me {\n      ...UserHeaderFi
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
 export function graphql(source: "\n    query GetCategories {\n        categories {\n            id\n            name\n            slug\n            description\n        }\n    }\n"): (typeof documents)["\n    query GetCategories {\n        categories {\n            id\n            name\n            slug\n            description\n        }\n    }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n    query GetCommentsByPost($postId: ID!, $limit: Int!, $offset: Int!) {\n        commentsByPost(postId: $postId, limit: $limit, offset: $offset) {\n            totalCount\n            comments {\n                id\n                content\n                createdAt\n                likesCount\n                dislikesCount\n                isLiked\n                isDisliked\n                isOwner\n                user {\n                   id\n                   login\n                   avatar\n                   role\n                }\n            }\n        }\n    }    \n"): (typeof documents)["\n    query GetCommentsByPost($postId: ID!, $limit: Int!, $offset: Int!) {\n        commentsByPost(postId: $postId, limit: $limit, offset: $offset) {\n            totalCount\n            comments {\n                id\n                content\n                createdAt\n                likesCount\n                dislikesCount\n                isLiked\n                isDisliked\n                isOwner\n                user {\n                   id\n                   login\n                   avatar\n                   role\n                }\n            }\n        }\n    }    \n"];
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */

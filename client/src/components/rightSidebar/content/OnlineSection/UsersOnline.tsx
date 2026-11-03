@@ -23,7 +23,7 @@ const UsersOnline = () => {
         const targetId = String(changedUser.id || (changedUser as any)._id || "");
 
         // 1. Фильтруем список, убирая пользователя (независимо от того, зашел он или вышел)
-        const filteredUsers = (prev.getOnlineUsers || []).filter((u: any) => {
+        const filteredUsers = (prev?.getOnlineUsers || []).filter((u: any) => {
             const currentId = String(u?.id || u?._id || "");
 
             // ВЫВЕДЕМ В КОНСОЛЬ БРАУЗЕРА СРАВНЕНИЕ:

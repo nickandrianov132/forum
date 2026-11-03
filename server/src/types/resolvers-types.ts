@@ -5,6 +5,9 @@ import type { ICategory } from '../models/Category.js';
 import type { ILike } from '../models/Likes.js';
 import type { IDislike } from '../models/Dislikes.js';
 import type { IMessage } from '../models/Messages.js';
+import type { IComment } from '../models/Comments.js';
+import type { ICommentLike } from '../models/CommentLikes.js';
+import type { ICommentDislike } from '../models/CommentDislike.js';
 import type { MyContext } from '../../index.js';
 export type Maybe<T> = T | null;
 export type InputMaybe<T> = Maybe<T>;
@@ -47,6 +50,40 @@ export type Category = {
   slug: Scalars['String']['output'];
 };
 
+export type Comment = {
+  __typename?: 'Comment';
+  content: Scalars['String']['output'];
+  createdAt: Scalars['DateTime']['output'];
+  dislikesCount: Scalars['Int']['output'];
+  id: Scalars['ID']['output'];
+  isDisliked: Scalars['Boolean']['output'];
+  isLiked: Scalars['Boolean']['output'];
+  isOwner: Scalars['Boolean']['output'];
+  likesCount: Scalars['Int']['output'];
+  post: Post;
+  user: User;
+};
+
+export type CommentDislike = {
+  __typename?: 'CommentDislike';
+  comment: Comment;
+  commentId: Scalars['ID']['output'];
+  createdAt: Scalars['DateTime']['output'];
+  id: Scalars['ID']['output'];
+  user: User;
+  userId: Scalars['ID']['output'];
+};
+
+export type CommentLike = {
+  __typename?: 'CommentLike';
+  comment: Comment;
+  commentId: Scalars['ID']['output'];
+  createdAt: Scalars['DateTime']['output'];
+  id: Scalars['ID']['output'];
+  user: User;
+  userId: Scalars['ID']['output'];
+};
+
 export type Dislike = {
   __typename?: 'Dislike';
   createdAt?: Maybe<Scalars['String']['output']>;
@@ -78,24 +115,42 @@ export type Message = {
 
 export type Mutation = {
   __typename?: 'Mutation';
+  addCommentDislike: Comment;
+  addCommentLike: Comment;
   addDislike: Post;
   addLike: Post;
   addUser: AuthResponse;
   banUser?: Maybe<Scalars['Boolean']['output']>;
   createCategory: Category;
+  createComment: Comment;
   createPost: Post;
+  deleteByAdminComment: Scalars['Boolean']['output'];
+  deleteComment: Scalars['Boolean']['output'];
   deleteMessage: Message;
   deletePost?: Maybe<Scalars['Boolean']['output']>;
   deletePostByAdmin: Scalars['Boolean']['output'];
   deleteUser?: Maybe<Scalars['Boolean']['output']>;
+  dislikeComment: Comment;
+  likeComment: Comment;
   logOut: Scalars['Boolean']['output'];
   loginUser: AuthResponse;
   pingOnline: Scalars['Boolean']['output'];
   refreshToken: AuthResponse;
   sendMessage: Message;
   unbanUser?: Maybe<Scalars['Boolean']['output']>;
+  updateComment: Comment;
   updatePost?: Maybe<Post>;
   updateUser?: Maybe<User>;
+};
+
+
+export type MutationAddCommentDislikeArgs = {
+  commentId: Scalars['ID']['input'];
+};
+
+
+export type MutationAddCommentLikeArgs = {
+  commentId: Scalars['ID']['input'];
 };
 
 
@@ -129,11 +184,27 @@ export type MutationCreateCategoryArgs = {
 };
 
 
+export type MutationCreateCommentArgs = {
+  content: Scalars['String']['input'];
+  postId: Scalars['ID']['input'];
+};
+
+
 export type MutationCreatePostArgs = {
   categoryId: Scalars['ID']['input'];
   content: Scalars['String']['input'];
   title: Scalars['String']['input'];
   userId: Scalars['ID']['input'];
+};
+
+
+export type MutationDeleteByAdminCommentArgs = {
+  id: Scalars['ID']['input'];
+};
+
+
+export type MutationDeleteCommentArgs = {
+  id: Scalars['ID']['input'];
 };
 
 
@@ -153,6 +224,16 @@ export type MutationDeletePostByAdminArgs = {
 
 
 export type MutationDeleteUserArgs = {
+  id: Scalars['ID']['input'];
+};
+
+
+export type MutationDislikeCommentArgs = {
+  id: Scalars['ID']['input'];
+};
+
+
+export type MutationLikeCommentArgs = {
   id: Scalars['ID']['input'];
 };
 
@@ -184,6 +265,12 @@ export type MutationUnbanUserArgs = {
 };
 
 
+export type MutationUpdateCommentArgs = {
+  content: Scalars['String']['input'];
+  id: Scalars['ID']['input'];
+};
+
+
 export type MutationUpdatePostArgs = {
   categoryId?: InputMaybe<Scalars['ID']['input']>;
   content?: InputMaybe<Scalars['String']['input']>;
@@ -195,6 +282,12 @@ export type MutationUpdatePostArgs = {
 export type MutationUpdateUserArgs = {
   id: Scalars['ID']['input'];
   input: UpdateUserInput;
+};
+
+export type PaginatedComments = {
+  __typename?: 'PaginatedComments';
+  comments: Array<Comment>;
+  totalCount: Scalars['Int']['output'];
 };
 
 export type PaginatedPosts = {
@@ -223,6 +316,7 @@ export type Query = {
   categories: Array<Category>;
   category?: Maybe<Category>;
   categoryBySlug?: Maybe<Category>;
+  commentsByPost: PaginatedComments;
   getOnlineUsers: Array<User>;
   me?: Maybe<User>;
   messages: Array<Message>;
@@ -241,6 +335,13 @@ export type QueryCategoryArgs = {
 
 export type QueryCategoryBySlugArgs = {
   slug: Scalars['String']['input'];
+};
+
+
+export type QueryCommentsByPostArgs = {
+  limit: Scalars['Int']['input'];
+  offset: Scalars['Int']['input'];
+  postId: Scalars['ID']['input'];
 };
 
 
@@ -393,6 +494,9 @@ export type ResolversTypes = ResolversObject<{
   BanUserInput: BanUserInput;
   Boolean: ResolverTypeWrapper<Scalars['Boolean']['output']>;
   Category: ResolverTypeWrapper<ICategory>;
+  Comment: ResolverTypeWrapper<IComment>;
+  CommentDislike: ResolverTypeWrapper<ICommentDislike>;
+  CommentLike: ResolverTypeWrapper<ICommentLike>;
   DateTime: ResolverTypeWrapper<Scalars['DateTime']['output']>;
   Dislike: ResolverTypeWrapper<IDislike>;
   ID: ResolverTypeWrapper<Scalars['ID']['output']>;
@@ -400,6 +504,7 @@ export type ResolversTypes = ResolversObject<{
   Like: ResolverTypeWrapper<ILike>;
   Message: ResolverTypeWrapper<IMessage>;
   Mutation: ResolverTypeWrapper<Record<PropertyKey, never>>;
+  PaginatedComments: ResolverTypeWrapper<Omit<PaginatedComments, 'comments'> & { comments: Array<ResolversTypes['Comment']> }>;
   PaginatedPosts: ResolverTypeWrapper<Omit<PaginatedPosts, 'posts'> & { posts: Array<ResolversTypes['Post']> }>;
   Post: ResolverTypeWrapper<IPost>;
   Query: ResolverTypeWrapper<Record<PropertyKey, never>>;
@@ -417,6 +522,9 @@ export type ResolversParentTypes = ResolversObject<{
   BanUserInput: BanUserInput;
   Boolean: Scalars['Boolean']['output'];
   Category: ICategory;
+  Comment: IComment;
+  CommentDislike: ICommentDislike;
+  CommentLike: ICommentLike;
   DateTime: Scalars['DateTime']['output'];
   Dislike: IDislike;
   ID: Scalars['ID']['output'];
@@ -424,6 +532,7 @@ export type ResolversParentTypes = ResolversObject<{
   Like: ILike;
   Message: IMessage;
   Mutation: Record<PropertyKey, never>;
+  PaginatedComments: Omit<PaginatedComments, 'comments'> & { comments: Array<ResolversParentTypes['Comment']> };
   PaginatedPosts: Omit<PaginatedPosts, 'posts'> & { posts: Array<ResolversParentTypes['Post']> };
   Post: IPost;
   Query: Record<PropertyKey, never>;
@@ -446,6 +555,37 @@ export type CategoryResolvers<ContextType = MyContext, ParentType extends Resolv
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   posts?: Resolver<Array<ResolversTypes['Post']>, ParentType, ContextType>;
   slug?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+}>;
+
+export type CommentResolvers<ContextType = MyContext, ParentType extends ResolversParentTypes['Comment'] = ResolversParentTypes['Comment']> = ResolversObject<{
+  content?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  createdAt?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  dislikesCount?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  isDisliked?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  isLiked?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  isOwner?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  likesCount?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  post?: Resolver<ResolversTypes['Post'], ParentType, ContextType>;
+  user?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
+}>;
+
+export type CommentDislikeResolvers<ContextType = MyContext, ParentType extends ResolversParentTypes['CommentDislike'] = ResolversParentTypes['CommentDislike']> = ResolversObject<{
+  comment?: Resolver<ResolversTypes['Comment'], ParentType, ContextType>;
+  commentId?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  createdAt?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  user?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
+  userId?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+}>;
+
+export type CommentLikeResolvers<ContextType = MyContext, ParentType extends ResolversParentTypes['CommentLike'] = ResolversParentTypes['CommentLike']> = ResolversObject<{
+  comment?: Resolver<ResolversTypes['Comment'], ParentType, ContextType>;
+  commentId?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  createdAt?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  user?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
+  userId?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
 }>;
 
 export interface DateTimeScalarConfig extends GraphQLScalarTypeConfig<ResolversTypes['DateTime'], any> {
@@ -479,24 +619,37 @@ export type MessageResolvers<ContextType = MyContext, ParentType extends Resolve
 }>;
 
 export type MutationResolvers<ContextType = MyContext, ParentType extends ResolversParentTypes['Mutation'] = ResolversParentTypes['Mutation']> = ResolversObject<{
+  addCommentDislike?: Resolver<ResolversTypes['Comment'], ParentType, ContextType, RequireFields<MutationAddCommentDislikeArgs, 'commentId'>>;
+  addCommentLike?: Resolver<ResolversTypes['Comment'], ParentType, ContextType, RequireFields<MutationAddCommentLikeArgs, 'commentId'>>;
   addDislike?: Resolver<ResolversTypes['Post'], ParentType, ContextType, RequireFields<MutationAddDislikeArgs, 'postId'>>;
   addLike?: Resolver<ResolversTypes['Post'], ParentType, ContextType, RequireFields<MutationAddLikeArgs, 'postId'>>;
   addUser?: Resolver<ResolversTypes['AuthResponse'], ParentType, ContextType, RequireFields<MutationAddUserArgs, 'email' | 'login' | 'password'>>;
   banUser?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationBanUserArgs, 'input'>>;
   createCategory?: Resolver<ResolversTypes['Category'], ParentType, ContextType, RequireFields<MutationCreateCategoryArgs, 'name' | 'slug'>>;
+  createComment?: Resolver<ResolversTypes['Comment'], ParentType, ContextType, RequireFields<MutationCreateCommentArgs, 'content' | 'postId'>>;
   createPost?: Resolver<ResolversTypes['Post'], ParentType, ContextType, RequireFields<MutationCreatePostArgs, 'categoryId' | 'content' | 'title' | 'userId'>>;
+  deleteByAdminComment?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationDeleteByAdminCommentArgs, 'id'>>;
+  deleteComment?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationDeleteCommentArgs, 'id'>>;
   deleteMessage?: Resolver<ResolversTypes['Message'], ParentType, ContextType, RequireFields<MutationDeleteMessageArgs, 'id'>>;
   deletePost?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationDeletePostArgs, 'id'>>;
   deletePostByAdmin?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationDeletePostByAdminArgs, 'id'>>;
   deleteUser?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationDeleteUserArgs, 'id'>>;
+  dislikeComment?: Resolver<ResolversTypes['Comment'], ParentType, ContextType, RequireFields<MutationDislikeCommentArgs, 'id'>>;
+  likeComment?: Resolver<ResolversTypes['Comment'], ParentType, ContextType, RequireFields<MutationLikeCommentArgs, 'id'>>;
   logOut?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, Partial<MutationLogOutArgs>>;
   loginUser?: Resolver<ResolversTypes['AuthResponse'], ParentType, ContextType, RequireFields<MutationLoginUserArgs, 'login' | 'password'>>;
   pingOnline?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   refreshToken?: Resolver<ResolversTypes['AuthResponse'], ParentType, ContextType, RequireFields<MutationRefreshTokenArgs, 'token'>>;
   sendMessage?: Resolver<ResolversTypes['Message'], ParentType, ContextType, RequireFields<MutationSendMessageArgs, 'text' | 'userId'>>;
   unbanUser?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationUnbanUserArgs, 'login'>>;
+  updateComment?: Resolver<ResolversTypes['Comment'], ParentType, ContextType, RequireFields<MutationUpdateCommentArgs, 'content' | 'id'>>;
   updatePost?: Resolver<Maybe<ResolversTypes['Post']>, ParentType, ContextType, RequireFields<MutationUpdatePostArgs, 'id'>>;
   updateUser?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, RequireFields<MutationUpdateUserArgs, 'id' | 'input'>>;
+}>;
+
+export type PaginatedCommentsResolvers<ContextType = MyContext, ParentType extends ResolversParentTypes['PaginatedComments'] = ResolversParentTypes['PaginatedComments']> = ResolversObject<{
+  comments?: Resolver<Array<ResolversTypes['Comment']>, ParentType, ContextType>;
+  totalCount?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
 }>;
 
 export type PaginatedPostsResolvers<ContextType = MyContext, ParentType extends ResolversParentTypes['PaginatedPosts'] = ResolversParentTypes['PaginatedPosts']> = ResolversObject<{
@@ -522,6 +675,7 @@ export type QueryResolvers<ContextType = MyContext, ParentType extends Resolvers
   categories?: Resolver<Array<ResolversTypes['Category']>, ParentType, ContextType>;
   category?: Resolver<Maybe<ResolversTypes['Category']>, ParentType, ContextType, RequireFields<QueryCategoryArgs, 'id'>>;
   categoryBySlug?: Resolver<Maybe<ResolversTypes['Category']>, ParentType, ContextType, RequireFields<QueryCategoryBySlugArgs, 'slug'>>;
+  commentsByPost?: Resolver<ResolversTypes['PaginatedComments'], ParentType, ContextType, RequireFields<QueryCommentsByPostArgs, 'limit' | 'offset' | 'postId'>>;
   getOnlineUsers?: Resolver<Array<ResolversTypes['User']>, ParentType, ContextType>;
   me?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
   messages?: Resolver<Array<ResolversTypes['Message']>, ParentType, ContextType>;
@@ -568,11 +722,15 @@ export type UserStatusPayloadResolvers<ContextType = MyContext, ParentType exten
 export type Resolvers<ContextType = MyContext> = ResolversObject<{
   AuthResponse?: AuthResponseResolvers<ContextType>;
   Category?: CategoryResolvers<ContextType>;
+  Comment?: CommentResolvers<ContextType>;
+  CommentDislike?: CommentDislikeResolvers<ContextType>;
+  CommentLike?: CommentLikeResolvers<ContextType>;
   DateTime?: GraphQLScalarType;
   Dislike?: DislikeResolvers<ContextType>;
   Like?: LikeResolvers<ContextType>;
   Message?: MessageResolvers<ContextType>;
   Mutation?: MutationResolvers<ContextType>;
+  PaginatedComments?: PaginatedCommentsResolvers<ContextType>;
   PaginatedPosts?: PaginatedPostsResolvers<ContextType>;
   Post?: PostResolvers<ContextType>;
   Query?: QueryResolvers<ContextType>;

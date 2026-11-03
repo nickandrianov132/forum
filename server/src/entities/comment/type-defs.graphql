@@ -1,0 +1,32 @@
+type Comment {
+  id: ID!
+  content: String!
+  user: User!
+  post: Post!
+  likesCount: Int!
+  dislikesCount: Int!
+  isLiked: Boolean!
+  isDisliked: Boolean!
+  isOwner: Boolean!
+  createdAt: DateTime!
+}
+
+
+type PaginatedComments {
+  comments: [Comment!]!
+  totalCount: Int!
+}
+
+extend type Query {
+  # Получение комментариев к посту с пагинацией (limit = 5, offset = 0, 5, 10...)
+  commentsByPost(postId: ID!, limit: Int!, offset: Int!): PaginatedComments!
+}
+
+extend type Mutation {
+  createComment(postId: ID!, content: String!): Comment!
+  deleteComment(id: ID!): Boolean!
+  deleteByAdminComment(id: ID!): Boolean!
+  updateComment(id: ID! content: String!): Comment!
+  likeComment(id: ID!): Comment!
+  dislikeComment(id: ID!): Comment!
+}
