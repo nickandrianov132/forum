@@ -4,7 +4,6 @@ import { Link } from "react-router";
 import { ACCOUNT_INFO_ROUTE, ACCOUNT_SETTINGS_ROUTE, ADMIN_PANEL } from "../../../utils/constants";
 
 
-
 const UserAvatar = () => {
     const { user } = useAppSelector(state => state.user)
     const [isUserMenu, setIsUserMenu] = useState(false)

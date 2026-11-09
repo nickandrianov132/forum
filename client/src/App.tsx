@@ -10,6 +10,7 @@ import { useAuthInit } from './hooks/useAuthInit.ts';
 import { useOnlineHeartbeat } from './hooks/useOnlineHeartbeat.ts';
 import { PING_ONLINE_MUTATION } from './graphql/mutations/pingOnline.ts';
 import { useEffect, useRef } from 'react';
+import { useAppSelector } from './store/hooks.ts';
 
 
 const apiEnv = import.meta.env.VITE_GRAPHQL_URI; 
@@ -317,15 +318,16 @@ function MainApp() {
   const [sendPing] = useMutation(PING_ONLINE_MUTATION);
   // Создаем "память" для таймстампа последнего успешного пинга
   const lastPingTimeRef = useRef<number>(0);
+  // const token = localStorage.getItem('token');
+  const { accessToken } = useAppSelector((state) => state.user);
 
   useEffect(() => {
     if (isAuthLoading) return;
-
+    if (!accessToken) return; 
     // Безопасная функция отправки пинга с ограничением частоты (Throttle)
     const executePingWithThrottle = async (isForced = false) => {
       const now = Date.now();
       const timeSinceLastPing = now - lastPingTimeRef.current;
-
       // Шлем запрос ТОЛЬКО если прошло больше 20 секунд с последнего пинга
       // ИЛИ если это принудительный пинг (например, при самом первом входе)
       if (isForced || timeSinceLastPing >= 20000) {
@@ -338,15 +340,12 @@ function MainApp() {
         }
       }
     };
-
     // 1. Первый пинг при загрузке приложения (принудительный)
     executePingWithThrottle(true);
-
     // 2. Фоновый интервал: держит онлайн каждые 20 секунд, если пользователь отошел, но вкладка открыта
     const interval = setInterval(() => {
       executePingWithThrottle();
     }, 20000);
-
     // 3. Обработчик активности: сработает при клике/нажатии, 
     // но функция executePingWithThrottle пропустит его на сервер, только если пришло время!
     const handleActivity = () => {
@@ -363,7 +362,7 @@ function MainApp() {
       window.removeEventListener('click', handleActivity);
       window.removeEventListener('keypress', handleActivity);
     };
-  }, [sendPing, isAuthLoading]);
+  }, [accessToken, sendPing, isAuthLoading]);
 
   if (isAuthLoading) {
     return (

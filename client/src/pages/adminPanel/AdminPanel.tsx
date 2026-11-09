@@ -5,7 +5,7 @@ import { useState } from "react";
 type Tab = 'users' | 'ban' | 'unban' | 'category'
 
 const AdminPanel = () => {
-    const [activeTab, setActiveTab] = useState<Tab>('users')
+    const [activeTab, setActiveTab] = useState<Tab>('ban')
     return (
         <div className="user-panel-container">
             <nav className="flex gap-2 mb-4">
