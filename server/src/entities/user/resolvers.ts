@@ -125,7 +125,6 @@ const resolvers: Resolvers<MyContext> = {
             }
             try {
                 const redisKey = `user:${userId}:status`;
-                
                 // Вместо exists проверяем оставшееся время жизни ключа в секундах
                 const timeLeft = await redis.ttl(redisKey); 
                 
@@ -152,7 +151,6 @@ const resolvers: Resolvers<MyContext> = {
                         role: user.role
                     } as any
                     });
-                    
                     console.log(`[Status System] -> Системное воскрешение для ${user.login}. (TTL в Redis был равен ${timeLeft}с)`);
                 }
                 }

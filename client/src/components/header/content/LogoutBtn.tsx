@@ -15,7 +15,7 @@ const LogoutBtn = () => {
             await logOutMutation();
 
             dispatch(logout());
-            client.clearStore();
+            await client.resetStore();
         } catch (error: any) {
             console.error("Logout User error:", error.message );
         }

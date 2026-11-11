@@ -267,7 +267,6 @@ const serverCleanup = useServer(
       
       if (authHeader) {
         const tokenUser = getUserFromHeader(authHeader) as any;
-        // if (!tokenUser || !tokenUser.id) return false;
         if (!tokenUser || !tokenUser.id) {
           console.log("[WS System] -> Токен протух или невалиден при коннекте. Пускаем сессию как гостя, ждем HTTP-рефреша токенов...");
           return true; 
@@ -327,16 +326,13 @@ const serverCleanup = useServer(
         const userLogin = session.login;
 
         const dbUser = await UserModel.findById(userId);
-
         socketSessionMap.delete(ctx);
+        
         console.log(`[WS System] -> Вкладка закрыта для ${userLogin}. Принудительно тушим статус...`);
-
         try {
           const redisKey = `user:${userId}:status`;
-          
           // 1. Стираем ключ в Redis, чтобы очистить оперативную память
           await redis.del(redisKey); 
-
           // 2. НАПРЯМУЮ шлем пакет оффлайна в GraphQL сокеты ВСЕМ остальным пользователям!
           // Теперь нам не нужно ждать, пока сработает фоновый триггер в redis.ts
           pubsub.publish('USER_STATUS', {
@@ -359,48 +355,6 @@ const serverCleanup = useServer(
           console.error(`[WS Disconnect Error] Ошибка при закрытии сокета для ${userLogin}:`, err);
         }
       }
-      // if (session) {
-      //   const userId = session.userId;
-      //   const userLogin = session.login;
-        
-      //   socketSessionMap.delete(ctx);
-      //   console.log(`[WS System] -> Вкладка закрыта для ${userLogin}. Принудительно удаляем сессию из Redis...`);
-
-      //   try {
-      //     const redisKey = `user:${userId}:status`;
-          
-      //     // Вместо того чтобы ждать 45 секунд, мы просто удаляем ключ из Redis прямо сейчас!
-      //     // Это мгновенно вызовет событие "expired" внутри нашего файла redis.ts,
-      //     // и все остальные пользователи сразу увидят статус ОФФЛАЙН, а MongoDB обновится.
-      //     await redis.del(redisKey); 
-      //     console.log(`[WS System] -> удалось удалить ключ в Redis для ${userLogin}.`);
-      //   } catch (err) {
-      //     console.error(`[WS Disconnect Error] Не удалось удалить ключ в Redis для ${userLogin}:`, err);
-      //   }
-      // }
-
-      // if (session) {
-      //   const userId = session.userId;
-      //   const userLogin = session.login;
-        
-      //   socketSessionMap.delete(ctx);
-      //   console.log(`[WS System] -> Соединение закрыто для ${userLogin}. Проверяем состояние...`);
-
-      //   // Вместо кастомных счетчиков вкладок, мы даем пользователю 5 секунд на перезагрузку страницы (F5).
-      //   // Мы просто уменьшаем TTL ключа в Redis до 5 секунд.
-      //   // Если за 5 секунд он не откроет новую вкладку/не обновит страницу — Redis сам его удалит и погасит статус!
-      //   try {
-      //     const redisKey = `user:${userId}:status`;
-      //     const exists = await redis.exists(redisKey);
-          
-      //     if (exists) {
-      //       // Даем 5 секунд «форы» на случай перезагрузки страницы (F5)
-      //       await redis.expire(redisKey, 5); 
-      //     }
-      //   } catch (err) {
-      //     console.error(`[WS Disconnect Error] Не удалось обновить TTL в Redis для ${userLogin}:`, err);
-      //   }
-      // }
     }
   },
   wsServer,

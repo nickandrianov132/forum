@@ -205,7 +205,6 @@ const authLink = new ApolloLink((operation, forward) => {
     keepAlive: 10000,
     // Позволяет сокету пытаться переподключиться при закрытии соединения
     shouldRetry: () => true, 
-
     // Бесконечное число попыток переподключения при случайном обрыве связи (F5, лифт, метро)
     retryAttempts: 10,
       

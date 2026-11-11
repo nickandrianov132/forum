@@ -1,55 +1,91 @@
-import { useQuery } from "@apollo/client/react";
+import { useQuery, useSubscription } from "@apollo/client/react";
 import { GET_USERS_ONLINE, USER_STATUS_SUBSCRIPTION } from "../../../../graphql/querry/getOnlineUsers";
 import { useEffect } from "react";
 import { useOnlineHeartbeat } from "../../../../hooks/useOnlineHeartbeat";
 
 
+
 const UsersOnline = () => {
-    const {data, loading, error, subscribeToMore} = useQuery(GET_USERS_ONLINE);
-    useOnlineHeartbeat();
-  console.log(data);
-
-    useEffect(() => {
-    const unsubscribe = subscribeToMore({
-        document: USER_STATUS_SUBSCRIPTION,
-        updateQuery: (prev, { subscriptionData }) => {
-        console.log("Данные из сокета прилетели в Apollo:", subscriptionData);
-        
-        if (!subscriptionData.data?.userStatusChanged) return prev;
-
-        const changedUser = subscriptionData.data.userStatusChanged;
-        
-        // Принудительно приводим ID к строке для надежности сравнения
-        const targetId = String(changedUser.id || (changedUser as any)._id || "");
-
-        // 1. Фильтруем список, убирая пользователя (независимо от того, зашел он или вышел)
-        const filteredUsers = (prev?.getOnlineUsers || []).filter((u: any) => {
-            const currentId = String(u?.id || u?._id || "");
-
-            // ВЫВЕДЕМ В КОНСОЛЬ БРАУЗЕРА СРАВНЕНИЕ:
-            console.log(`Сравниваем в фильтре: Кэш ID [${currentId}] и Прилетевший ID [${targetId}] -> Результат:`, currentId !== targetId);
-            
-            return currentId !== targetId;
-        });
-
-        // 2. Если он онлайн — добавляем обновленный объект, иначе оставляем чистый отфильтрованный массив
-        const updatedList = changedUser.isOnline 
-            ? [...filteredUsers, changedUser] 
-            : filteredUsers;
-
-        console.log("Новый сформированный массив для UI:", updatedList);
-
-        // 3. КРИТИЧЕСКИЙ ШАГ: Возвращаем НОВЫЙ объект через деструктуризацию,
-        // чтобы React зафиксировал изменение ссылки и принудительно обновил интерфейс
-        return {
-            ...prev,
-            getOnlineUsers: [...updatedList], // Явное копирование массива
-        } as any;
-        },
+    const {data, loading, error, subscribeToMore} = useQuery(GET_USERS_ONLINE, {
+        fetchPolicy: 'network-only',
     });
+    useOnlineHeartbeat();
+    console.log(data);
 
-    return () => unsubscribe();
-    }, [subscribeToMore]);
+    useSubscription(USER_STATUS_SUBSCRIPTION, {
+    onData: ({ client, data: subData }) => {
+      const changedUser = subData.data?.userStatusChanged;
+      if (!changedUser) return;
+
+      // 1. Читаем актуальный список напрямую из кеша
+      const cachedData = client.readQuery({
+        query: GET_USERS_ONLINE,
+      });
+
+      const currentUsers = cachedData?.getOnlineUsers || [];
+      const targetId = String(changedUser.id);
+
+      // 2. Удаляем пользователя из текущего списка
+      const filteredUsers = currentUsers.filter(
+        (u: any) => String(u.id) !== targetId
+      );
+
+      // 3. Если он онлайн — возвращаем в список, если оффлайн — оставляем отфильтрованный
+      const updatedList = changedUser.isOnline
+        ? [...filteredUsers, changedUser]
+        : filteredUsers;
+
+      // 4. Принудительно записываем новый массив в кеш (это гарантированно вызовет ре-рендер)
+      client.writeQuery({
+        query: GET_USERS_ONLINE,
+        data: {
+          getOnlineUsers: updatedList,
+        },
+      });
+    },
+  });
+
+    // useEffect(() => {
+    // const unsubscribe = subscribeToMore({
+    //     document: USER_STATUS_SUBSCRIPTION,
+    //     updateQuery: (prev, { subscriptionData }) => {
+    //         console.log("Данные из сокета прилетели в Apollo:", subscriptionData);
+            
+    //         if (!subscriptionData.data?.userStatusChanged) return prev;
+
+    //         const changedUser = subscriptionData.data.userStatusChanged;
+            
+    //         // Принудительно приводим ID к строке для надежности сравнения
+    //         const targetId = String(changedUser.id || (changedUser as any)._id || "");
+
+    //         // 1. Фильтруем список, убирая пользователя (независимо от того, зашел он или вышел)
+    //         const filteredUsers = (prev?.getOnlineUsers || []).filter((u: any) => {
+    //             const currentId = String(u?.id || u?._id || "");
+
+    //             // ВЫВЕДЕМ В КОНСОЛЬ БРАУЗЕРА СРАВНЕНИЕ:
+    //             console.log(`Сравниваем в фильтре: Кэш ID [${currentId}] и Прилетевший ID [${targetId}] -> Результат:`, currentId !== targetId);
+                
+    //             return currentId !== targetId;
+    //         });
+
+    //         // 2. Если он онлайн — добавляем обновленный объект, иначе оставляем чистый отфильтрованный массив
+    //         const updatedList = changedUser.isOnline 
+    //             ? [...filteredUsers, changedUser] 
+    //             : filteredUsers;
+
+    //         console.log("Новый сформированный массив для UI:", updatedList);
+
+    //         // 3. КРИТИЧЕСКИЙ ШАГ: Возвращаем НОВЫЙ объект через деструктуризацию,
+    //         // чтобы React зафиксировал изменение ссылки и принудительно обновил интерфейс
+    //         return {
+    //             ...prev,
+    //             getOnlineUsers: [...updatedList], // Явное копирование массива
+    //         } as any;
+    //         },
+    //     });
+
+    //     return () => unsubscribe();
+    // }, [subscribeToMore]);
 
     if (loading) return <div>Loading Users...</div>
     if (error) return <div className="text-rose-500">Error Users</div>

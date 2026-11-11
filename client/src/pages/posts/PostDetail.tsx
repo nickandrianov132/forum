@@ -248,7 +248,7 @@ const PostDetail = () => {
                         </div>
 
                         {/* Post body */}
-                        <div className="p-5 text-slate-300 text-base leading-relaxed flex-auto overflow-y-auto prose-images:cursor-pointer [&_img]:cursor-pointer [&_img]:transition-transform [&_img]:duration-200 hover:[&_img]:scale-[1.01]">
+                        <div className="p-3 sm:p-5 text-slate-300 text-base leading-relaxed flex-auto overflow-y-auto prose-images:cursor-pointer [&_img]:cursor-pointer [&_img]:transition-transform [&_img]:duration-200 hover:[&_img]:scale-[1.01]">
                             <LexicalHTMLRenderer jsonString={post.content} />
                         </div>
                         {activeImgUrl && (

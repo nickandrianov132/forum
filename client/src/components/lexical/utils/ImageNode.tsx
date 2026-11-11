@@ -10,7 +10,6 @@ export type SerializedImageNode = Spread<
 
 export class ImageNode extends DecoratorNode<React.JSX.Element> {
   __src: string;
-
   static getType(): string { return 'image'; }
   static clone(node: ImageNode): ImageNode { return new ImageNode(node.__src, node.__key); }
 
@@ -26,8 +25,6 @@ export class ImageNode extends DecoratorNode<React.JSX.Element> {
   static importJSON(serializedNode: SerializedImageNode): ImageNode {
     return new ImageNode(serializedNode.src || (serializedNode as any).__src || '');
   }
-
-  // ================= ВАЖНОЕ ДОБАВЛЕНИЕ ДЛЯ LEXICAL_HTML_RENDERER =================
   // Этот метод вызывается конвертером JSON -> HTML на бэкенде или фронтенде.
   // Именно он создаст правильный тег <img> для вашего компонента отображения!
   exportDOM(): DOMExportOutput {
@@ -42,11 +39,9 @@ export class ImageNode extends DecoratorNode<React.JSX.Element> {
     img.setAttribute('loading', 'lazy');
 
     div.appendChild(img);
-    
     return { element: div };
   }
   // ==============================================================================
-
   // Этот метод нужен только для отображения ВНУТРИ редактора при создании
   createDOM(config: EditorConfig): HTMLElement {
     const div = document.createElement('div');
