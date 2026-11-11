@@ -155,9 +155,9 @@ const Posts = () => {
     // console.log(data?.posts[0].isLiked);
 
 return (
-    <div className="flex flex-col gap-3 min-h-full p-4">
+    <div className="flex flex-col w-full w-max-dvw items-center lg:gap-3 min-h-full lg:p-4">
         {/* Category */}
-        <div className="flex h-14 w-9/10 self-center items-center gap-2 justify-between overflow-hidden rounded-xl bg-slate-900/40 border border-white/5 backdrop-blur-xs mb-2">
+        <div className="flex h-14 w-90 sm:w-9/10 self-center items-center gap-2 justify-between overflow-hidden rounded-xl bg-slate-900/40 border border-white/5 backdrop-blur-xs mb-2">
             <div className="flex h-full rounded-xl items-center flex-3/4">
                 <span className="inline-flex animate-once-shine px-5 items-center bg-linear-to-tr from-blue-600 via-indigo-600 to-purple-600/70 text-white font-semibold shadow-xs h-full">Category</span>
                 <h2 className="w-full text-center text-2xl font-semibold text-slate-200 tracking-wide">
@@ -175,14 +175,14 @@ return (
 
         {/* Posts List */}
         <div 
-            className="flex flex-col gap-3 transition-opacity duration-200"
+            className="flex flex-col w-full items-center gap-3 transition-opacity duration-200"
             style={{ opacity: isLoading ? 0.6 : 1 }}
         >
             {posts?.map((post) => (
                 <Link 
                     key={post.id}  
                     to={`/post/${categorySlug}/${post.id}`} 
-                    className="group flex flex-col gap-2 p-4 rounded-lg bg-slate-900/40  border border-white/5 backdrop-blur-xs transition-all duration-200 hover:bg-slate-900/60 hover:border-white/10 hover:shadow-lg hover:-translate-y-0.5"
+                    className="group flex w-full flex-col gap-2 p-4 rounded-lg bg-slate-900/40  border border-white/5 backdrop-blur-xs transition-all duration-200 hover:bg-slate-900/60 hover:border-white/10 hover:shadow-lg hover:-translate-y-0.5"
                 >
                     {/* Post header */}
                     <div className="flex justify-between items-start gap-4">
@@ -270,9 +270,9 @@ return (
 
         {/* No posts message */}
         {postsData && postsData.postsByCategory.posts.length === 0 && (
-            <p className="text-center text-slate-500 text-sm py-8 bg-slate-900/20 rounded-xl border border-dashed border-white/5">
+            <span className=" inline-flex w-full items-center justify-center text-center text-slate-500 text-sm py-8 bg-slate-900/20 rounded-xl border border-dashed border-white/5">
                 No posts in this section.
-            </p>
+            </span>
         )}
 
         {/* Pagination section */}

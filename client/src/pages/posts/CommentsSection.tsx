@@ -244,7 +244,7 @@ const CommentsSection = ({ postId }: CommentsSectionProps ) => {
                 comments.map((comment) => (
                     <div 
                         key={comment.id} 
-                        className="group flex flex-col gap-2 px-4 py-2 rounded-lg bg-slate-900/40 border border-white/5 backdrop-blur-xs transition-all duration-200 hover:bg-slate-900/60 hover:border-white/10 hover:shadow-lg hover:-translate-y-0.5"
+                        className="group flex flex-col gap-2 px-4 py-2 rounded-lg bg-slate-900/40 border border-white/5 backdrop-blur-xs transition-colors duration-200 hover:bg-slate-900/60 hover:border-white/10 hover:shadow-lg hover:-translate-y-0.5"
                     >
                         {/* Card Header */}
                         <div className="flex justify-between items-start gap-4">
@@ -252,7 +252,7 @@ const CommentsSection = ({ postId }: CommentsSectionProps ) => {
                                 className="flex items-center"
                             >
                                 <img
-                                    className="w-10 rounded-full border border-slate-300/30" 
+                                    className="w-10 h-10 rounded-full border-2 border-sky-500/40 ring-1" 
                                     src={comment.user.avatar}
                                 />
                                 <span className="text-sky-400 ml-1.5 font-semibold text-xs tracking-wide">

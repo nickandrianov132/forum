@@ -50,37 +50,6 @@ const UsersOnline = () => {
 
     return () => unsubscribe();
     }, [subscribeToMore]);
-    // useEffect(() => {
-    //     const unsubscribe = subscribeToMore({
-    //     document: USER_STATUS_SUBSCRIPTION,
-    //     updateQuery: ( prev, { subscriptionData } ) => {
-    //         console.log(subscriptionData);
-    //         // Если данных нет, возвращаем текущее состояние без изменений
-    //         if (!subscriptionData.data?.userStatusChanged) return prev;
-
-    //         const changedUser = subscriptionData.data.userStatusChanged;
-    //         console.log("Прилетели данные из подписки:", changedUser);
-    //         // Убираем пользователя из старого списка, если он там уже был
-    //         const filteredUsers = (prev.getOnlineUsers || []).filter(
-    //         (u) => u?.id !== changedUser.id
-    //         );
-
-    //         // Если он зашел (isOnline), добавляем его в начало или конец массива
-    //         const updatedList = changedUser.isOnline 
-    //         ? [...filteredUsers, changedUser] 
-    //         : filteredUsers;
-
-    //         // Возвращаем объект, полностью соответствующий типу GetOnlineUsersQuery
-    //     return {
-    //     ...prev,
-    //     getOnlineUsers: updatedList,
-    //     } as any;
-    //     },
-    //     });
-
-    //     return () => unsubscribe();
-
-    // }, [subscribeToMore]);
 
     if (loading) return <div>Loading Users...</div>
     if (error) return <div className="text-rose-500">Error Users</div>

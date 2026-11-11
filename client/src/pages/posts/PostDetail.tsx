@@ -161,21 +161,23 @@ const PostDetail = () => {
         <div className="flex flex-col md:flex-row rounded-xl bg-slate-900/40 border border-white/5 backdrop-blur-xs overflow-hidden">
             
             {/* Left side: Avatar */}
-            <div className="flex flex-col items-center justify-start p-5 w-full md:w-44 shrink-0 bg-slate-900/20 border-b md:border-b-0 md:border-r border-white/5">
+            <div className="flex sm:flex-col items-center justify-start p-2 sm:p-5 w-full md:w-44 shrink-0 bg-slate-900/20 border-b md:border-b-0 md:border-r border-white/5">
                 <div className="relative group flex items-center justify-center">
                     <img 
-                        className="block w-20 h-20 md:w-24 md:h-24 rounded-full border-2 border-slate-700/50 object-cover bg-slate-800 shadow-md transition-transform group-hover:scale-105" 
+                        className="block w-12 h-12 sm:w-20 sm:h-20 md:w-24 md:h-24 rounded-full border-2 border-slate-700/50 object-cover bg-slate-800 shadow-md transition-transform group-hover:scale-105" 
                         src={post.user?.avatar || "https://placeholder.com"}
                         alt="Avatar"
                     />
                     <div className="absolute inset-0 rounded-full bg-sky-500/10 opacity-0 group-hover:opacity-100 transition-opacity" />
                 </div>
-                <em className="not-italic font-semibold text-slate-200 text-sm mt-3 tracking-wide truncate max-w-full">
-                    {post.user?.login || "Anonymous"}
-                </em>
-                <span className="text-[10px] text-slate-500 font-medium uppercase tracking-widest mt-1">
-                    Author
-                </span>
+                <div className="flex flex-col">
+                    <em className="not-italic font-semibold text-slate-200 text-sm sm:mt-3 tracking-wide truncate max-w-full">
+                        {post.user?.login || "Anonymous"}
+                    </em>
+                    <span className="text-[10px] text-slate-500 font-medium uppercase tracking-widest mt-1">
+                        Author
+                    </span>
+                </div>
             </div>
 
             {/* Right side: Content */}
@@ -230,8 +232,8 @@ const PostDetail = () => {
                         className="flex flex-col h-full justify-between">
                         
                         {/* Post header */}
-                        <div className="flex items-center justify-between px-5 py-4 border-b border-white/5 bg-slate-900/10 gap-4">
-                            <h1 className="text-xl font-bold text-slate-100 tracking-wide leading-tight wrap-break-word">
+                        <div className="flex items-center justify-between px-3 sm:px-5 py-4 border-b border-white/5 bg-slate-900/10 gap-4">
+                            <h1 className="sm:text-xl font-bold text-slate-100 tracking-wide leading-tight wrap-break-word">
                                 {post.title}
                             </h1>
                             {post.user?.login === user?.login && (

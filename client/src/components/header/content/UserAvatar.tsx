@@ -1,14 +1,32 @@
 import { useEffect, useRef, useState } from "react";
-import { useAppSelector } from "../../../store/hooks";
+import { useAppDispatch, useAppSelector } from "../../../store/hooks";
 import { Link } from "react-router";
 import { ACCOUNT_INFO_ROUTE, ACCOUNT_SETTINGS_ROUTE, ADMIN_PANEL } from "../../../utils/constants";
+import { useMutation } from "@apollo/client/react";
+import { LOGOUT_USER } from "../../../graphql/mutations/logoutUser";
+import { logout } from "../../../store/slices/authSlice";
+import { client } from "../../../App";
 
 
 const UserAvatar = () => {
     const { user } = useAppSelector(state => state.user)
     const [isUserMenu, setIsUserMenu] = useState(false)
     const menuRef = useRef<HTMLDivElement>(null)
+    const dispatch = useAppDispatch();
+    const [logOutMutation, {error, loading}] = useMutation(LOGOUT_USER);
 
+    const handleLogout = async () => {
+        try {
+            await logOutMutation();
+
+            dispatch(logout());
+            client.clearStore();
+        } catch (error: any) {
+            console.error("Logout User error:", error.message );
+        }
+
+
+    }
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
             if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
@@ -29,7 +47,7 @@ const UserAvatar = () => {
         <div 
             ref={menuRef}
             onClick={toggleMenu}
-            className="relative flex items-center gap-4 bg-slate-800/40 hover:bg-slate-800/80 border border-slate-700/50 rounded-xl p-2 pr-4 transition-all group cursor-pointer"
+            className="relative flex items-center gap-2 sm:gap-4 bg-slate-800/40 hover:bg-slate-800/80 border border-slate-700/50 rounded-xl p-1 sm:p-2 sm:pr-4 transition-all group cursor-pointer"
             // onClick={}
         >
             <svg 
@@ -42,7 +60,7 @@ const UserAvatar = () => {
             {isUserMenu && (
                 <div
                     onClick={(e) => e.stopPropagation()} 
-                    className="absolute z-50 top-full right-2 w-fit flex flex-col border border-slate-700/50 bg-slate-800 text-white rounded-b-md"
+                    className="absolute z-50 top-full right-1 sm:right-2 w-fit flex flex-col border border-slate-700/50 bg-slate-800 text-white rounded-b-md"
                 >
                     {user?.role === "Admin" &&
                         <Link
@@ -61,6 +79,10 @@ const UserAvatar = () => {
                         onClick={() => setIsUserMenu(false)}
                         className="px-3 py-2 rounded-b-md text-sm transition-colors text-slate-200 hover:text-white hover:bg-sky-600/80 "
                     >Settings</Link>
+                    <span 
+                        onClick={handleLogout}
+                        className="px-3 py-2 rounded-b-md text-sm transition-colors text-slate-200 hover:text-white hover:bg-sky-600/80 "
+                    >Logout</span>
                 </div>
             )}
             {/* Аватар */}

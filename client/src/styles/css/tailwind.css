@@ -10,23 +10,22 @@
   --text-shadow-all: 1px 2px 5px;   
   --font-poppins: Poppins, sans-serif;
 }
+@utility root {
+  @apply flex w-dvw bg-red-500 min-h-screen;
+}
 @utility main {
-  /* По умолчанию (мобилки): 1 колонка, элементы прижаты к верху */
-  @apply grid grid-cols-1 items-start min-h-dvh min-w-120 max-w-360 mx-auto gap-0 p-4;
-  
-  /* ХИТРОСТЬ: Каждая строка сетки на мобильных сжимается строго под размер своего контента */
-  grid-auto-rows: min-content;
+  /* Вместо grid на мобильных лучше использовать flex, чтобы элементы тянулись */
+  @apply flex flex-1 flex-col  min-w-90 max-w-380 mx-auto p-2 gap-0;
 
-  /* На десктопе (от 1024px) */
+  /* На десктопе включаем grid обратно */
   @media (width >= 64rem) {
-    @apply grid-cols-8 items-stretch w-full gap-2;
-    
-    /* Сбрасываем сжатие строк, чтобы на ПК сайдбары снова красиво растягивались по высоте до футера */
-    grid-auto-rows: unset; 
+    @apply grid grid-cols-8 items-stretch w-full gap-2;
   }
 }
 
-
+@utility forum-container {
+  @apply flex flex-1 flex-col sm:w-full bg-linear-to-tl from-[#2C353F] via-[#253342] to-[#334155];
+}
 @utility left-bar {
   /* На мобильных: блок занимает всю ширину, а высота строго по контенту */
   @apply w-full h-fit;
@@ -49,7 +48,7 @@
 }
 
 @utility router-container {
-  @apply lg:col-span-5 space-y-6;
+  @apply flex-1 items-center justify-center lg:col-span-5 sm:space-y-6;
 }
 
 @utility right-bar {
@@ -74,11 +73,11 @@
 }
 
 @utility header-container {
-  @apply flex items-center bg-gray-800 p-2 h-22 w-full ;
+  @apply flex items-center bg-gray-800 p-2 sm:h-22 w-full ;
 }
 
 @utility nav-header {
-  @apply max-w-7xl mx-auto px-4 h-16 flex justify-between items-center;
+  @apply flex justify-between w-full items-center sm:max-w-7xl sm:mx-auto px-4 sm:h-16 ;
 
   @media (width>= 64rem) {
     @apply w-full;
@@ -382,7 +381,7 @@ input.form-input-clean:-webkit-autofill:hover {
 
 /* 1. Базовые inline-стили для Lexical */
 @utility my-bold-text {
-  @apply font-bold text-slate-300;
+  @apply text-sm font-bold text-slate-300;
 }
 
 @utility my-italic-text {
@@ -441,13 +440,16 @@ input.form-input-clean:-webkit-autofill:hover {
   & p {
     @apply text-xs;
   }
+  & b {
+    @apply text-sm;
+  }
 
   /* Стилизация маркированного списка в готовом посте */
   & ul {
     @apply list-disc ml-6 my-2 space-y-1;
     
     & li {
-      @apply text-slate-300;
+      @apply text-sm text-slate-300;
       
       &::marker {
         @apply text-sky-600;
@@ -460,7 +462,7 @@ input.form-input-clean:-webkit-autofill:hover {
     @apply list-decimal ml-6 my-2 space-y-1;
     
     & li {
-      @apply m-0 text-slate-300;
+      @apply m-0 text-sm text-slate-300;
       
       &::marker {
         @apply text-slate-400 font-sans;
