@@ -13,7 +13,7 @@ const LeftNavbar = () => {
 
     return (
         <aside className="left-bar">
-            <nav className="bg-gray-800 p-4 rounded-l-lg h-fit lg:h-full border border-slate-400/20">
+            <nav className="bg-gray-800 p-2 xl:p-4 rounded-md lg:rounded-l-md lg:rounded-r-none h-fit lg:h-full border border-slate-600/50 lg:border-slate-500/30">
                 <ul className="text-gray-300 text-sm w-full">
                     {data?.categories.map((category: any) => (
                         <li key={category.id}>

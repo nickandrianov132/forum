@@ -6,8 +6,8 @@ interface LoginBtnProps {
 const LoginBtn = ({ setLoginForm } : LoginBtnProps) => {
     return (
         <button 
-        className="group inline-flex items-center gap-1.5 h-fit border border-slate-200/60 bg-emerald-600 text-shadow-sm/20 text-shadow-emerald-950 text-sm font-medium text-slate-200 py-1.5 px-3 rounded-md cursor-pointer transition-all duration-200
-        hover:bg-emerald-500 hover:border-white hover:text-white hover:shadow-md hover:shadow-emerald-500/20
+        className="group inline-flex items-center gap-1.5 h-fit border border-slate-200/30 bg-emerald-600 text-shadow-sm/20 text-shadow-emerald-950 text-sm font-medium text-slate-200 py-1.5 px-3 rounded-md cursor-pointer transition-all duration-200
+        hover:bg-emerald-500 hover:border-white/50 hover:text-white hover:shadow-md hover:shadow-emerald-500/20
         active:bg-emerald-400 active:scale-[0.98]
         focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:ring-offset-2 focus:ring-offset-slate-700"
 

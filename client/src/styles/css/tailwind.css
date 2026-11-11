@@ -77,7 +77,7 @@
 }
 
 @utility nav-header {
-  @apply flex justify-between w-full items-center sm:max-w-7xl sm:mx-auto px-4 sm:h-16 ;
+  @apply flex justify-between w-full items-center sm:max-w-7xl sm:mx-auto lg:px-4 sm:h-16 ;
 
   @media (width>= 64rem) {
     @apply w-full;
@@ -85,7 +85,7 @@
 }
 
 @utility admin-panel-tab {
-  @apply text-slate-300 border border-slate-300/30 rounded-sm px-3 py-1 bg-indigo-700 hover:bg-indigo-600 hover:text-white hover:shadow-xl hover:shadow-violet-600/20 transition-colors;
+  @apply flex justify-center text-center items-center text-sm  text-slate-300 border border-slate-300/30 rounded-sm px-3 py-1 bg-indigo-700 hover:bg-indigo-600 hover:text-white hover:shadow-xl hover:shadow-violet-600/20 transition-colors;
 
   @variant active {
     @apply scale-98;
@@ -94,7 +94,7 @@
 }
 
 @utility admin-panel-tab-active {
-  @apply border border-slate-300/50 rounded-sm px-3 py-1 bg-indigo-500 text-white shadow-xl shadow-violet-600/20 transition-colors;
+  @apply flex justify-center text-center items-center border border-slate-300/50 rounded-sm px-3 py-1 bg-indigo-500 text-sm text-white font-semibold shadow-xl shadow-violet-600/20 transition-colors;
 
   @variant active {
     @apply scale-98;
@@ -111,15 +111,7 @@
 
 /* Базовый класс для неактивных категорий */
 @utility nav-link-base {
-  display: flex;
-  align-items: center;
-  padding: 0.625rem 1.25rem;
-  border-radius: 0.25rem; 
-  font-size: 1rem;
-  font-weight: 600;
-  color: #94a3b8;
-  border-left: 3px solid transparent; /* Заготовка под левую линию */
-  transition: all 0.2s ease-in-out;
+  @apply flex items-center py-1.5 px-3 rounded-sm font-semibold text-slate-300 border-l-[3px] border-transparent transition-all ;
 
   @variant hover {
     color: #ffffff;
@@ -162,7 +154,7 @@
   @apply flex flex-col w-auto
 }
 @utility post-detail {
-  @apply flex flex-col gap-2 sm:gap-4 w-full max-w-5xl mx-auto sm:p-4
+  @apply flex flex-col gap-2 mt-2 lg:mt-0 lg:gap-4 w-full max-w-5xl mx-auto sm:p-4
 }
 
 @utility post-footer {
@@ -304,7 +296,7 @@ input.form-input-clean:-webkit-autofill:hover {
 }
 
 @utility user-panel-container {
-  @apply flex flex-col w-full border border-slate-600/50 rounded-lg py-5 px-4 mt-2 bg-gray-800 h-full;
+  @apply flex flex-col w-full border border-slate-600/50 rounded-lg mt-1 lg:mt-0 py-5 px-4 bg-gray-800 h-full;
 }
 
 @utility editor-container {
@@ -538,4 +530,13 @@ input.form-input-clean:-webkit-autofill:hover {
 
 .animate-scale-up {
   animation: scaleUp 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes voidPulse {
+  0%, 100% {
+    filter: drop-shadow(0 0 2px rgba(30, 64, 175, 0.5));
+  }
+  50% {
+    filter: drop-shadow(0 0 7px rgba(56, 189, 248, 0.85));
+  }
 }

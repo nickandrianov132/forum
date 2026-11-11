@@ -81,7 +81,7 @@ const UserAvatar = () => {
                     >Settings</Link>
                     <span 
                         onClick={handleLogout}
-                        className="px-3 py-2 rounded-b-md text-sm transition-colors text-slate-200 hover:text-white hover:bg-sky-600/80 "
+                        className="lg:hidden px-3 py-2 rounded-b-md text-sm transition-colors text-slate-200 hover:text-white hover:bg-sky-600/80 "
                     >Logout</span>
                 </div>
             )}

@@ -5,11 +5,11 @@ const UserAccauntInfo = () => {
 
     return (
         <div className="user-panel-container">
-            <div className="flex gap-4 p-4 text-slate-200">
+            <div className="flex flex-col items-center sm:flex-row sm:justify-start sm:gap-4 p-4 text-slate-200">
                 <div className="group flex flex-col items-center gap-3 rounded-2xl bg-slate-800/40 p-4 border border-slate-700/30 backdrop-blur-sm transition-all duration-300 hover:bg-slate-800/60 hover:border-slate-600/40">
                     <div className="relative">
                         <img 
-                        className="w-30 h-30 rounded-full object-cover border-2 border-sky-500/70 p-1 shadow-lg shadow-sky-500/10 transition-transform duration-200 group-hover:scale-105 group-hover:border-sky-400"
+                        className="w-25 h-25 sm:w-30 sm:h-30 rounded-full object-cover border-2 border-sky-500/70 p-1 shadow-lg shadow-sky-500/10 transition-transform duration-200 group-hover:scale-105 group-hover:border-sky-400"
                         src={user?.avatar || '/default-avatar.png'} 
                         alt="User Avatar"
                         title={user?.avatar}

@@ -155,7 +155,7 @@ const Posts = () => {
     // console.log(data?.posts[0].isLiked);
 
 return (
-    <div className="flex flex-col w-full w-max-dvw items-center lg:gap-3 min-h-full lg:p-4">
+    <div className="flex flex-col w-full w-max-dvw mt-2 lg:mt-0 items-center lg:gap-3 min-h-full lg:p-4">
         {/* Category */}
         <div className="flex h-14 w-90 sm:w-9/10 self-center items-center gap-2 justify-between overflow-hidden rounded-xl bg-slate-900/40 border border-white/5 backdrop-blur-xs mb-2">
             <div className="flex h-full rounded-xl items-center flex-3/4">

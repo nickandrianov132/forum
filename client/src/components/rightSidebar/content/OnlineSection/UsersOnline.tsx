@@ -87,12 +87,12 @@ const UsersOnline = () => {
     //     return () => unsubscribe();
     // }, [subscribeToMore]);
 
-    if (loading) return <div>Loading Users...</div>
+    if (loading) return <div className="w-full mt-1 bg-slate-900/40 border border-white/5 rounded-xl animate-pulse text-slate-300 backdrop-blur-sm p-4 shadow-xl text-sm">Loading Users...</div>
     if (error) return <div className="text-rose-500">Error Users</div>
 
 
     return (
-        <div className="w-full bg-slate-900/40 backdrop-blur-sm border border-slate-800/60 rounded-xl p-4 shadow-xl">
+        <div className="w-full mt-1 bg-slate-900/40 backdrop-blur-sm border border-slate-800/60 rounded-lg p-4 shadow-xl">
             <div className="flex items-center gap-2 mb-3 pb-2 border-b border-slate-800/80">
             <span className="relative flex h-2.5 w-2.5">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
