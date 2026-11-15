@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 120 120" preserveAspectRatio="xMidYMid slice">
+  <!-- Темно-серый фон под стиль вашего интерфейса -->
+  <rect width="120" height="120" fill="#1e293b" />
+  
+  <!-- Иконка профиля (голова и плечи) по центру -->
+  <g stroke="#64748b" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none">
+    <!-- Голова -->
+    <circle cx="60" cy="52" r="14" />
+    <!-- Плечи (погрудный контур) -->
+    <path d="M36 86 C36 70, 86 70, 84 86" />
+    
+    <!-- Перечеркивающая диагональная линия с темной обводкой -->
+    <line x1="41" y1="38" x2="82" y2="92" stroke="#1e293b" stroke-width="6.5" />
+    <line x1="41" y1="38" x2="82" y2="92" stroke="#64748b" stroke-width="3.0" />
+  </g>
+</svg>

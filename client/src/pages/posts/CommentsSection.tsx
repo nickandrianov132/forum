@@ -9,6 +9,7 @@ import { BiSolidDislike } from "react-icons/bi";
 import { DELETE_COMMENT } from "../../graphql/mutations/deleteComment";
 import { UPDATE_COMMENT } from "../../graphql/mutations/updateComment";
 import type { CommentFieldsFragment } from "../../gql/graphql";
+import SafeImage from "../../utils/SafeImage";
 
 
 interface CommentsSectionProps {
@@ -251,9 +252,13 @@ const CommentsSection = ({ postId }: CommentsSectionProps ) => {
                             <div 
                                 className="flex items-center"
                             >
-                                <img
+                                {/* <img
                                     className="w-10 h-10 rounded-full border-2 border-sky-500/40 ring-1" 
                                     src={comment.user.avatar}
+                                /> */}
+                                <SafeImage 
+                                    src={comment.user.avatar}
+                                    imgClassName="w-10 h-10 rounded-full border-2 border-sky-500/40 ring-1"
                                 />
                                 <span className="text-sky-400 ml-1.5 font-semibold text-xs tracking-wide">
                                     {comment.user?.login || "Anonymous"}

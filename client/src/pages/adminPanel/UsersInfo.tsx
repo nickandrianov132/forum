@@ -1,6 +1,7 @@
 import { useQuery } from "@apollo/client/react";
 import { GET_ALL_USERS } from "../../graphql/querry/getAllUsers";
 import Spinner from "../../components/Spinner";
+import SafeImage from "../../utils/SafeImage";
 
 const UsersInfo = () => {
     const {data, loading, error} = useQuery(GET_ALL_USERS);
@@ -12,9 +13,15 @@ const UsersInfo = () => {
         <div className="flex gap-2 flex-wrap">
             {data?.users.map((user) => 
                 <div key={user.id} className="user-card-container">
-                    <img 
+                    {/* <img 
                         src={user.avatar} 
                         className="w-15 rounded-2xl"
+                        alt="user-avatar"
+                        title={user.login} 
+                    /> */}
+                    <SafeImage 
+                        src={user.avatar} 
+                        imgClassName="w-15 rounded-2xl"
                         alt="user-avatar"
                         title={user.login} 
                     />

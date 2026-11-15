@@ -8,10 +8,11 @@ import { FaHeart } from "react-icons/fa";
 import { BiSolidDislike } from "react-icons/bi";
 import { useEffect, useState } from "react";
 import { UPDATE_POST } from "../../graphql/mutations/updatePost.js";
-
 import Editor from "../../components/lexical/Editor.js"; // Тот самый типизированный Editor
 import LexicalHTMLRenderer from "../../components/lexical/LexicalHTMLRenderer.js"; // Для отображения контента
 import CommentsSection from "./CommentsSection.js";
+import SafeImage from "../../utils/SafeImage.js";
+import placeholder from '../../assets/placeholder.svg';
 
 
 const PostDetail = () => {
@@ -163,10 +164,16 @@ const PostDetail = () => {
             {/* Left side: Avatar */}
             <div className="flex md:flex-col items-center justify-start p-2 sm:p-5 w-full md:w-44 shrink-0 bg-slate-900/20 border-b md:border-b-0 md:border-r border-white/5">
                 <div className="relative group flex items-center justify-center">
-                    <img 
+                    {/* <img 
                         className="block w-12 h-12 sm:w-20 sm:h-20 lg:w-24 lg:h-24 rounded-full border-2 border-slate-700/50 object-cover bg-slate-800 shadow-md transition-transform group-hover:scale-105" 
-                        src={post.user?.avatar || "https://placeholder.com"}
+                        src={post.user?.avatar}
                         alt="Avatar"
+                    /> */}
+                    <SafeImage
+                        src={post.user?.avatar}
+                        alt="Avatar" 
+                        skeletonClassName="block w-12 h-12 sm:w-20 sm:h-20 lg:w-24 lg:h-24 rounded-full border-2 border-slate-700/60 object-cover bg-slate-800 shadow-md transition-transform group-hover:scale-105"
+                        imgClassName="block w-12 h-12 sm:w-20 sm:h-20 lg:w-24 lg:h-24 rounded-full border-2 border-slate-700/50 object-cover bg-slate-800 shadow-md transition-transform group-hover:scale-105" 
                     />
                     <div className="absolute inset-0 rounded-full bg-sky-500/10 opacity-0 group-hover:opacity-100 transition-opacity" />
                 </div>
@@ -262,12 +269,20 @@ const PostDetail = () => {
                                 >
                                     X
                                 </button>
-                                <img
+                                {/* <img
                                     src={activeImgUrl}
                                     alt="Enlarged image"
                                     onClick={(e) => e.stopPropagation()}
                                     className="max-w-full max-h-[90vh] object-contain rounded-lg shadow-2xl border border-white/10 animate-scale-up cursor-default"
-                                />
+                                /> */}
+                                <SafeImage
+                                    src={activeImgUrl}
+                                    alt="Enlarged image"
+                                    onClick={(e) => e.stopPropagation()}
+                                    skeletonClassName="flex bg-slate-800 w-[70%] h-[70%] object-contain rounded-lg shadow-2xl border border-white/10 cursor-default"
+                                    imgClassName="max-w-full max-h-[90vh] object-contain rounded-lg shadow-2xl border border-white/10 animate-scale-up cursor-default"
+                                    fallback={placeholder}
+                                    />
                             </div>
                         )}
                         {/* Footer likes/dislikes */}

@@ -6,6 +6,7 @@ import { useAppSelector } from "../../../../store/hooks";
 import { MESSAGE_DELETED_SUBSCRIPTION } from "../../../../graphql/subscriptions/onMessageDeleted";
 import type { GetMessagesQuery, OnMessageDeletedSubscription } from "../../../../gql/graphql";
 import { DELETE_MESSAGE } from "../../../../graphql/mutations/deleteMessage";
+import SafeImage from "../../../../utils/SafeImage";
 // import type { GetMessagesQuery } from "../../../../gql/graphql";
 
 // type MessageType = GetMessagesQuery["messages"][number];
@@ -130,28 +131,40 @@ const ChatBody = () => {
                                     }
                                     <span className="font-bold text-xs text-indigo-400">{msg.user.login}</span>
                                 </div>
-                                <p className="text-xs text-slate-200 mt-2! py-1! px-2! bg-slate-800 rounded-md max-w-md">
+                                <p className="text-xs text-slate-200 mt-2! py-1! px-2! bg-slate-800 rounded-md">
                                     {msg.text}
                                 </p>
                             </div>
-                            <img 
+                            {/* <img 
                                 src={msg.user.avatar} 
                                 alt={msg.user.login} 
                                 className="w-8 h-8 rounded-full object-cover"
+                            /> */}
+                            <SafeImage 
+                                src={msg.user.avatar}
+                                alt={msg.user.login}
+                                skeletonClassName="block w-8 h-8 bg-slate-800 rounded-full"
+                                imgClassName="w-8 h-8 rounded-full object-cover"
                             />
                         </div>
                         :
                         <div key={msg.id} className="flex items-start gap-1.5">
-                            <img 
+                            {/* <img 
                                 src={msg.user.avatar} 
                                 alt={msg.user.login} 
                                 className="w-8 h-8 rounded-full object-cover"
+                            /> */}
+                            <SafeImage 
+                                src={msg.user.avatar}
+                                alt={msg.user.login}
+                                skeletonClassName="w-8 h-8 bg-slate-800 rounded-full object-cover"
+                                imgClassName="w-8 h-8 rounded-full object-cover"
                             />
-                            <div>
-                                <div className="flex items-center gap-2">
+                            <div className="flex flex-col max-w-[80%]">
+                                <div className="flex-1 items-center gap-2">
                                     <span className="font-bold text-xs text-indigo-400">{msg.user.login}</span>
                                 </div>
-                                <p className="text-xs text-slate-200 mt-2! py-1! px-2! bg-slate-800 rounded-md max-w-md">
+                                <p className="text-xs text-slate-200 mt-2! py-1! px-2! bg-slate-800 rounded-md max-w-sm">
                                     {msg.text}
                                 </p>
                             </div>

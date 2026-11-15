@@ -6,6 +6,7 @@ import { useMutation } from "@apollo/client/react";
 import { LOGOUT_USER } from "../../../graphql/mutations/logoutUser";
 import { logout } from "../../../store/slices/authSlice";
 import { client } from "../../../App";
+import SafeImage from "../../../utils/SafeImage";
 
 
 const UserAvatar = () => {
@@ -87,10 +88,16 @@ const UserAvatar = () => {
             )}
             {/* Аватар */}
             <div className="p-0.5 rounded-full bg-linear-to-tr from-blue-500 via-indigo-500 to-cyan-400">
-                <img 
+                {/* <img 
                 alt="avatar" 
                 className="w-10 h-10 rounded-full bg-gray-800" 
                 src={user?.avatar} 
+                /> */}
+                <SafeImage 
+                    alt="avatar"
+                    skeletonClassName="w-10 h-10 rounded-full bg-gray-800"
+                    imgClassName="w-10 h-10 rounded-full bg-gray-800"
+                    src={user?.avatar} 
                 />
             </div>
             

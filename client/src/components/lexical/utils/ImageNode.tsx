@@ -1,6 +1,7 @@
 import { DecoratorNode, type NodeKey, type EditorConfig, type LexicalNode, type SerializedLexicalNode, type Spread, type DOMExportOutput } from 'lexical';
 import React from 'react';
-
+import SafeImage from '../../../utils/SafeImage';
+import placeholder from '../../../assets/placeholder.svg';
 export type SerializedImageNode = Spread<
   {
     src: string;
@@ -54,13 +55,21 @@ export class ImageNode extends DecoratorNode<React.JSX.Element> {
   // Этот метод отвечает за отрисовку ВНУТРИ редактора при создании
   decorate(): React.JSX.Element {
     return (
-      <img 
+      <SafeImage 
         src={this.__src} 
         alt="Uploaded content" 
         className="lexical-image"
+        fallback={placeholder}
         style={{ display: 'block' }}
         loading="lazy"
       />
+      // <img 
+      //   src={this.__src} 
+      //   alt="Uploaded content" 
+      //   className="lexical-image"
+      //   style={{ display: 'block' }}
+      //   loading="lazy"
+      // />
     );
   }
 }
