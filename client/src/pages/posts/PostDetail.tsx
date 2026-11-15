@@ -172,7 +172,7 @@ const PostDetail = () => {
                     <SafeImage
                         src={post.user?.avatar}
                         alt="Avatar" 
-                        skeletonClassName="block w-12 h-12 sm:w-20 sm:h-20 lg:w-24 lg:h-24 rounded-full border-2 border-slate-700/60 object-cover bg-slate-800 shadow-md transition-transform group-hover:scale-105"
+                        skeletonClassName="w-12 h-12 sm:w-20 sm:h-20 lg:w-24 lg:h-24 rounded-full border-2 border-slate-700/60 object-cover bg-slate-800 shadow-md transition-transform group-hover:scale-105"
                         imgClassName="block w-12 h-12 sm:w-20 sm:h-20 lg:w-24 lg:h-24 rounded-full border-2 border-slate-700/50 object-cover bg-slate-800 shadow-md transition-transform group-hover:scale-105" 
                     />
                     <div className="absolute inset-0 rounded-full bg-sky-500/10 opacity-0 group-hover:opacity-100 transition-opacity" />

@@ -1,4 +1,4 @@
-import React, {useEffect, useState, type ImgHTMLAttributes } from 'react';
+import React, {useEffect, useRef, useState, type ImgHTMLAttributes } from 'react';
 import avatarPlaceholder from '../assets/avatar_placeholder.svg';
 
 // const OFFLINE_FALLBACK_IMG = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=';
@@ -24,15 +24,25 @@ export const SafeImage = ({
     onError,
     ...props
 }: SafeImageProps) => {
+    const targetSrc = src || fallback;
     const [imgSrc, setImgSrc] = useState<string>(src || fallback);
     const [hasError, setHasError] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
+    const imgRef = useRef<HTMLImageElement>(null);
 
     useEffect(() => {
-        setImgSrc(src || fallback);
+        // Обновляем состояние только если ссылка реально изменилась
+        if (imgSrc !== targetSrc) {
+        setImgSrc(targetSrc);
         setHasError(false);
         setIsLoading(Boolean(src));
-    }, [src, fallback]);
+        }
+
+        // Если картинка уже в кэше браузера (complete === true), сразу выключаем скелетон
+        if (imgRef.current && imgRef.current.complete && imgRef.current.naturalWidth > 0) {
+        setIsLoading(false);
+        }
+    }, [src, fallback, targetSrc, imgSrc]);
 
     useEffect(() => {
         const handleOnline = () => {
@@ -73,6 +83,7 @@ export const SafeImage = ({
             <div className={`animate-pulse ${skeletonClassName}`} />
         )}
         <img
+            ref={imgRef}
             src={imgSrc}
             alt={alt}
             onLoad={handleLoad}
