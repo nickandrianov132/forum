@@ -14,10 +14,10 @@ import { useAppSelector } from './store/hooks.ts';
 
 
 const apiEnv = import.meta.env.VITE_GRAPHQL_URI; 
-const HTTP_URI = apiEnv || 'http://localhost:7000/graphql';
+const HTTP_URI = apiEnv || 'http://localhost:7001/graphql';
 const WS_URI = apiEnv 
   ? apiEnv.replace(/^http/, 'ws') 
-  : 'ws://localhost:7000/graphql';
+  : 'ws://localhost:7001/graphql';
 // 1. HTTP Link
 const httpLink = new HttpLink({
   uri: HTTP_URI,

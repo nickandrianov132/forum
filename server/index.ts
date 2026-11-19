@@ -1,26 +1,21 @@
 import { ApolloServer } from "@apollo/server";
-import { startStandaloneServer } from "@apollo/server/standalone";
 import mongoose from "mongoose";
 import dns from 'node:dns/promises';
 dns.setDefaultResultOrder('ipv4first');
 dns.setServers(['8.8.8.8', '1.1.1.1']);
-import { GraphQLError } from "graphql";
-/// for Subscriptions Http and WebSockets:
 import { createServer } from 'http';
 import { ApolloServerPluginDrainHttpServer } from '@apollo/server/plugin/drainHttpServer';
-import { makeExecutableSchema } from '@graphql-tools/schema';
 import { WebSocketServer } from 'ws';
 import { expressMiddleware } from '@as-integrations/express5';
 import cors from 'cors';
 import express from 'express';
 import schema from "./src/schema.ts"
 import { useServer } from 'graphql-ws/use/ws';
-import { getUserFromHeader, verifyToken } from "./src/utils/auth.ts";
+import { getUserFromHeader } from "./src/utils/auth.ts";
 import type { ILoaders } from "./src/loaders/mainLoader.ts";
 import { createLoaders } from "./src/loaders/mainLoader.ts";
 import { env } from "./src/config.ts";
-import { UserModel, type IUser } from "./src/models/Users.ts";
-import { PubSub } from "graphql-subscriptions";
+import { UserModel } from "./src/models/Users.ts";
 import { EventEmitter } from "node:events";
 import { pubsub } from "./src/utils/userPubSub.ts";
 import { redis } from './src/utils/redis.ts';
@@ -31,57 +26,6 @@ export const globalEvents = new EventEmitter();
 // import { migrateOldUsers } from "./src/scripts/migrate-users.ts";
 // assignAdminRoles();
 // migrateOldUsers();
-
-// ГЛОБАЛЬНЫЙ МОСТ: Каждый раз, когда в эмиттер летит событие,
-// мы пересылаем его в pubsub из стабильного глобального контекста сервера
-// globalEvents.on("STATUS_CHANGED", (payload) => {
-//   pubsub.publish("USER_STATUS", payload);
-// });
-
-// export async function setGlobalUserOffline(userId: string, userLogin: string) {
-//   try {
-//     const dbUser = await UserModel.findById(userId);
-//     if (dbUser && dbUser.isOnline) {
-//       dbUser.isOnline = false;
-//       await dbUser.save();
-
-//       const userPayload = {
-//         id: String(dbUser._id),
-//         login: dbUser.login,
-//         isOnline: false,
-//         role: dbUser.role,
-//         avatar: (dbUser as any).avatar || "",
-//         __typename: "User"
-//       };
-//       // Шлем событие через единый PubSub — теперь его услышат ВСЕ клиенты
-//       pubsub.publish("USER_STATUS", { userStatusChanged: userPayload as any});
-//       console.log(`[Status System] -> Пользователь ${userLogin} успешно переведен в ОФФЛАЙН.`);
-//     }
-//   } catch (err) {
-//     console.error(`[Status System] Ошибка перевода в оффлайн для ${userLogin}:`, err);
-//   }
-// }
-// setInterval(async () => {
-//   // Страховочный таймаут: 3 минуты бездействия
-//   const offlineThreshold = new Date(Date.now() - 3 * 60 * 1000); 
-//   try {
-//     const expiredUsers = await UserModel.find({
-//       isOnline: true,
-//       lastSeen: { $lt: offlineThreshold }
-//     });
-
-//     for (const user of expiredUsers) {
-//       // Очищаем счетчики сокетов для этого пользователя на всякий случай
-//       userSocketCounts.delete(String(user._id));
-//       // Переводим в оффлайн через общую функцию
-//       await setGlobalUserOffline(String(user._id), user.login || "Пользователь");
-//       console.log(`[Страховка] Мобилка ${user.login} уснула. Погасили статус по таймауту.`);
-//     }
-//   } catch (err) {
-//     console.error("[Страховка Error] Ошибка проверки:", err);
-//   }
-// }, 120000); // Проверка запускается раз в 2 минуты
-
 
 
 async function checkAndCleanOfflineUsers() {
@@ -127,7 +71,10 @@ setInterval(checkAndCleanOfflineUsers, 30000);
 
 const app = express();
 app.use(cors({
-  origin: true, // Временно разрешаем абсолютно любой домен для стопроцентного теста
+  origin: [
+    'https://mu-void.com',
+    'http://localhost:5173'
+  ],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
@@ -148,114 +95,12 @@ const wsServer = new WebSocketServer({
   path: '/graphql',
 });
 
-// Карта для подсчета вкладок: userId -> количество открытых сокетов
-const userSocketCounts = new Map<string, number>();
-
-// Хранилище активных таймеров оффлайна: userId -> NodeJS.Timeout
-const userOfflineTimers = new Map<string, NodeJS.Timeout>();
 
 interface ISessionData {
   userId: string;
   login: string;
 }
 const socketSessionMap = new WeakMap<object, ISessionData>();
-
-
-// const serverCleanup = useServer(
-//   {
-//     schema,
-//     onConnect: async (ctx) => {
-//       const connectionParams = ctx.connectionParams as { authorization?: string };
-//       const authHeader = connectionParams?.authorization;
-      
-//       if (authHeader) {
-//         const tokenUser = getUserFromHeader(authHeader) as any;
-//         if (!tokenUser || !tokenUser.id) return false;
-        
-//         const userId = String(tokenUser.id);
-//         const dbUser = await UserModel.findById(userId);
-        
-//         if (dbUser) {
-//           socketSessionMap.set(ctx, {
-//             userId: userId,
-//             login: dbUser.login || "Пользователь"
-//           });
-
-//           // Отменяем таймер оффлайна, если пользователь вернулся (F5)
-//           if (userOfflineTimers.has(userId)) {
-//             clearTimeout(userOfflineTimers.get(userId)!);
-//             userOfflineTimers.delete(userId);
-//             console.log(`[WS] Пользователь ${dbUser.login} успел переподключиться. Таймер оффлайна отменен.`);
-//           }
-
-//           const currentCount = userSocketCounts.get(userId) || 0;
-//           userSocketCounts.set(userId, currentCount + 1);
-
-//           if (currentCount === 0 || !dbUser.isOnline) {
-//             dbUser.isOnline = true;
-//             await dbUser.save();
-            
-//             const userPayload = {
-//               id: String(dbUser._id),
-//               login: dbUser.login,
-//               isOnline: true,
-//               role: dbUser.role,
-//               avatar: (dbUser as any).avatar || "",
-//               __typename: "User"
-//             };
-//             pubsub.publish("USER_STATUS", { userStatusChanged: userPayload as any });
-//           }
-//         }
-//       }
-//       return true;
-//     },
-//     context: async (ctx) => {
-//       const connectionParams = ctx.connectionParams as { authorization?: string };
-//       const authHeader = connectionParams?.authorization;
-//       const user = authHeader ? getUserFromHeader(authHeader) : null;
-//       return {
-//         userId: user?.id || null,
-//         role: user?.role || null,
-//         loaders: createLoaders(user?.id || undefined)
-//       };
-//     },
-//     onDisconnect: (ctx) => { // Обратите внимание: убрали async с самого хука
-//       const session = socketSessionMap.get(ctx);
-      
-//       if (session) {
-//         const userId = session.userId;
-//         const userLogin = session.login;
-        
-//         socketSessionMap.delete(ctx);
-
-//         const currentCount = userSocketCounts.get(userId) || 0;
-//         const newCount = currentCount - 1;
-
-//         if (newCount <= 0) {
-//           userSocketCounts.delete(userId);
-          
-//           if (!userOfflineTimers.has(userId)) {
-//             console.log(`[WS] Последняя вкладка ${userLogin} закрыта. Запуск быстрого таймера...`);
-            
-//             const timer = setTimeout(() => {
-//               userOfflineTimers.delete(userId);
-
-//               if (!userSocketCounts.has(userId)) {
-//                 // Запускаем асинхронную функцию изолированно, не блокируя сокет-сервер
-//                 setGlobalUserOffline(userId, userLogin).catch(err => console.error(err));
-//               }
-//             }, 1500); // 1.5 секунды задержки для F5 / переключения вкладок
-
-//             userOfflineTimers.set(userId, timer);
-//           }
-//         } else {
-//           userSocketCounts.set(userId, newCount);
-//         }
-//       }
-//     }
-//   },
-//   wsServer,
-// );
 
 
 const serverCleanup = useServer(
@@ -430,7 +275,7 @@ app.use(
 
   }),
 );
-const PORT = env.PORT || 7000;
+const PORT = env.PORT || 7001;
 // const uri = "mongodb+srv://nick132:1322009Nick$@cluster0.dq4k6vy.mongodb.net/?appName=Cluster0"
 // const uri = 'mongodb://127.0.0.1:27017'
 

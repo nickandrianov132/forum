@@ -23,15 +23,22 @@ export const createLoaders = (currentUserId?: string) => ({
         return ids.map(() => new Error("Internal Database Error (CategoryLoader)"));
       }
     }),
+    // Важно: инстанс DataLoader должен создаваться заново на каждый входящий запрос (в контексте),
+    // чтобы кэш не утекал между разными пользователями.
     userLoader: new DataLoader(async (ids: readonly string[]) => {
+    // Когда DataLoader встречает вызов .load 
+    // (по сути при вызове резолвера на получение постов на каждый пост вызовется свой loaders.userLoader.load(userId))
+    // он не делает запрос для каждого поста а соберает их в один массив вот сюда за один тик EventLoop 
+    // далее делаем 1 запрос на получение всех пользователей этих постов 
     try {
       // 1. Получаем документы из базы
       const users = await UserModel.find({ _id: { $in: ids } });
 
       // 2. Создаем карту (Map) для быстрого поиска O(1)
+      // БД не гарантирует порядок элементов при $in, поэтому складываем результаты в Map.
       const userMap = new Map(users.map(u => [u.id.toString(), u]));
 
-      // 3. Сопоставляем входящие ID с результатами
+      // 3.Восстановление порядка. Сопоставляем входящие ID с результатами, индексы и длинна массива должна совпадать с индексами и длинной массива ids
       return ids.map(id => {
         const user = userMap.get(id.toString());
         if (!user) {
@@ -41,7 +48,7 @@ export const createLoaders = (currentUserId?: string) => ({
       });
     } catch (err) {
       console.error("ОШИБКА В USER_LOADER:", err);
-      // Если упала сама база, возвращаем объект ошибки для каждого ID в пачке
+      // Если упала сама БД, возвращаем объект Error для каждого ID, чтобы корректно отклонить все промисы в пачке.
       return ids.map(() => new Error("Internal Database Error"));
     }
     }),
