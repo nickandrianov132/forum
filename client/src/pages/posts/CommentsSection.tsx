@@ -10,6 +10,8 @@ import { DELETE_COMMENT } from "../../graphql/mutations/deleteComment";
 import { UPDATE_COMMENT } from "../../graphql/mutations/updateComment";
 import type { CommentFieldsFragment } from "../../gql/graphql";
 import SafeImage from "../../utils/SafeImage";
+import { ADD_COMMENT_LIKE } from "../../graphql/mutations/addCommentLike";
+import { ADD_COMMENT_DISLIKE } from "../../graphql/mutations/addCommentDislike";
 
 
 interface CommentsSectionProps {
@@ -17,7 +19,9 @@ interface CommentsSectionProps {
 }
 
 const CommentsSection = ({ postId }: CommentsSectionProps ) => {
-    const { user } = useAppSelector(state => state.user);
+    const { accessToken, user } = useAppSelector(state => state.user);
+    const [addCommentLike] = useMutation(ADD_COMMENT_LIKE);
+    const [addCommentDislike] = useMutation(ADD_COMMENT_DISLIKE);
     const [isEdit, setIsEdit] = useState(false);
     const [editedComment, setEditedComment] = useState('');
     const [editedText, setEditedText] = useState('');
@@ -198,6 +202,40 @@ const CommentsSection = ({ postId }: CommentsSectionProps ) => {
         }
     }
 
+    const handleLike = (comment: CommentFieldsFragment) => {
+        if (accessToken.length === 0) return;
+        addCommentLike({
+            variables: {commentId: comment.id},
+            optimisticResponse: {
+                addCommentLike: {
+                    __typename: "Comment",
+                    id: comment.id,
+                    likesCount: comment.isLiked ? comment.likesCount - 1 : comment.likesCount + 1,
+                    dislikesCount: comment.isDisliked ? comment.dislikesCount - 1 : comment.dislikesCount,
+                    isLiked: !comment.isLiked,
+                    isDisliked: false,
+                }
+            }
+        })
+    }
+
+    const handleDislike = (comment: CommentFieldsFragment) => {
+        if (accessToken.length === 0) return;
+        addCommentDislike({
+            variables: { commentId: comment.id },
+            optimisticResponse: {
+                addCommentDislike: {
+                    __typename: "Comment",
+                    id: comment.id,
+                    dislikesCount: comment.isDisliked ? comment.dislikesCount - 1 : comment.dislikesCount + 1,
+                    likesCount: comment.isLiked ? comment.likesCount - 1 : comment.likesCount,
+                    isDisliked: !comment.isDisliked,
+                    isLiked: false,
+                }
+            }
+        })
+    }
+
     if (isLoading && page === 1) {
         return <div className="mt-6 text-center text-slate-400 animate-pulse text-sm">Loading...</div>;
     }
@@ -350,7 +388,7 @@ const CommentsSection = ({ postId }: CommentsSectionProps ) => {
                                 onClick={(e) => {
                                     e.preventDefault();
                                     e.stopPropagation();
-                                    // handleLike(post);
+                                    handleLike(comment);
                                 }} 
                                 className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium cursor-pointer transition-all ${
                                     comment.isLiked 
@@ -367,7 +405,7 @@ const CommentsSection = ({ postId }: CommentsSectionProps ) => {
                                 onClick={(e) => {
                                     e.preventDefault();
                                     e.stopPropagation();
-                                    // handleDislike(post);
+                                    handleDislike(comment);
                                 }} 
                                 className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium cursor-pointer transition-all ${
                                     comment.isDisliked 

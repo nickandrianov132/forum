@@ -11,14 +11,12 @@ export function useAuthInit() {
     const client = useApolloClient();
     const [isReady, setIsReady] = useState(false);
 
-    // 1. Убираем useMemo с пустым массивом для токенов, 
-    // либо привязываем его к состоянию готовности, чтобы не блокировать чтение.
     const accessToken = localStorage.getItem('token') || '';
     const refreshToken = localStorage.getItem('refreshToken') || '';
     
     const hasToken = !!accessToken;
 
-    // 2. Если приложение уже инициализировано (isReady),
+    //  Если приложение уже инициализировано (isReady),
     // мы пропускаем (skip) этот запрос навсегда, чтобы он не стрелял при логинах нового юзера!
     const { loading, error, data } = useQuery(GET_ME, {
         skip: !hasToken || isReady, 

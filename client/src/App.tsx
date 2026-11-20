@@ -11,6 +11,7 @@ import { useOnlineHeartbeat } from './hooks/useOnlineHeartbeat.ts';
 import { PING_ONLINE_MUTATION } from './graphql/mutations/pingOnline.ts';
 import { useEffect, useRef } from 'react';
 import { useAppSelector } from './store/hooks.ts';
+import Spinner from './components/Spinner.tsx';
 
 
 const apiEnv = import.meta.env.VITE_GRAPHQL_URI; 
@@ -365,8 +366,9 @@ function MainApp() {
 
   if (isAuthLoading) {
     return (
-      <div className='flex items-center justify-center h-full'>
-        <h3>Authorization...</h3>
+      <div className='flex flex-col w-full items-center justify-center h-full'>
+        <h3 className='text-slate-300 animate-pulse mt-5'>Authorization...</h3>
+        <Spinner />
       </div>
     );
   }

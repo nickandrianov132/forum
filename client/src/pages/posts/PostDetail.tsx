@@ -51,7 +51,7 @@ const PostDetail = () => {
     };
 
     const handleLike = (post: any) => {
-        if(accessToken.length === 0) return
+        if (accessToken.length === 0) return;
         addLike({
             variables: { postId: post.id },
             optimisticResponse: {
@@ -69,23 +69,20 @@ const PostDetail = () => {
         });
     };
     const handleDislike = (post: any) => {
-        if(accessToken.length != 0){
-            addDislike({
-                variables: { postId: post.id },
-                optimisticResponse: {
-                    addDislike: {
-                        __typename: 'Post',
-                        id: post.id,
-                        dislikesCount: post.isDisliked ? post.dislikesCount - 1 : post.dislikesCount + 1,
-                        likesCount: post.isLiked ? post.likesCount - 1 : post.likesCount,
-                        isDisliked: !post.isDisliked,
-                        isLiked: false,
-                    },
+        if (accessToken.length === 0) return;
+        addDislike({
+            variables: { postId: post.id },
+            optimisticResponse: {
+                addDislike: {
+                    __typename: 'Post',
+                    id: post.id,
+                    dislikesCount: post.isDisliked ? post.dislikesCount - 1 : post.dislikesCount + 1,
+                    likesCount: post.isLiked ? post.likesCount - 1 : post.likesCount,
+                    isDisliked: !post.isDisliked,
+                    isLiked: false,
                 },
-            });
-        } else {
-            return
-        }
+            },
+        });
     };
 
     const handleUpdatePost = (pId: string, pTitle: string, pContent: string) => {

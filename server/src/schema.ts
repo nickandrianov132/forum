@@ -33,11 +33,11 @@ import {
 import {
     resolvers as commentLikeResolver,
     typeDefs as commentLikeTypeDefs,
-} from "./entities/comment/index.ts";
+} from "./entities/commentLike/index.ts";
 import {
     resolvers as commentDislikeResolver,
     typeDefs as commentDislikeTypeDefs,
-} from "./entities/comment/index.ts";
+} from "./entities/commentDislike/index.ts";
 
 
 const schema = makeExecutableSchema({

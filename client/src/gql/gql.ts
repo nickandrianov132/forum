@@ -16,6 +16,8 @@ import type { TypedDocumentNode as DocumentNode } from '@graphql-typed-document-
 type Documents = {
     "\n  fragment CommentFields on Comment {\n    id\n    content\n    createdAt\n    likesCount\n    dislikesCount\n    isLiked\n    isDisliked\n    isOwner\n    user {\n      id\n      login\n      avatar\n      role\n    }\n  }\n": typeof types.CommentFieldsFragmentDoc,
     "\n    mutation CreateComment($postId: ID!, $content: String!) {\n        createComment(postId: $postId, content: $content) {\n            ...CommentFields\n        }\n    } \n": typeof types.CreateCommentDocument,
+    "\n    mutation AddCommentDislike($commentId: ID!) {\n        addCommentDislike(commentId: $commentId) {\n            id\n            likesCount\n            dislikesCount\n            isLiked\n            isDisliked\n        }\n    }    \n": typeof types.AddCommentDislikeDocument,
+    "\n    mutation AddCommentLike($commentId: ID!) {\n        addCommentLike(commentId: $commentId) {\n            id\n            likesCount\n            dislikesCount\n            isLiked\n            isDisliked\n        }\n    }\n": typeof types.AddCommentLikeDocument,
     "\n  mutation AddDislike($postId: ID!) {\n    addDislike(postId: $postId) {\n      id\n      likesCount\n      dislikesCount\n      isLiked\n      isDisliked\n    }\n  }\n": typeof types.AddDislikeDocument,
     "\n  mutation AddLike($postId: ID!) {\n    addLike(postId: $postId) {\n      id\n      likesCount\n      dislikesCount\n      isLiked\n      isDisliked\n    }\n  }\n": typeof types.AddLikeDocument,
     "\n    mutation BanUser($input: BanUserInput!) {\n        banUser( input: $input )\n    }   \n": typeof types.BanUserDocument,
@@ -52,6 +54,8 @@ type Documents = {
 const documents: Documents = {
     "\n  fragment CommentFields on Comment {\n    id\n    content\n    createdAt\n    likesCount\n    dislikesCount\n    isLiked\n    isDisliked\n    isOwner\n    user {\n      id\n      login\n      avatar\n      role\n    }\n  }\n": types.CommentFieldsFragmentDoc,
     "\n    mutation CreateComment($postId: ID!, $content: String!) {\n        createComment(postId: $postId, content: $content) {\n            ...CommentFields\n        }\n    } \n": types.CreateCommentDocument,
+    "\n    mutation AddCommentDislike($commentId: ID!) {\n        addCommentDislike(commentId: $commentId) {\n            id\n            likesCount\n            dislikesCount\n            isLiked\n            isDisliked\n        }\n    }    \n": types.AddCommentDislikeDocument,
+    "\n    mutation AddCommentLike($commentId: ID!) {\n        addCommentLike(commentId: $commentId) {\n            id\n            likesCount\n            dislikesCount\n            isLiked\n            isDisliked\n        }\n    }\n": types.AddCommentLikeDocument,
     "\n  mutation AddDislike($postId: ID!) {\n    addDislike(postId: $postId) {\n      id\n      likesCount\n      dislikesCount\n      isLiked\n      isDisliked\n    }\n  }\n": types.AddDislikeDocument,
     "\n  mutation AddLike($postId: ID!) {\n    addLike(postId: $postId) {\n      id\n      likesCount\n      dislikesCount\n      isLiked\n      isDisliked\n    }\n  }\n": types.AddLikeDocument,
     "\n    mutation BanUser($input: BanUserInput!) {\n        banUser( input: $input )\n    }   \n": types.BanUserDocument,
@@ -108,6 +112,14 @@ export function graphql(source: "\n  fragment CommentFields on Comment {\n    id
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
 export function graphql(source: "\n    mutation CreateComment($postId: ID!, $content: String!) {\n        createComment(postId: $postId, content: $content) {\n            ...CommentFields\n        }\n    } \n"): (typeof documents)["\n    mutation CreateComment($postId: ID!, $content: String!) {\n        createComment(postId: $postId, content: $content) {\n            ...CommentFields\n        }\n    } \n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n    mutation AddCommentDislike($commentId: ID!) {\n        addCommentDislike(commentId: $commentId) {\n            id\n            likesCount\n            dislikesCount\n            isLiked\n            isDisliked\n        }\n    }    \n"): (typeof documents)["\n    mutation AddCommentDislike($commentId: ID!) {\n        addCommentDislike(commentId: $commentId) {\n            id\n            likesCount\n            dislikesCount\n            isLiked\n            isDisliked\n        }\n    }    \n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n    mutation AddCommentLike($commentId: ID!) {\n        addCommentLike(commentId: $commentId) {\n            id\n            likesCount\n            dislikesCount\n            isLiked\n            isDisliked\n        }\n    }\n"): (typeof documents)["\n    mutation AddCommentLike($commentId: ID!) {\n        addCommentLike(commentId: $commentId) {\n            id\n            likesCount\n            dislikesCount\n            isLiked\n            isDisliked\n        }\n    }\n"];
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */

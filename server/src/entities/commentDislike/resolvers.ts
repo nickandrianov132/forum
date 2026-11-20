@@ -40,7 +40,7 @@ const resolvers: Resolvers<MyContext> = {
 
       if (existingDislike) {
         // Если дизлайк уже был — убираем его (toggle-эффект)
-        await CommentLikeModel.findByIdAndDelete(existingDislike._id);
+        await CommentDislikeModel.findByIdAndDelete(existingDislike._id);
       } else {
         // Если дизлайк не было — убираем лайк (если он стоял) и создаем дизлайк
         await CommentLikeModel.findOneAndDelete({ commentId, userId });

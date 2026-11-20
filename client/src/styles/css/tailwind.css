@@ -11,7 +11,7 @@
   --font-poppins: Poppins, sans-serif;
 }
 @utility root {
-  @apply flex w-dvw bg-slate-400 min-w-90 min-h-screen;
+  @apply flex w-dvw bg-slate-800 min-w-90 min-h-screen;
 }
 @utility main {
   /* Вместо grid на мобильных лучше использовать flex, чтобы элементы тянулись */
