@@ -74,7 +74,8 @@ app.use(cors({
   origin: [
     'https://mu-void.com',
     'http://localhost:5173',
-    'https://server-kbvy.onrender.com'
+    'https://vercel.app',
+    /\.vercel\.app$/, 
   ],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
