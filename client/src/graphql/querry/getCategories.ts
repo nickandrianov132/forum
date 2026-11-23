@@ -7,6 +7,7 @@ export const GET_CATEGORIES = graphql(`
             name
             slug
             description
+            isAdminOnly
         }
     }
 `)

@@ -1,5 +1,5 @@
+import { CategoryModel } from "../models/Category.ts";
 import { UserModel } from "../models/Users.ts";
-
 
 async function assignAdminRoles() {
   try {
@@ -13,6 +13,17 @@ async function assignAdminRoles() {
       'moderator-void@gmail.com'  
     ];
 
+    // 1. Всем существующим категориям ставим false
+    await CategoryModel.updateMany(
+      { isAdminOnly: { $exists: false } },
+      { $set: { isAdminOnly: false } }
+    );
+
+    // 2. Нужным разделам включаем true по их slug
+    await CategoryModel.updateMany(
+      { slug: { $in: ['news', 'guides', 'banned'] } },
+      { $set: { isAdminOnly: true } }
+    );
     // 2. Назначаем роль Admin
     const adminResult = await UserModel.updateMany(
       { email: { $in: adminEmails } },
@@ -31,6 +42,5 @@ async function assignAdminRoles() {
     console.error('[Роли] Ошибка при назначении административных прав:', err);
   }
 }
-
 // Экспортируем функцию для вызова в index.ts
 export { assignAdminRoles };

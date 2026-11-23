@@ -3,7 +3,9 @@ import { PostModel } from "../../models/Posts.ts";
 import { UserModel } from "../../models/Users.ts";
 import type { Resolvers } from "../../types/resolvers-types.ts";
 import { PubSub } from "graphql-subscriptions";
+import { GraphQLError } from 'graphql';
 import { authenticated, hasRole } from "../../utils/authGuard.ts";
+import { CategoryModel } from "../../models/Category.ts";
 const pubsub = new PubSub()
 
 const resolvers: Resolvers<MyContext> = {
@@ -62,12 +64,29 @@ const resolvers: Resolvers<MyContext> = {
         }
     },
     Mutation: {
-        createPost: authenticated( async (_, {categoryId, title, content, userId}) => {
+        createPost: authenticated( async (_, {categoryId, title, content}, context) => {
+            const category = await CategoryModel.findById(categoryId);
+            if (!category) {
+                throw new GraphQLError('Category not found!', {
+                    extensions: { code: 'NOT_FOUND' }
+                })
+            }
+            if (!context.role) {
+                    throw new GraphQLError('Wrong Role!', {
+                    extensions: { code: 'FORBIDDEN' }
+                })
+            }
+            const isStaff = ['Admin', 'Moderator'].includes(context.role);
+            if (category.isAdminOnly && !isStaff) {
+                throw new GraphQLError('Only administrators can create posts in this category', {
+                    extensions: { code: 'FORBIDDEN' }
+                })
+            }
             const newPost = new PostModel({
                 category: categoryId, 
                 title, 
                 content, 
-                userId
+                userId: context.userId
             })
             await newPost.save()
             const posts = await PostModel.find()

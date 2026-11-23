@@ -4,13 +4,15 @@ import Editor from "../../components/lexical/Editor";
 import { useEffect, useState, type SubmitEvent } from "react";
 import { CREATE_POST } from "../../graphql/mutations/createPost";
 import { useAppSelector } from "../../store/hooks";
-import { useNavigate } from "react-router";
+import { useNavigate, useSearchParams } from "react-router";
 import { GET_POSTS_BY_CATEGORY } from "../../graphql/querry/getPostsByCategory";
 
 const ITEMS_PER_PAGE = 5;
 
 const CreatePost = () => {
     const navigate = useNavigate();
+    const [searchParams] = useSearchParams();
+    const defaultCategorySlug = searchParams.get('category') || 'off-topic'
     const [cat, setCat] = useState('');
     const [title, setTitle] = useState('');
     const [postContent, setPostContent] = useState('');
@@ -28,13 +30,21 @@ const CreatePost = () => {
     });
 
     const isSuccess = called && !postLoading && !postError;
-
     useEffect(() => {
         if (data?.categories && data.categories.length > 0 && !cat) {
-            setCat(data.categories[0].id);
+            // 1. Ищем категорию, у которой slug совпадает с параметром из URL
+            const matchedCategory = data.categories.find(
+                (c) => c.slug === defaultCategorySlug
+            );
+            // 2. Если нашли — ставим её id, если нет — берём первую категорию из списка
+            if (matchedCategory) {
+                setCat(matchedCategory.id);
+            } else {
+                setCat(data.categories[0].id);
+            }
         }
          console.log(cat);
-    }, [data, cat]);
+    }, [data, cat, defaultCategorySlug]);
     // console.log(data);   
 
     if (loading || postLoading )  return (
@@ -64,7 +74,6 @@ const CreatePost = () => {
                 categoryId: cat,
                 title,
                 content: postContent,
-                userId: user.id
             },
 
             refetchQueries: [   

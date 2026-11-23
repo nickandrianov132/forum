@@ -20,7 +20,8 @@ const categorySchema = new Schema({
         type: String,
         trim: true,
         default: ""
-    }
+    },
+    isAdminOnly: { type: Boolean, default: false }
 }, { timestamps: true });
 
 export type ICategory = InferSchemaType<typeof categorySchema> & { _id: Types.ObjectId; id: string };

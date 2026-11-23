@@ -5,7 +5,9 @@ export const GET_CATEGORY_BY_SLUG = graphql(`
       categoryBySlug(slug: $slug) {
         id
         name
+        slug
         description
+        isAdminOnly
       }
     }  
 `)

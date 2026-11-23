@@ -3,6 +3,7 @@ type Category {
     name: String!
     slug: String!
     description: String
+    isAdminOnly: Boolean!
     posts: [Post!]!     # GraphQL поймет этот тип, даже если он объявлен в другой папке
 }
 
@@ -15,6 +16,7 @@ extend type Query {
 
 # Расширяем глобальный Mutation
 extend type Mutation {
-    createPost(categoryId: ID!, title: String!, content: String!, userId: ID!): Post!
-    createCategory(name: String!, slug: String!, description: String): Category!
+    createPost(categoryId: ID!, title: String!, content: String!): Post!
+    createCategory(name: String!, slug: String!, description: String, isAdminOnly: Boolean): Category!
+    deleteCategory(id: ID!): ID!
 }

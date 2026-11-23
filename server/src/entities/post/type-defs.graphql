@@ -25,7 +25,7 @@ extend type Query {
     postsByCategory(slug: String!, limit: Int!, offset: Int!): PaginatedPosts!
 }
 extend type Mutation {
-    createPost(categoryId: ID!, title: String!, content: String!, userId: ID!): Post
+    createPost(categoryId: ID!, title: String!, content: String!): Post
     updatePost(id: ID!, categoryId: ID, title: String, content: String): Post
     deletePost(id: ID!): Boolean
     deletePostByAdmin(id: ID!): Boolean! 

@@ -45,6 +45,7 @@ export type Category = {
   __typename?: 'Category';
   description?: Maybe<Scalars['String']['output']>;
   id: Scalars['ID']['output'];
+  isAdminOnly: Scalars['Boolean']['output'];
   name: Scalars['String']['output'];
   posts: Array<Post>;
   slug: Scalars['String']['output'];
@@ -125,6 +126,7 @@ export type Mutation = {
   createComment: Comment;
   createPost: Post;
   deleteByAdminComment: Scalars['Boolean']['output'];
+  deleteCategory: Scalars['ID']['output'];
   deleteComment: Scalars['Boolean']['output'];
   deleteMessage: Message;
   deletePost?: Maybe<Scalars['Boolean']['output']>;
@@ -179,6 +181,7 @@ export type MutationBanUserArgs = {
 
 export type MutationCreateCategoryArgs = {
   description?: InputMaybe<Scalars['String']['input']>;
+  isAdminOnly?: InputMaybe<Scalars['Boolean']['input']>;
   name: Scalars['String']['input'];
   slug: Scalars['String']['input'];
 };
@@ -194,11 +197,15 @@ export type MutationCreatePostArgs = {
   categoryId: Scalars['ID']['input'];
   content: Scalars['String']['input'];
   title: Scalars['String']['input'];
-  userId: Scalars['ID']['input'];
 };
 
 
 export type MutationDeleteByAdminCommentArgs = {
+  id: Scalars['ID']['input'];
+};
+
+
+export type MutationDeleteCategoryArgs = {
   id: Scalars['ID']['input'];
 };
 
@@ -552,6 +559,7 @@ export type AuthResponseResolvers<ContextType = MyContext, ParentType extends Re
 export type CategoryResolvers<ContextType = MyContext, ParentType extends ResolversParentTypes['Category'] = ResolversParentTypes['Category']> = ResolversObject<{
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  isAdminOnly?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   posts?: Resolver<Array<ResolversTypes['Post']>, ParentType, ContextType>;
   slug?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -627,8 +635,9 @@ export type MutationResolvers<ContextType = MyContext, ParentType extends Resolv
   banUser?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationBanUserArgs, 'input'>>;
   createCategory?: Resolver<ResolversTypes['Category'], ParentType, ContextType, RequireFields<MutationCreateCategoryArgs, 'name' | 'slug'>>;
   createComment?: Resolver<ResolversTypes['Comment'], ParentType, ContextType, RequireFields<MutationCreateCommentArgs, 'content' | 'postId'>>;
-  createPost?: Resolver<ResolversTypes['Post'], ParentType, ContextType, RequireFields<MutationCreatePostArgs, 'categoryId' | 'content' | 'title' | 'userId'>>;
+  createPost?: Resolver<ResolversTypes['Post'], ParentType, ContextType, RequireFields<MutationCreatePostArgs, 'categoryId' | 'content' | 'title'>>;
   deleteByAdminComment?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationDeleteByAdminCommentArgs, 'id'>>;
+  deleteCategory?: Resolver<ResolversTypes['ID'], ParentType, ContextType, RequireFields<MutationDeleteCategoryArgs, 'id'>>;
   deleteComment?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationDeleteCommentArgs, 'id'>>;
   deleteMessage?: Resolver<ResolversTypes['Message'], ParentType, ContextType, RequireFields<MutationDeleteMessageArgs, 'id'>>;
   deletePost?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationDeletePostArgs, 'id'>>;
