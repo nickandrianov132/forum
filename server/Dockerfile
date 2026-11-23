@@ -1,5 +1,8 @@
 FROM node:20-alpine
 
+# Устанавливаем Redis внутри образа
+RUN apk add --no-cache redis
+
 WORKDIR /app
 
 # Копируем файлы зависимостей
@@ -17,5 +20,5 @@ COPY . .
 # Открываем порт
 EXPOSE 7000
 
-# Запускаем сервер напрямую через tsx
-CMD ["tsx", "index.ts"]
+# Запускаем Redis в фоне и сразу стартуем сервер
+CMD ["sh", "-c", "redis-server --daemonize yes && tsx index.ts"]
